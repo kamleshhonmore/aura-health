@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jsPDF } from 'jspdf';
 import { ThemeConfig, CycleRecord, DayLog } from '../types';
 import { symptomList, moodList } from '../data';
 import {
@@ -10,6 +11,7 @@ import {
   Sparkles,
   PieChart,
   BarChart2,
+  Download,
 } from 'lucide-react';
 
 interface ChartsViewProps {
@@ -84,8 +86,73 @@ export const ChartsView: React.FC<ChartsViewProps> = ({
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6);
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('Cycle & Health Report', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Recorded Cycles: ${totalCycles}`, 20, 35);
+    doc.text(`Average Cycle Length: ${avgCycleLength} days`, 20, 45);
+    doc.text(`Average Period Length: ${avgPeriodLength} days`, 20, 55);
+
+    let yPos = 70;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Top Symptoms:', 20, yPos);
+    yPos += 10;
+    
+    doc.setFont('helvetica', 'normal');
+    if (sortedSymptoms.length === 0) {
+      doc.text('No symptoms logged.', 25, yPos);
+      yPos += 10;
+    } else {
+      sortedSymptoms.forEach(([sId, count]) => {
+        const sym = symptomList.find((s) => s.id === sId);
+        const name = sym ? sym.name : sId;
+        doc.text(`- ${name}: logged ${count} times`, 25, yPos);
+        yPos += 10;
+      });
+    }
+
+    yPos += 5;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Dominant Moods:', 20, yPos);
+    yPos += 10;
+    
+    doc.setFont('helvetica', 'normal');
+    if (sortedMoods.length === 0) {
+      doc.text('No moods logged.', 25, yPos);
+      yPos += 10;
+    } else {
+      sortedMoods.forEach(([mId, count]) => {
+        const m = moodList.find((item) => item.id === mId);
+        const name = m ? m.name : mId;
+        doc.text(`- ${name}: logged ${count} times`, 25, yPos);
+        yPos += 10;
+      });
+    }
+
+    doc.save('cycle_report.pdf');
+  };
+
   return (
     <div className="space-y-4">
+      {/* Top Header with Export Button */}
+      <div className="flex items-center justify-between">
+        <h2 className={`text-lg font-black font-['Fredoka'] ${theme.textPrimary}`}>
+          Health Insights
+        </h2>
+        <button
+          onClick={handleExportPDF}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r ${theme.buttonBg} shadow-sm active:scale-95 transition-all`}
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Export PDF</span>
+        </button>
+      </div>
+
       {/* Top Navigation Filter Tabs */}
       <div className="flex items-center gap-1.5 p-1 bg-white rounded-2xl border border-pink-100 shadow-xs overflow-x-auto">
         {[

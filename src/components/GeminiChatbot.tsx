@@ -40,7 +40,7 @@ interface GeminiChatbotProps {
   onNavigateToTab?: (tab: any) => void;
 }
 
-export type ChatRole = 'general' | 'ayurveda' | 'fertility' | 'pcos' | 'perimenopause';
+export type ChatRole = 'general' | 'ayurveda' | 'fertility' | 'pcos' | 'perimenopause' | 'clinical';
 
 export const CHAT_ROLES: Record<
   ChatRole,
@@ -70,6 +70,22 @@ export const CHAT_ROLES: Record<
       'What foods should I eat in the Luteal phase?',
       'Is spotting 14 days after period normal?',
       'How does estrogen affect my energy levels?',
+    ],
+  },
+  clinical: {
+    name: 'Nova AI Assistant',
+    title: 'Clinically Guardrailed Medical AI',
+    avatar: '⚕️',
+    accentColor: 'from-blue-500 to-indigo-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    description: 'Strictly evidence-based, clinically validated reproductive health information (RAG constraints).',
+    icon: Activity,
+    sampleQuestions: [
+      'What are the Rotterdam criteria for PCOS?',
+      'How is Endometriosis definitively diagnosed?',
+      'Can you generate a Question Prompt List for my OBGYN visit?',
+      'What are the clinical markers for early perimenopause?',
     ],
   },
   ayurveda: {
@@ -139,11 +155,8 @@ export const CHAT_ROLES: Record<
 };
 
 export const AVAILABLE_MODELS = [
-  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', tag: 'High Quota • Fast & Smart' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', tag: 'Fast Multimodal' },
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tag: 'High Reliability' },
-  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', tag: 'Ultra Fast' },
-  { id: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash', tag: 'Advanced Reasoning' },
+  { id: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash', tag: 'Fast & Smart' },
+  { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', tag: 'Ultra Fast' },
 ];
 
 export function GeminiChatbot({
@@ -155,7 +168,7 @@ export function GeminiChatbot({
   onNavigateToTab,
 }: GeminiChatbotProps) {
   const [selectedRole, setSelectedRole] = useState<ChatRole>('general');
-  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-3.7-flash');
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);

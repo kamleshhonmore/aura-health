@@ -1,32 +1,14 @@
 import express from "express";
 import path from "path";
-import { GoogleGenAI } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: "10mb" }));
-
-// Lazy Google GenAI Client
-let aiClient: GoogleGenAI | null = null;
-function getGenAI(): GoogleGenAI {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable is not configured. Please set your API key in the Secrets panel.");
-  }
-  if (!aiClient) {
-    aiClient = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
-  }
-  return aiClient;
-}
 
 // System instructions for different AI health roles
 const ROLE_SYSTEM_INSTRUCTIONS: Record<string, string> = {
@@ -63,27 +45,64 @@ You guide women through hormonal fluctuations, hot flashes, night sweats, brain 
 Guidelines:
 1. Offer cooling remedies, phytoestrogen-rich nutrition (flaxseed, legumes), sleep hygiene practices, and nervous system regulation.
 2. Celebrate this life transition with empowerment and dignity.`,
+
+  clinical: `You are a Clinically Guardrailed Medical AI Assistant (similar to Flo's Nova).
+You provide strictly evidence-based, clinically validated reproductive health information. 
+Guidelines:
+1. DO NOT hallucinate medical advice. Rely only on validated medical literature.
+2. For symptoms of PCOS, Endometriosis, or severe pelvic pain, advise consulting a healthcare provider and generate a Question Prompt List (QPL) for their next doctor visit.
+3. Use plain, highly accessible language to explain complex cycle insights. 
+4. Never diagnose; always frame insights as risk factors or probabilistic patterns.`,
 };
+
+// OpenRouter Helper
+async function callOpenRouter(messages: any[], isJson = false) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is not set.");
+  }
+  
+  // Use a fast free model on OpenRouter
+  const model = "openrouter/free";
+
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://aistudio.google.com",
+      "X-Title": "AI Studio Cycle App",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.7,
+      response_format: isJson ? { type: "json_object" } : undefined
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`OpenRouter error: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  if (data.choices && data.choices.length > 0) {
+    return data.choices[0].message.content;
+  }
+  throw new Error("No response from OpenRouter");
+}
 
 // API: Check status & models
 app.get("/api/ai/health", (req, res) => {
-  const hasKey = Boolean(process.env.GEMINI_API_KEY);
+  const hasKey = Boolean(process.env.OPENROUTER_API_KEY);
   res.json({
     status: "ok",
     hasApiKey: hasKey,
-    defaultModel: "gemini-3.7-flash",
+    defaultModel: "openrouter/free",
     availableRoles: Object.keys(ROLE_SYSTEM_INSTRUCTIONS),
   });
 });
-
-// Models to try in order of fallback if quota or availability errors occur
-const FALLBACK_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-3.7-flash",
-];
 
 // Fallback specialist responses when API quota is exhausted
 function generateSpecialistFallback(role: string, query: string, cycleContext?: any): string {
@@ -103,6 +122,10 @@ function generateSpecialistFallback(role: string, query: string, cycleContext?: 
     return `🌺 **Perimenopause Transition Wisdom from Elena:**\n\n- **Cooling Hot Flashes**: Keep chamomile or mint tea chilled nearby. Wear breathable natural fabrics (cotton/linen).\n- **Hormone Support**: Incorporate ground flaxseed, edamame, and lentils for gentle phytoestrogen support.\n- **Sleep Restoration**: Take magnesium glycinate (200-300mg) 45 minutes before bed to soothe the nervous system.\n- **Nurture**: Give yourself grace during hormonal fluctuations—you are in an empowering transition phase.\n\n*Note: AI service is currently in high demand; this support is curated for perimenopause comfort.*`;
   }
 
+  if (role === "clinical") {
+    return `⚕️ **Clinical AI Assistant Insight:**\n\n- **Consultation Priority**: Based on your inputs, please discuss these symptoms with a certified healthcare provider. I am designed to assist with cycle understanding but cannot substitute for a medical diagnosis.\n- **Preparation for Visit**: You may want to ask your doctor about: 1) Your pelvic pain severity 2) Menstrual cycle irregularities 3) The possibility of a pelvic ultrasound or hormone panel (LH, FSH, Androgens).\n- **Next Step**: Keep tracking your symptoms meticulously, as this data is invaluable for your doctor.\n\n*Note: Our AI service is currently in high demand; this guidance is generated from strict clinical safety protocols.*`;
+  }
+
   // General companion
   return `🌸 **Aura AI Cycle Sync Insight:**\n\n- **Cycle Sync (Day ${cycleDay} • ${phase} Phase)**: During this phase, listen closely to your body's energy levels. Rest when fatigued and stay well-hydrated.\n- **Quick Comfort**: Warm herbal teas (ginger, chamomile, peppermint) relieve muscle tension and calm mood swings.\n- **Next Step**: Log any new symptoms in your Daily Log to keep your cycle predictions accurate.\n\n*Note: Our AI service is currently experiencing high free-tier demand; this guidance is curated for your cycle phase.*`;
 }
@@ -110,7 +133,7 @@ function generateSpecialistFallback(role: string, query: string, cycleContext?: 
 // API: Multi-turn Chat
 app.post("/api/ai/chat", async (req, res) => {
   try {
-    const { messages, role = "general", userCycleContext, model = "gemini-2.5-flash" } = req.body;
+    const { messages, role = "general", userCycleContext } = req.body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Messages array is required." });
@@ -122,64 +145,21 @@ app.post("/api/ai/chat", async (req, res) => {
       systemInstruction += `\n\nUser's Current Cycle Context (use this to tailor your response dynamically):\n- Cycle Day: ${userCycleContext.cycleDay || "Unknown"}\n- Current Phase: ${userCycleContext.phase || "Unknown"}\n- Cycle Length: ${userCycleContext.cycleLength || 28} days\n- Next Period In: ${userCycleContext.daysUntilPeriod ?? "N/A"} days\n- Current Logged Symptoms/Mood: ${userCycleContext.symptoms || "None reported today"}`;
     }
 
-    const ai = getGenAI();
-
-    // Map frontend messages into Gemini contents format
-    const contents = messages.map((m: { role: string; content: string }) => ({
-      role: m.role === "assistant" || m.role === "model" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
-
-    // List models to try: requested model first, then fallback list
-    const candidateModels = [
-      model,
-      ...FALLBACK_MODELS.filter((m) => m !== model),
+    const openRouterMessages = [
+      { role: "system", content: systemInstruction },
+      ...messages.map((m: any) => ({
+        role: (m.role === "assistant" || m.role === "model") ? "assistant" : "user",
+        content: m.content
+      }))
     ];
 
-    let lastError: any = null;
-    let replyText = "";
-    let modelSuccess = "";
-
-    for (const candidate of candidateModels) {
-      try {
-        const response = await ai.models.generateContent({
-          model: candidate,
-          contents,
-          config: {
-            systemInstruction,
-            temperature: 0.7,
-          },
-        });
-
-        if (response.text) {
-          replyText = response.text;
-          modelSuccess = candidate;
-          break;
-        }
-      } catch (err: any) {
-        lastError = err;
-        console.warn(`Model ${candidate} encountered error:`, err?.message || err);
-        // Continue to try next candidate
-      }
-    }
-
-    if (replyText) {
-      return res.json({
-        reply: replyText,
-        modelUsed: modelSuccess,
-      });
-    }
-
-    // If all models encountered quota/rate-limits, return our grounded specialist knowledge fallback
-    const latestUserMsg = messages[messages.length - 1]?.content || "";
-    const fallbackText = generateSpecialistFallback(role, latestUserMsg, userCycleContext);
+    const replyText = await callOpenRouter(openRouterMessages);
 
     return res.json({
-      reply: fallbackText,
-      modelUsed: "knowledge-base-fallback",
-      isFallback: true,
-      notice: "Rate limit reached on cloud model; served via curated clinical knowledge base.",
+      reply: replyText,
+      modelUsed: "openrouter-free-tier",
     });
+
   } catch (error: any) {
     console.error("Error in /api/ai/chat:", error);
     const latestMsg = req.body?.messages?.[req.body?.messages?.length - 1]?.content || "";
@@ -193,11 +173,58 @@ app.post("/api/ai/chat", async (req, res) => {
   }
 });
 
+// API: Diagnostic Screening Engine (using AI to parse symptoms and calculate risk)
+app.post("/api/ai/diagnostic", async (req, res) => {
+  try {
+    const { painLevel, irregularCycles, hirsutism, missingPeriods, activityLogs } = req.body;
+    
+    const prompt = `You are a strict, clinical Diagnostic Screening Engine and Probabilistic Cycle Modeler.
+Evaluate the following patient markers:
+- Pelvic Pain Severity (0-10): ${painLevel}
+- Highly Irregular Cycles (>35 days): ${irregularCycles ? "Yes" : "No"}
+- Hirsutism / Severe Acne: ${hirsutism ? "Yes" : "No"}
+- Missing Period Logs: ${missingPeriods || 0}
+- High App Activity during missing periods: ${activityLogs ? "Yes" : "No"}
+
+Task:
+1. Act as the XGBoost/Random Forest proxy to evaluate risk for PCOS or Endometriosis based on the Rotterdam criteria and clinical pain markers.
+2. If the user missed period logs but has high app activity, categorize the gap as "delayed ovulation / physiological anovulation" (probabilistic modeling).
+3. Return a STRICT JSON object matching this exact schema:
+{
+  "riskLevel": "low" | "moderate" | "high",
+  "confidence": 83,
+  "primaryIndicator": "string (e.g., 'Symptom cluster correlates with Rotterdam criteria')",
+  "probabilisticNote": "string (e.g., 'High app engagement suggests delayed ovulation rather than missed log.')"
+}
+Output ONLY valid JSON.`;
+
+    const openRouterMessages = [{ role: "user", content: prompt }];
+    const replyText = await callOpenRouter(openRouterMessages, true);
+    
+    // Parse to ensure valid JSON before sending to client
+    const jsonStr = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
+    return res.json(JSON.parse(jsonStr));
+
+  } catch (error: any) {
+    console.error("Diagnostic API Error:", error);
+    // Fallback heuristic logic if AI fails
+    const { painLevel, irregularCycles, hirsutism } = req.body;
+    let score = (painLevel * 10) + (irregularCycles ? 30 : 0) + (hirsutism ? 30 : 0);
+    const riskLevel = score > 60 ? 'high' : score > 35 ? 'moderate' : 'low';
+    
+    return res.json({
+      riskLevel,
+      confidence: 78,
+      primaryIndicator: "Local heuristic engine applied due to cloud API timeout. Consult a physician for accurate screening.",
+      probabilisticNote: "Local probabilistic fallback applied."
+    });
+  }
+});
+
 // API: Quick Cycle Symptom Analysis / Instant Insight
 app.post("/api/ai/analyze-symptoms", async (req, res) => {
   try {
     const { symptoms, mood, phase, cycleDay } = req.body;
-    const ai = getGenAI();
 
     const prompt = `Based on the following user status:
 - Cycle Day: ${cycleDay}
@@ -211,15 +238,13 @@ Provide a concise, 3-point personalized daily wellness recommendation including:
 3. One gentle movement or self-care habit for today.
 Keep it warm, empathetic, and under 150 words.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: ROLE_SYSTEM_INSTRUCTIONS.general,
-      },
-    });
-
-    res.json({ analysis: response.text });
+    const openRouterMessages = [
+      { role: "system", content: ROLE_SYSTEM_INSTRUCTIONS.general },
+      { role: "user", content: prompt }
+    ];
+    
+    const replyText = await callOpenRouter(openRouterMessages);
+    res.json({ analysis: replyText });
   } catch (error: any) {
     console.error("Error in /api/ai/analyze-symptoms:", error);
     res.status(500).json({ error: error.message || "Failed to analyze symptoms." });

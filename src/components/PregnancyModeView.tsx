@@ -18,12 +18,14 @@ interface PregnancyModeViewProps {
   settings: AppSettings;
   theme: ThemeConfig;
   onUpdateDueDate: (newDueDate: string) => void;
+  onNavigateToBabyAI?: () => void;
 }
 
 export const PregnancyModeView: React.FC<PregnancyModeViewProps> = ({
   settings,
   theme,
   onUpdateDueDate,
+  onNavigateToBabyAI,
 }) => {
   const [kickCount, setKickCount] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -234,6 +236,32 @@ export const PregnancyModeView: React.FC<PregnancyModeViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Future Baby Face & Genetics AI Feature Card */}
+      {onNavigateToBabyAI && (
+        <button
+          onClick={onNavigateToBabyAI}
+          className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF0F5] via-[#FCE4EC] to-[#EDE7F6] border-2 border-pink-200 shadow-md hover:shadow-lg transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group"
+        >
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-pink-600 bg-white/90 px-2.5 py-0.5 rounded-full border border-pink-200">
+                ✨ Parents AI Blend
+              </span>
+            </div>
+            <h3 className="text-sm font-black font-['Fredoka'] text-[#2D1B2D]">
+              Future Baby Face Generator
+            </h3>
+            <p className="text-xs text-[#875C66]">
+              Upload Mom & Dad photos to predict baby traits & features
+            </p>
+          </div>
+
+          <div className="w-12 h-12 rounded-2xl bg-white/90 border border-pink-100 flex items-center justify-center text-2xl shadow-xs shrink-0">
+            <span>👶</span>
+          </div>
+        </button>
+      )}
 
       {/* Week 15 Mom & Baby Insights */}
       <div className={`p-4 rounded-3xl ${theme.bgCard} border ${theme.borderCard} shadow-md space-y-2`}>

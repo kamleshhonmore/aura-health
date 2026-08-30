@@ -18,7 +18,7 @@ interface CategoryHubProps {
   settings: AppSettings;
   theme: ThemeConfig;
   todayLog?: DayLog;
-  onNavigateTab: (tab: 'home' | 'calendar' | 'charts' | 'pregnancy' | 'ayurveda' | 'perimenopause' | 'aichat' | 'babyai') => void;
+  onNavigateTab: (tab: 'home' | 'calendar' | 'charts' | 'pregnancy' | 'ayurveda' | 'perimenopause' | 'aichat' | 'babyai' | 'clinical') => void;
   onOpenLogModal: () => void;
 }
 
@@ -104,28 +104,60 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
         </button>
 
-        {/* 3. Pregnancy Card */}
+        {/* 3. Future Baby AI Generator (From Parents Photo) */}
+        <button
+          onClick={() => onNavigateTab('babyai')}
+          className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF0F5] via-[#FCE4EC] to-[#F3E5F5] border-2 border-pink-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 bg-gradient-to-l from-purple-500 via-pink-500 to-rose-400 text-white text-[9px] font-black px-3 py-0.5 rounded-bl-xl uppercase tracking-wider shadow-xs flex items-center gap-1">
+            <Sparkles className="w-2.5 h-2.5" /> AI Photo Blend
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-black font-['Fredoka'] text-[#2D1B2D] flex items-center gap-1.5">
+              Future Baby Generator
+            </h3>
+            <p className="text-xs font-semibold text-[#875C66]">
+              Generate baby face from Mom & Dad photos
+            </p>
+            <div className="pt-1 flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-[#D81B60] bg-white/90 px-2 py-0.5 rounded-full border border-pink-200">
+                Photo Upload • Eye/Hair Genetics • Traits
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center text-2xl shadow-xs border border-pink-100">
+              <span className="text-3xl">👶</span>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-[#EC407A]/20 group-hover:bg-[#EC407A] text-[#D81B60] group-hover:text-white flex items-center justify-center transition-colors">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </button>
+
+        {/* 4. Pregnancy Mode */}
         <button
           onClick={() => onNavigateTab('pregnancy')}
           className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF3E0] to-[#FFF8E1] border border-[#FFE0B2] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group"
         >
           <div className="space-y-1">
             <h3 className="text-base font-black font-['Fredoka'] text-[#2D1B2D]">
-              Pregnancy & Baby AI
+              Pregnancy Mode
             </h3>
             <p className="text-xs font-semibold text-[#875C66]">
-              Track pregnancy & future baby traits
+              Week-by-week size, due date & kick counter
             </p>
             <div className="pt-1">
               <span className="text-[10px] font-bold text-[#E65100] bg-white/80 px-2 py-0.5 rounded-full border border-orange-200">
-                Baby Generator & Kick Tracker
+                Fetal Milestones & Kick Counter
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">👶</span>
+              <span className="text-3xl">🤰</span>
             </div>
             <div className="w-9 h-9 rounded-full bg-[#FB8C00]/20 group-hover:bg-[#FB8C00] text-[#E65100] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
@@ -189,6 +221,64 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
               <span className="text-3xl">💬</span>
             </div>
             <div className="w-9 h-9 rounded-full bg-purple-500/20 group-hover:bg-purple-600 text-purple-700 group-hover:text-white flex items-center justify-center transition-colors">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </button>
+
+        {/* Clinical Diagnostics Hub */}
+        <button
+          onClick={() => onNavigateTab('clinical')}
+          className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#E8F5E9] to-[#E0F2F1] border border-[#A5D6A7] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group"
+        >
+          <div className="space-y-1">
+            <h3 className="text-base font-black font-['Fredoka'] text-[#2D1B2D]">
+              Clinical AI Engine
+            </h3>
+            <p className="text-xs font-semibold text-[#875C66]">
+              Risk screening, optical analysis & metrics
+            </p>
+            <div className="pt-1">
+              <span className="text-[10px] font-bold text-[#2E7D32] bg-white/80 px-2 py-0.5 rounded-full border border-green-200">
+                Endo & PCOS ML Risk Scans
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs text-emerald-600">
+              <Activity className="w-8 h-8" />
+            </div>
+            <div className="w-9 h-9 rounded-full bg-emerald-500/20 group-hover:bg-emerald-500 text-emerald-700 group-hover:text-white flex items-center justify-center transition-colors">
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        </button>
+
+        {/* Ayurvedic Hub */}
+        <button
+          onClick={() => onNavigateTab('ayurveda')}
+          className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF3E0] to-[#FBE9E7] border border-[#FFCC80] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group"
+        >
+          <div className="space-y-1">
+            <h3 className="text-base font-black font-['Fredoka'] text-[#2D1B2D]">
+              Ayurvedic Health
+            </h3>
+            <p className="text-xs font-semibold text-[#875C66]">
+              Dosha-based diet & lifestyle
+            </p>
+            <div className="pt-1">
+              <span className="text-[10px] font-bold text-[#E65100] bg-white/80 px-2 py-0.5 rounded-full border border-orange-200">
+                Herbal remedies & routines
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
+              <span className="text-3xl">🌿</span>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-[#FB8C00]/20 group-hover:bg-[#FB8C00] text-[#E65100] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>

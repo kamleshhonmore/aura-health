@@ -27,6 +27,7 @@ import { ScenicCountdownView } from './components/ScenicCountdownView';
 import { CategoryHub } from './components/CategoryHub';
 import { AyurvedicHub } from './components/AyurvedicHub';
 import { FutureBabyGenerator } from './components/FutureBabyGenerator';
+import { ClinicalDiagnosticsHub } from './components/ClinicalDiagnosticsHub';
 import { PerimenopauseScreen } from './components/PerimenopauseScreen';
 import { GeminiChatbot } from './components/GeminiChatbot';
 
@@ -47,8 +48,10 @@ import {
   Baby,
   MessageSquare,
   Bot,
+  Activity,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function App() {
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -68,7 +71,7 @@ export function App() {
 
   const [lastPeriodStart, setLastPeriodStart] = useState<string>('2026-08-01');
   const [activeTab, setActiveTab] = useState<
-    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'babyai' | 'perimenopause' | 'aichat'
+    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat'
   >('home');
   const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('scenic');
 
@@ -287,161 +290,235 @@ export function App() {
         />
 
         {/* Main Tab Content View */}
-        <main className="flex-1 p-3.5 space-y-3.5 overflow-y-auto">
-          {/* TAB 1: HOME (Scenic or Desk) */}
-          {activeTab === 'home' && (
-            <div className="space-y-3.5 animate-in fade-in duration-200">
-              {homeViewStyle === 'scenic' ? (
-                /* Scenic View matching Image 4 */
-                <ScenicCountdownView
-                  status={cycleStatus}
-                  theme={currentTheme}
-                  pet={currentPet}
-                  settings={settings}
-                  todayLog={todayLog}
-                  onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
-                  onOpenTheme={() => setIsThemeModalOpen(true)}
-                  onOpenSettings={() => setIsSettingsModalOpen(true)}
-                  onTogglePeriodToday={handleTogglePeriodToday}
-                  onOpenAiChat={() => setActiveTab('aichat')}
-                />
-              ) : (
-                /* Classic Desk View */
-                <>
-                  <StatusCard
+        <main className="flex-1 p-3.5 overflow-x-hidden overflow-y-auto">
+          <AnimatePresence mode="wait">
+            {/* TAB 1: HOME (Scenic or Desk) */}
+            {activeTab === 'home' && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="space-y-3.5"
+              >
+                {homeViewStyle === 'scenic' ? (
+                  /* Scenic View matching Image 4 */
+                  <ScenicCountdownView
                     status={cycleStatus}
                     theme={currentTheme}
-                    onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
-                    onTogglePeriodToday={handleTogglePeriodToday}
-                    onOpenCalendar={() => setActiveTab('calendar')}
-                  />
-
-                  <PetMascot
                     pet={currentPet}
-                    theme={currentTheme}
-                    cyclePhase={cycleStatus.phase}
-                    isWaterGoalReached={(todayLog?.waterGlasses || 0) >= settings.waterGoalGlasses}
-                    onOpenPetSelector={() => setIsThemeModalOpen(true)}
-                  />
-
-                  <WaterTracker
-                    currentGlasses={todayLog?.waterGlasses || 0}
-                    goalGlasses={settings.waterGoalGlasses}
-                    theme={currentTheme}
-                    onUpdateGlasses={handleUpdateWaterGlasses}
-                  />
-
-                  <PillTracker
-                    isTaken={todayLog?.pillTaken || false}
-                    pillTime={todayLog?.pillTime}
-                    cycleDay={cycleStatus.currentCycleDay}
-                    theme={currentTheme}
-                    onTogglePill={handleTogglePillToday}
-                  />
-
-                  <QuickLogBar
+                    settings={settings}
                     todayLog={todayLog}
-                    theme={currentTheme}
                     onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
-                    onToggleSymptom={handleToggleQuickSymptom}
+                    onOpenTheme={() => setIsThemeModalOpen(true)}
+                    onOpenSettings={() => setIsSettingsModalOpen(true)}
+                    onTogglePeriodToday={handleTogglePeriodToday}
+                    onOpenAiChat={() => setActiveTab('aichat')}
                   />
-                </>
-              )}
-            </div>
-          )}
+                ) : (
+                  /* Classic Desk View */
+                  <>
+                    <StatusCard
+                      status={cycleStatus}
+                      theme={currentTheme}
+                      onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
+                      onTogglePeriodToday={handleTogglePeriodToday}
+                      onOpenCalendar={() => setActiveTab('calendar')}
+                    />
 
-          {/* TAB 2: HUB ("Understand Your Body" matching Image 3) */}
-          {activeTab === 'hub' && (
-            <div className="animate-in fade-in duration-200">
-              <CategoryHub
-                status={cycleStatus}
-                settings={settings}
-                theme={currentTheme}
-                todayLog={todayLog}
-                onNavigateTab={(tab) => setActiveTab(tab)}
-                onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
-              />
-            </div>
-          )}
+                    <PetMascot
+                      pet={currentPet}
+                      theme={currentTheme}
+                      cyclePhase={cycleStatus.phase}
+                      isWaterGoalReached={(todayLog?.waterGlasses || 0) >= settings.waterGoalGlasses}
+                      onOpenPetSelector={() => setIsThemeModalOpen(true)}
+                    />
 
-          {/* TAB 3: AYURVEDA ("Ancient Remedies" matching Image 5 & Image 6) */}
-          {activeTab === 'ayurveda' && (
-            <div className="animate-in fade-in duration-200">
-              <AyurvedicHub />
-            </div>
-          )}
+                    <WaterTracker
+                      currentGlasses={todayLog?.waterGlasses || 0}
+                      goalGlasses={settings.waterGoalGlasses}
+                      theme={currentTheme}
+                      onUpdateGlasses={handleUpdateWaterGlasses}
+                    />
 
-          {/* TAB 4: CALENDAR */}
-          {activeTab === 'calendar' && (
-            <div className="animate-in fade-in duration-200">
-              <CalendarView
-                theme={currentTheme}
-                lastPeriodStart={lastPeriodStart}
-                cycleLength={settings.cycleLength}
-                periodLength={settings.periodLength}
-                lutealLength={settings.lutealLength}
-                logs={logs}
-                onSelectDate={(d) => setLogModalDate(d)}
-                onOpenLogModalForDate={handleOpenLogModalForDate}
-                onTogglePeriodOnDate={handleTogglePeriodOnDate}
-              />
-            </div>
-          )}
+                    <PillTracker
+                      isTaken={todayLog?.pillTaken || false}
+                      pillTime={todayLog?.pillTime}
+                      cycleDay={cycleStatus.currentCycleDay}
+                      theme={currentTheme}
+                      onTogglePill={handleTogglePillToday}
+                    />
 
-          {/* TAB 5: CHARTS / ANALYSIS */}
-          {activeTab === 'charts' && (
-            <div className="animate-in fade-in duration-200">
-              <ChartsView
-                theme={currentTheme}
-                cycles={cycles}
-                logs={logs}
-                tempUnit={settings.tempUnit}
-                weightUnit={settings.weightUnit}
-              />
-            </div>
-          )}
+                    <QuickLogBar
+                      todayLog={todayLog}
+                      theme={currentTheme}
+                      onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
+                      onToggleSymptom={handleToggleQuickSymptom}
+                    />
+                  </>
+                )}
+              </motion.div>
+            )}
 
-          {/* TAB 6: BABY AI / FUTURE BABY GENERATOR matching Image 1 */}
-          {activeTab === 'babyai' && (
-            <div className="animate-in fade-in duration-200">
-              <FutureBabyGenerator />
-            </div>
-          )}
+            {/* TAB 2: HUB ("Understand Your Body" matching Image 3) */}
+            {activeTab === 'hub' && (
+              <motion.div
+                key="hub"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <CategoryHub
+                  status={cycleStatus}
+                  settings={settings}
+                  theme={currentTheme}
+                  todayLog={todayLog}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
+                  onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
+                />
+              </motion.div>
+            )}
 
-          {/* TAB 7: PREGNANCY MODE */}
-          {activeTab === 'pregnancy' && (
-            <div className="animate-in fade-in duration-200">
-              <PregnancyModeView
-                settings={settings}
-                theme={currentTheme}
-                onUpdateDueDate={(newDue) => handleUpdateSettings({ pregnancyDueDate: newDue })}
-              />
-            </div>
-          )}
+            {/* TAB 3: AYURVEDA ("Ancient Remedies" matching Image 5 & Image 6) */}
+            {activeTab === 'ayurveda' && (
+              <motion.div
+                key="ayurveda"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <AyurvedicHub />
+              </motion.div>
+            )}
 
-          {/* TAB 8: PERI-MENOPAUSE CARE */}
-          {activeTab === 'perimenopause' && (
-            <div className="animate-in fade-in duration-200">
-              <PerimenopauseScreen
-                theme={currentTheme}
-                settings={settings}
-                onBack={() => setActiveTab('hub')}
-              />
-            </div>
-          )}
+            {/* TAB 4: CALENDAR */}
+            {activeTab === 'calendar' && (
+              <motion.div
+                key="calendar"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <CalendarView
+                  theme={currentTheme}
+                  lastPeriodStart={lastPeriodStart}
+                  cycleLength={settings.cycleLength}
+                  periodLength={settings.periodLength}
+                  lutealLength={settings.lutealLength}
+                  logs={logs}
+                  onSelectDate={(d) => setLogModalDate(d)}
+                  onOpenLogModalForDate={handleOpenLogModalForDate}
+                  onTogglePeriodOnDate={handleTogglePeriodOnDate}
+                />
+              </motion.div>
+            )}
 
-          {/* TAB 9: GEMINI AI MULTI-TURN CHATBOT */}
-          {activeTab === 'aichat' && (
-            <div className="animate-in fade-in duration-200">
-              <GeminiChatbot
-                theme={currentTheme}
-                cycleStatus={cycleStatus}
-                userSymptoms={todayLog?.symptoms || []}
-                userMoods={todayLog?.moods || []}
-                onNavigateToTab={(tab) => setActiveTab(tab)}
-              />
-            </div>
-          )}
+            {/* TAB 5: CHARTS / ANALYSIS */}
+            {activeTab === 'charts' && (
+              <motion.div
+                key="charts"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <ChartsView
+                  theme={currentTheme}
+                  cycles={cycles}
+                  logs={logs}
+                  tempUnit={settings.tempUnit}
+                  weightUnit={settings.weightUnit}
+                />
+              </motion.div>
+            )}
+
+            {/* TAB 10: CLINICAL AI */}
+            {activeTab === 'clinical' && (
+              <motion.div
+                key="clinical"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <ClinicalDiagnosticsHub 
+                  theme={currentTheme}
+                  onNavigateBack={() => setActiveTab('hub')}
+                />
+              </motion.div>
+            )}
+
+            {/* TAB 6: BABY AI / FUTURE BABY GENERATOR matching Image 1 */}
+            {activeTab === 'babyai' && (
+              <motion.div
+                key="babyai"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <FutureBabyGenerator onBack={() => setActiveTab('hub')} />
+              </motion.div>
+            )}
+
+            {/* TAB 7: PREGNANCY MODE */}
+            {activeTab === 'pregnancy' && (
+              <motion.div
+                key="pregnancy"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <PregnancyModeView
+                  settings={settings}
+                  theme={currentTheme}
+                  onUpdateDueDate={(newDue) => handleUpdateSettings({ pregnancyDueDate: newDue })}
+                  onNavigateToBabyAI={() => setActiveTab('babyai')}
+                />
+              </motion.div>
+            )}
+
+            {/* TAB 8: PERI-MENOPAUSE CARE */}
+            {activeTab === 'perimenopause' && (
+              <motion.div
+                key="perimenopause"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <PerimenopauseScreen
+                  theme={currentTheme}
+                  settings={settings}
+                  onBack={() => setActiveTab('hub')}
+                />
+              </motion.div>
+            )}
+
+            {/* TAB 9: GEMINI AI MULTI-TURN CHATBOT */}
+            {activeTab === 'aichat' && (
+              <motion.div
+                key="aichat"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <GeminiChatbot
+                  theme={currentTheme}
+                  cycleStatus={cycleStatus}
+                  userSymptoms={todayLog?.symptoms || []}
+                  userMoods={todayLog?.moods || []}
+                  onNavigateToTab={(tab) => setActiveTab(tab)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
 
         {/* Floating Quick Action Button for Instant Logging */}
@@ -472,6 +549,19 @@ export function App() {
             <span className="text-[10px] font-['Fredoka'] mt-0.5">Home</span>
           </button>
 
+          {/* Calendar */}
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
+              activeTab === 'calendar'
+                ? 'text-[#FF5376] font-black scale-105'
+                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
+            }`}
+          >
+            <CalendarIcon className={`w-4.5 h-4.5 ${activeTab === 'calendar' ? 'stroke-[2.5]' : ''}`} />
+            <span className="text-[10px] font-['Fredoka'] mt-0.5">Calendar</span>
+          </button>
+
           {/* Hub */}
           <button
             onClick={() => setActiveTab('hub')}
@@ -500,58 +590,6 @@ export function App() {
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500" />
             </div>
             <span className="text-[10px] font-['Fredoka'] mt-0.5">AI Chat</span>
-          </button>
-
-          {/* Ayurveda */}
-          <button
-            onClick={() => setActiveTab('ayurveda')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'ayurveda'
-                ? 'text-emerald-600 font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <Leaf className={`w-4.5 h-4.5 ${activeTab === 'ayurveda' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Ayurveda</span>
-          </button>
-
-          {/* Calendar */}
-          <button
-            onClick={() => setActiveTab('calendar')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'calendar'
-                ? 'text-[#FF5376] font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <CalendarIcon className={`w-4.5 h-4.5 ${activeTab === 'calendar' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Calendar</span>
-          </button>
-
-          {/* Analysis / Charts */}
-          <button
-            onClick={() => setActiveTab('charts')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'charts'
-                ? 'text-[#FF5376] font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <BarChart2 className={`w-4.5 h-4.5 ${activeTab === 'charts' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Charts</span>
-          </button>
-
-          {/* Future Baby / Baby AI */}
-          <button
-            onClick={() => setActiveTab('babyai')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'babyai'
-                ? 'text-[#7C4DFF] font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <Sparkles className={`w-4.5 h-4.5 ${activeTab === 'babyai' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Baby AI</span>
           </button>
         </nav>
       </div>
