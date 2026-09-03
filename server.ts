@@ -8,6 +8,17 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
+// Enable CORS for mobile devices, Capacitor WebView, and web browsers
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json({ limit: "10mb" }));
 
 // System instructions for different AI health roles
@@ -55,42 +66,69 @@ Guidelines:
 4. Never diagnose; always frame insights as risk factors or probabilistic patterns.`,
 };
 
-// OpenRouter Helper
+// OpenRouter Helper with model redundancy
 async function callOpenRouter(messages: any[], isJson = false) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY || "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";
   if (!apiKey) {
     throw new Error("OPENROUTER_API_KEY is not set.");
   }
   
-  // Use a fast free model on OpenRouter
-  const model = "openrouter/free";
+  // Active, verified conversational free models (excluding rate-limited models)
+  const candidateModels = [
+    "openrouter/free",
+    "minimax/minimax-m3:free",
+    "liquid/lfm-2.5-2.6b:free",
+    "inclusionai/ling-3.0-flash-fin:free",
+    "nvidia/nemotron-3.5-lightning:free",
+  ];
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://aistudio.google.com",
-      "X-Title": "AI Studio Cycle App",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.7,
-      response_format: isJson ? { type: "json_object" } : undefined
-    }),
-  });
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`OpenRouter error: ${response.status} ${errText}`);
+  for (const model of candidateModels) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": "https://aistudio.google.com",
+          "X-Title": "Aura Women Health Cycle App",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.7,
+          response_format: isJson ? { type: "json_object" } : undefined
+        }),
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        lastError = new Error(`Model ${model} returned ${response.status}`);
+        continue;
+      }
+
+      const data = await response.json();
+      const choice = data.choices?.[0];
+      const rawContent = choice?.message?.content || choice?.text;
+      
+      if (rawContent && typeof rawContent === "string") {
+        const trimmed = rawContent.trim();
+        if (trimmed.length > 0 && !trimmed.startsWith("User Safety:")) {
+          return trimmed;
+        }
+      }
+    } catch (err: any) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  const data = await response.json();
-  if (data.choices && data.choices.length > 0) {
-    return data.choices[0].message.content;
-  }
-  throw new Error("No response from OpenRouter");
+  throw lastError || new Error("All AI models currently unavailable.");
 }
 
 // API: Check status & models
@@ -106,8 +144,30 @@ app.get("/api/ai/health", (req, res) => {
 
 // Fallback specialist responses when API quota is exhausted
 function generateSpecialistFallback(role: string, query: string, cycleContext?: any): string {
+  const q = (query || "").trim().toLowerCase();
   const phase = cycleContext?.phase || "Luteal/Follicular";
   const cycleDay = cycleContext?.cycleDay || "14";
+
+  const isGreeting = /^(hi|hello|hey|hola|namaste|good\s*(morning|afternoon|evening))\b/i.test(q) || q === "hi" || q === "hello";
+
+  if (isGreeting) {
+    if (role === "ayurveda") {
+      return `Namaste! 🌿 I am **Vaidya Ananya**, your Ayurvedic women's health specialist. Welcome to your holistic sanctuary. How can I assist your doshic balance or cycle health today?`;
+    }
+    if (role === "fertility") {
+      return `Hello! 💖 I am **Dr. Maya**, your fertility and conception guide. I am here to help you navigate ovulation timing, fertile windows, and reproductive wellness. What questions do you have today?`;
+    }
+    if (role === "pcos") {
+      return `Hi there! ✨ I'm **Coach Tara**, your PCOS & hormonal balance coach. I'm here to support your blood sugar harmony, cycle regularity, and daily wellness. How can I help you today?`;
+    }
+    if (role === "perimenopause") {
+      return `Warm greetings! 🌺 I'm **Elena**, your menopause transition companion. I'm here to offer cooling relief, restorative sleep rituals, and gentle guidance. How are you feeling today?`;
+    }
+    if (role === "clinical") {
+      return `Hello. ⚕️ I am **Nova AI Assistant**, clinically guardrailed for reproductive health guidance. What evidence-based health questions can I answer for you today?`;
+    }
+    return `Hello, beautiful! 🌸 I'm **Aura AI**, your Women's Health & Cycle Guide. How can I support your body, mood, and cycle today?`;
+  }
 
   if (role === "ayurveda") {
     return `🌿 **Ayurvedic Guidance from Vaidya Ananya:**\n\n- **Doshic Focus**: Cycle Day ${cycleDay} balances Apana Vata (the downward energy regulating flow) and Pitta (metabolic fire).\n- **Soothing Herbal Infusion**: Brew **CCF Tea** (equal parts Cumin, Coriander, Fennel seeds) steeped in warm water with a pinch of grated ginger.\n- **Dietary Tip**: Favor warm, gently spiced, unctuous foods (khichdi, stewed apples, ghee) and avoid cold/raw iced drinks.\n- **Self-Care**: Apply warm sesame or castor oil gently over your lower abdomen in clockwise circular motions.\n\n*Note: Our AI service is currently in high demand; this guidance is curated directly from classical Ayurvedic texts.*`;

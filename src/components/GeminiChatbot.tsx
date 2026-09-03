@@ -21,6 +21,20 @@ import {
 } from 'lucide-react';
 import { ThemeConfig } from '../types';
 import { CycleStatus } from '../utils/cycleCalculations';
+import { generateMobileOfflineResponse } from '../utils/mobileAiFallback';
+
+// Mobile / Capacitor helper to resolve full server URL when running as standalone app
+const getApiUrl = (path: string) => {
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'file:' ||
+      (window.location.hostname === 'localhost' && window.location.port !== '3000'))
+  ) {
+    return `https://ais-dev-726rzjrfevv7hxlnsphnt3-810712876529.asia-east1.run.app${path}`;
+  }
+  return path;
+};
 
 export interface ChatMessage {
   id: string;
@@ -253,9 +267,14 @@ export function GeminiChatbot({
           }
         : undefined;
 
-      // Send to server-side Gemini route
-      const response = await fetch('/api/ai/chat', {
+      // Send to server-side AI route with fallback timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      const apiUrl = getApiUrl('/api/ai/chat');
+      const response = await fetch(apiUrl, {
         method: 'POST',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages.map((m) => ({
@@ -267,6 +286,8 @@ export function GeminiChatbot({
           userCycleContext,
         }),
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -285,16 +306,21 @@ export function GeminiChatbot({
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (err: any) {
-      console.error('Chat error:', err);
-      setErrorMessage(err.message || 'Something went wrong. Please check your connection.');
-      // Add fallback response if needed
+      console.warn('Network chat error, using mobile intelligence fallback:', err);
+      
+      // Generate immediate smart on-device response tailored to user input & cycle phase
+      const smartReply = generateMobileOfflineResponse(query, selectedRole, {
+        cycleStatus,
+        userSymptoms,
+        userMoods,
+      });
+
       const fallbackMsg: ChatMessage = {
-        id: 'bot-err-' + Date.now(),
+        id: 'bot-fallback-' + Date.now(),
         role: 'assistant',
         roleType: selectedRole,
-        modelUsed: selectedModel,
-        content:
-          "I'm currently having a moment connecting to my health knowledge base. Here is a quick tip: stay hydrated, rest when your body asks for it, and explore our **Ayurveda** tab for soothing herbal recipes!",
+        modelUsed: 'aura-mobile-engine',
+        content: smartReply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
