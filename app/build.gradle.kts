@@ -1,4 +1,5 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import java.util.Base64
 
 plugins {
   alias(libs.plugins.android.application)
@@ -37,7 +38,7 @@ android {
         val b64File = file("${rootDir}/debug.keystore.base64")
         if (b64File.exists()) {
           try {
-            val decoded = java.util.Base64.getDecoder().decode(b64File.readText().trim())
+            val decoded = Base64.getDecoder().decode(b64File.readText().trim())
             keystoreFile.writeBytes(decoded)
           } catch (_: Exception) {}
         }
