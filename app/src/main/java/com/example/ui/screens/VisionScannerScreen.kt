@@ -1,5 +1,9 @@
 package com.example.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -24,10 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.data.model.*
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.AuraUiState
@@ -45,6 +51,22 @@ fun VisionScannerScreen(
 ) {
   val isScanning = uiState.scannerStatus == ScannerStatus.ALIGNING || uiState.scannerStatus == ScannerStatus.ANALYZING
   val result = uiState.scanResult
+  val context = LocalContext.current
+
+  var hasCameraPermission by remember {
+    mutableStateOf(
+      ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    )
+  }
+
+  val cameraLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.RequestPermission()
+  ) { isGranted ->
+    hasCameraPermission = isGranted
+    if (isGranted) {
+      onTriggerScan()
+    }
+  }
 
   Column(
     modifier = modifier
@@ -276,29 +298,46 @@ fun VisionScannerScreen(
         verticalAlignment = Alignment.CenterVertically
       ) {
         // Trigger Shutter Button
-        Box(
-          modifier = Modifier
-            .size(72.dp)
-            .clip(CircleShape)
-            .border(2.dp, BlushRose, CircleShape)
-            .padding(5.dp)
-            .clip(CircleShape)
-            .background(if (isScanning) AuraSurfaceVariant else BlushRose)
-            .clickable(enabled = !isScanning) { onTriggerScan() },
-          contentAlignment = Alignment.Center
-        ) {
-          if (isScanning) {
-            CircularProgressIndicator(
-              modifier = Modifier.size(32.dp),
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Box(
+            modifier = Modifier
+              .size(72.dp)
+              .clip(CircleShape)
+              .border(2.dp, BlushRose, CircleShape)
+              .padding(5.dp)
+              .clip(CircleShape)
+              .background(if (isScanning) AuraSurfaceVariant else BlushRose)
+              .clickable(enabled = !isScanning) {
+                if (hasCameraPermission) {
+                  onTriggerScan()
+                } else {
+                  cameraLauncher.launch(Manifest.permission.CAMERA)
+                }
+              },
+            contentAlignment = Alignment.Center
+          ) {
+            if (isScanning) {
+              CircularProgressIndicator(
+                modifier = Modifier.size(32.dp),
+                color = BlushRose,
+                strokeWidth = 3.dp
+              )
+            } else {
+              Icon(
+                imageVector = Icons.Rounded.CameraAlt,
+                contentDescription = "Capture",
+                tint = TextOnAccent,
+                modifier = Modifier.size(28.dp)
+              )
+            }
+          }
+          if (!hasCameraPermission) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+              text = "Tap to grant camera permission",
+              style = MaterialTheme.typography.labelSmall,
               color = BlushRose,
-              strokeWidth = 3.dp
-            )
-          } else {
-            Icon(
-              imageVector = Icons.Rounded.CameraAlt,
-              contentDescription = "Capture",
-              tint = TextOnAccent,
-              modifier = Modifier.size(28.dp)
+              fontSize = 10.sp
             )
           }
         }

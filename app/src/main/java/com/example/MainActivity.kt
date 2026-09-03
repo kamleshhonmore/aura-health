@@ -1,9 +1,14 @@
 package com.example
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,9 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.components.AuraBottomNavigation
@@ -51,6 +58,32 @@ fun AuraApp(
   viewModel: AuraHealthViewModel = viewModel()
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+
+  // Dynamic runtime permissions check for Camera and Android 13+ Notifications
+  val permissionsToRequest = remember {
+    buildList {
+      add(Manifest.permission.CAMERA)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        add(Manifest.permission.POST_NOTIFICATIONS)
+      }
+    }.toTypedArray()
+  }
+
+  val permissionLauncher = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.RequestMultiplePermissions()
+  ) { permissionsMap ->
+    // Runtime permissions granted by user
+  }
+
+  LaunchedEffect(Unit) {
+    val needsPermission = permissionsToRequest.any { perm ->
+      ContextCompat.checkSelfPermission(context, perm) != PackageManager.PERMISSION_GRANTED
+    }
+    if (needsPermission) {
+      permissionLauncher.launch(permissionsToRequest)
+    }
+  }
 
   Scaffold(
     modifier = Modifier.fillMaxSize(),

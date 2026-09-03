@@ -146,7 +146,7 @@ export const ChartsView: React.FC<ChartsViewProps> = ({
         </h2>
         <button
           onClick={handleExportPDF}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r ${theme.buttonBg} shadow-sm active:scale-95 transition-all`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r ${theme.bannerBg} shadow-sm active:scale-95 transition-all`}
         >
           <Download className="w-3.5 h-3.5" />
           <span>Export PDF</span>

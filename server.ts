@@ -128,7 +128,7 @@ async function callOpenRouter(messages: any[], isJson = false) {
     }
   }
 
-  throw lastError || new Error("All AI models currently unavailable.");
+  throw lastError || new Error("AI models temporarily unavailable.");
 }
 
 // API: Check status & models
@@ -170,24 +170,24 @@ function generateSpecialistFallback(role: string, query: string, cycleContext?: 
   }
 
   if (role === "ayurveda") {
-    return `🌿 **Ayurvedic Guidance from Vaidya Ananya:**\n\n- **Doshic Focus**: Cycle Day ${cycleDay} balances Apana Vata (the downward energy regulating flow) and Pitta (metabolic fire).\n- **Soothing Herbal Infusion**: Brew **CCF Tea** (equal parts Cumin, Coriander, Fennel seeds) steeped in warm water with a pinch of grated ginger.\n- **Dietary Tip**: Favor warm, gently spiced, unctuous foods (khichdi, stewed apples, ghee) and avoid cold/raw iced drinks.\n- **Self-Care**: Apply warm sesame or castor oil gently over your lower abdomen in clockwise circular motions.\n\n*Note: Our AI service is currently in high demand; this guidance is curated directly from classical Ayurvedic texts.*`;
+    return `🌿 **Ayurvedic Guidance from Vaidya Ananya:**\n\n- **Doshic Focus**: Cycle Day ${cycleDay} balances Apana Vata (the downward energy regulating flow) and Pitta (metabolic fire).\n- **Soothing Herbal Infusion**: Brew **CCF Tea** (equal parts Cumin, Coriander, Fennel seeds) steeped in warm water with a pinch of grated ginger.\n- **Dietary Tip**: Favor warm, gently spiced, unctuous foods (khichdi, stewed apples, ghee) and avoid cold/raw iced drinks.\n- **Self-Care**: Apply warm sesame or castor oil gently over your lower abdomen in clockwise circular motions.`;
   }
   if (role === "fertility") {
-    return `💖 **Fertility & Ovulation Insights from Dr. Maya:**\n\n- **Fertile Window Timing**: In a standard 28-32 day cycle, ovulation typically occurs 12-16 days before your next expected period.\n- **Key Biometrics**: Watch for slippery, clear "egg-white" cervical mucus and a slight biphasic rise in Basal Body Temperature (0.4°F - 0.8°F) after ovulation.\n- **Nutritional Support**: Ensure adequate folate (400-800mcg), CoQ10, omega-3 fatty acids, and vibrant antioxidant-rich berries.\n- **Next Step**: Keep tracking your symptoms in the Calendar tab to pinpoint your peak fertility window.\n\n*Note: Our AI service is currently in high demand; these insights are based on reproductive endocrinology guidelines.*`;
+    return `💖 **Fertility & Ovulation Insights from Dr. Maya:**\n\n- **Fertile Window Timing**: In a standard 28-32 day cycle, ovulation typically occurs 12-16 days before your next expected period.\n- **Key Biometrics**: Watch for slippery, clear "egg-white" cervical mucus and a slight biphasic rise in Basal Body Temperature (0.4°F - 0.8°F) after ovulation.\n- **Nutritional Support**: Ensure adequate folate (400-800mcg), CoQ10, omega-3 fatty acids, and vibrant antioxidant-rich berries.\n- **Next Step**: Keep tracking your symptoms in the Calendar tab to pinpoint your peak fertility window.`;
   }
   if (role === "pcos") {
-    return `✨ **PCOS & Metabolic Sync from Coach Tara:**\n\n- **Blood Sugar Balance**: Pair every carbohydrate with protein and healthy fats (e.g., chia seeds, eggs, avocado) to prevent insulin spikes that trigger androgens.\n- **Targeted Herbs**: 1-2 cups of **organic spearmint tea** daily helps naturally balance free testosterone and supports clear skin.\n- **Seed Cycling**: Pumpkin & Flax seeds in the Follicular phase (Days 1-14); Sunflower & Sesame seeds in the Luteal phase (Days 15-28).\n- **Gentle Movement**: Favor strength training and restorative walking over exhausting high-cortisol cardio.\n\n*Note: AI service is currently in high demand; this protocol is curated for PCOS balance.*`;
+    return `✨ **PCOS & Metabolic Sync from Coach Tara:**\n\n- **Blood Sugar Balance**: Pair every carbohydrate with protein and healthy fats (e.g., chia seeds, eggs, avocado) to prevent insulin spikes that trigger androgens.\n- **Targeted Herbs**: 1-2 cups of **organic spearmint tea** daily helps naturally balance free testosterone and supports clear skin.\n- **Seed Cycling**: Pumpkin & Flax seeds in the Follicular phase (Days 1-14); Sunflower & Sesame seeds in the Luteal phase (Days 15-28).\n- **Gentle Movement**: Favor strength training and restorative walking over exhausting high-cortisol cardio.`;
   }
   if (role === "perimenopause") {
-    return `🌺 **Perimenopause Transition Wisdom from Elena:**\n\n- **Cooling Hot Flashes**: Keep chamomile or mint tea chilled nearby. Wear breathable natural fabrics (cotton/linen).\n- **Hormone Support**: Incorporate ground flaxseed, edamame, and lentils for gentle phytoestrogen support.\n- **Sleep Restoration**: Take magnesium glycinate (200-300mg) 45 minutes before bed to soothe the nervous system.\n- **Nurture**: Give yourself grace during hormonal fluctuations—you are in an empowering transition phase.\n\n*Note: AI service is currently in high demand; this support is curated for perimenopause comfort.*`;
+    return `🌺 **Perimenopause Transition Wisdom from Elena:**\n\n- **Cooling Hot Flashes**: Keep chamomile or mint tea chilled nearby. Wear breathable natural fabrics (cotton/linen).\n- **Hormone Support**: Incorporate ground flaxseed, edamame, and lentils for gentle phytoestrogen support.\n- **Sleep Restoration**: Take magnesium glycinate (200-300mg) 45 minutes before bed to soothe the nervous system.\n- **Nurture**: Give yourself grace during hormonal fluctuations—you are in an empowering transition phase.`;
   }
 
   if (role === "clinical") {
-    return `⚕️ **Clinical AI Assistant Insight:**\n\n- **Consultation Priority**: Based on your inputs, please discuss these symptoms with a certified healthcare provider. I am designed to assist with cycle understanding but cannot substitute for a medical diagnosis.\n- **Preparation for Visit**: You may want to ask your doctor about: 1) Your pelvic pain severity 2) Menstrual cycle irregularities 3) The possibility of a pelvic ultrasound or hormone panel (LH, FSH, Androgens).\n- **Next Step**: Keep tracking your symptoms meticulously, as this data is invaluable for your doctor.\n\n*Note: Our AI service is currently in high demand; this guidance is generated from strict clinical safety protocols.*`;
+    return `⚕️ **Clinical AI Assistant Insight:**\n\n- **Consultation Priority**: Based on your inputs, please discuss these symptoms with a certified healthcare provider. I am designed to assist with cycle understanding but cannot substitute for a medical diagnosis.\n- **Preparation for Visit**: You may want to ask your doctor about: 1) Your pelvic pain severity 2) Menstrual cycle irregularities 3) The possibility of a pelvic ultrasound or hormone panel (LH, FSH, Androgens).\n- **Next Step**: Keep tracking your symptoms meticulously, as this data is invaluable for your doctor.`;
   }
 
   // General companion
-  return `🌸 **Aura AI Cycle Sync Insight:**\n\n- **Cycle Sync (Day ${cycleDay} • ${phase} Phase)**: During this phase, listen closely to your body's energy levels. Rest when fatigued and stay well-hydrated.\n- **Quick Comfort**: Warm herbal teas (ginger, chamomile, peppermint) relieve muscle tension and calm mood swings.\n- **Next Step**: Log any new symptoms in your Daily Log to keep your cycle predictions accurate.\n\n*Note: Our AI service is currently experiencing high free-tier demand; this guidance is curated for your cycle phase.*`;
+  return `🌸 **Aura AI Cycle Sync Insight:**\n\n- **Cycle Sync (Day ${cycleDay} • ${phase} Phase)**: During this phase, listen closely to your body's energy levels. Rest when fatigued and stay well-hydrated.\n- **Quick Comfort**: Warm herbal teas (ginger, chamomile, peppermint) relieve muscle tension and calm mood swings.\n- **Next Step**: Log any new symptoms in your Daily Log to keep your cycle predictions accurate.`;
 }
 
 // API: Multi-turn Chat

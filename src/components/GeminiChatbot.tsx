@@ -23,18 +23,60 @@ import { ThemeConfig } from '../types';
 import { CycleStatus } from '../utils/cycleCalculations';
 import { generateMobileOfflineResponse } from '../utils/mobileAiFallback';
 
-// Mobile / Capacitor helper to resolve full server URL when running as standalone app
-const getApiUrl = (path: string) => {
-  if (
-    typeof window !== 'undefined' &&
-    (window.location.protocol === 'capacitor:' ||
-      window.location.protocol === 'file:' ||
-      (window.location.hostname === 'localhost' && window.location.port !== '3000'))
-  ) {
-    return `https://ais-dev-726rzjrfevv7hxlnsphnt3-810712876529.asia-east1.run.app${path}`;
+const OPENROUTER_FALLBACK_KEY = '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';
+
+// Direct client fallback to OpenRouter when running standalone on mobile / Capacitor
+async function fetchDirectOpenRouter(
+  messages: { role: string; content: string }[],
+  systemPrompt: string
+): Promise<{ reply: string; model: string }> {
+  const models = [
+    'openrouter/free',
+    'minimax/minimax-m3:free',
+    'liquid/lfm-2.5-2.6b:free',
+    'inclusionai/ling-3.0-flash-fin:free',
+    'nvidia/nemotron-3.5-lightning:free',
+  ];
+
+  for (const model of models) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_FALLBACK_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://aurahealth.app',
+          'X-Title': 'Aura Health Mobile',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...messages.map((m) => ({
+              role: m.role === 'assistant' || m.role === 'model' ? 'assistant' : 'user',
+              content: m.content,
+            })),
+          ],
+        }),
+      });
+      clearTimeout(tid);
+
+      if (res.ok) {
+        const data = await res.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (content && content.trim().length > 0) {
+          return { reply: content.trim(), model };
+        }
+      }
+    } catch (e) {
+      console.warn(`Direct model ${model} check failed:`, e);
+    }
   }
-  return path;
-};
+  throw new Error('All mobile direct AI models exhausted');
+}
 
 export interface ChatMessage {
   id: string;
@@ -255,6 +297,35 @@ export function GeminiChatbot({
     setMessages(newMessages);
     setIsLoading(true);
 
+    // Fast path: Instant personalized greeting for common greetings (Hi, Hello, Hey)
+    const isGreeting =
+      /^(hi|hello|hey|hola|namaste|good\s*(morning|afternoon|evening)|howdy|sup|greetings)\b/i.test(query) ||
+      query.toLowerCase() === 'hi' ||
+      query.toLowerCase() === 'hello' ||
+      query.toLowerCase() === 'hey';
+
+    if (isGreeting) {
+      const greetingReply = generateMobileOfflineResponse(query, selectedRole, {
+        cycleStatus,
+        userSymptoms,
+        userMoods,
+      });
+
+      const botMsg: ChatMessage = {
+        id: 'bot-' + Date.now(),
+        role: 'assistant',
+        roleType: selectedRole,
+        modelUsed: 'instant-aura-engine',
+        content: greetingReply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      setMessages((prev) => [...prev, botMsg]);
+      setIsLoading(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
+      return;
+    }
+
     try {
       // Build cycle context
       const userCycleContext = cycleStatus
@@ -267,48 +338,76 @@ export function GeminiChatbot({
           }
         : undefined;
 
-      // Send to server-side AI route with fallback timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      let replyText = '';
+      let modelUsed = selectedModel;
 
-      const apiUrl = getApiUrl('/api/ai/chat');
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages.map((m) => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
+      // Tier 1: Try local server API route (works in web browser and hosted dev server)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+        const response = await fetch('/api/ai/chat', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: newMessages.map((m) => ({
+              role: m.role === 'assistant' ? 'model' : 'user',
+              content: m.content,
+            })),
+            role: selectedRole,
+            model: selectedModel,
+            userCycleContext,
+          }),
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.reply) {
+            replyText = data.reply;
+            modelUsed = data.modelUsed || selectedModel;
+          }
+        }
+      } catch (serverErr) {
+        console.warn('Backend /api/ai/chat not directly reachable (normal on mobile WebView):', serverErr);
+      }
+
+      // Tier 2: If backend returned no reply, call OpenRouter direct client AI (with CORS support)
+      if (!replyText) {
+        const systemPrompt = `You are a certified Women's Health & Cycle Tracker AI Specialist (${CHAT_ROLES[selectedRole]?.name || 'Aura AI'}).
+Role Title: ${CHAT_ROLES[selectedRole]?.title || 'Health Guide'}
+Current Cycle Day: ${userCycleContext?.cycleDay || 14}
+Current Cycle Phase: ${userCycleContext?.phase || 'Follicular'}
+Reported Symptoms: ${userCycleContext?.symptoms || 'None'}
+Answer the user's inquiry with empathy, evidence-based reproductive science, bullet points, and actionable guidance.`;
+
+        const directResult = await fetchDirectOpenRouter(
+          newMessages.map((m) => ({
+            role: m.role === 'assistant' ? 'assistant' : 'user',
             content: m.content,
           })),
-          role: selectedRole,
-          model: selectedModel,
-          userCycleContext,
-        }),
-      });
-
-      clearTimeout(timeoutId);
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get AI response.');
+          systemPrompt
+        );
+        replyText = directResult.reply;
+        modelUsed = directResult.model;
       }
 
       const botMsg: ChatMessage = {
         id: 'bot-' + Date.now(),
         role: 'assistant',
         roleType: selectedRole,
-        modelUsed: data.modelUsed || selectedModel,
-        content: data.reply,
+        modelUsed,
+        content: replyText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (err: any) {
       console.warn('Network chat error, using mobile intelligence fallback:', err);
-      
-      // Generate immediate smart on-device response tailored to user input & cycle phase
+
+      // Tier 3: Instant on-device mobile intelligence fallback (offline / airplane mode)
       const smartReply = generateMobileOfflineResponse(query, selectedRole, {
         cycleStatus,
         userSymptoms,
@@ -319,7 +418,7 @@ export function GeminiChatbot({
         id: 'bot-fallback-' + Date.now(),
         role: 'assistant',
         roleType: selectedRole,
-        modelUsed: 'aura-mobile-engine',
+        modelUsed: 'aura-on-device-engine',
         content: smartReply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
