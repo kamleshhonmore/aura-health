@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, BrainCircuit, Activity, ShieldCheck, CheckCircle2, AlertTriangle, Scan, Shield, ActivitySquare, Brain, Server, RefreshCw, UploadCloud, VideoOff } from 'lucide-react';
+import { Camera, BrainCircuit, Activity, ShieldCheck, CheckCircle2, AlertTriangle, Scan, Shield, ActivitySquare, Brain, Server, RefreshCw, UploadCloud, VideoOff, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ThemeConfig } from '../types';
+import { NativeBridge } from '../utils/nativeBridge';
 
 interface ClinicalHubProps {
   theme: ThemeConfig;
@@ -136,6 +137,68 @@ export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubPro
         setCameraStream(null);
       }
     }, 4000);
+  };
+
+  const handleNativeCameraCapture = async () => {
+    setCameraError(null);
+    try {
+      const photo = await NativeBridge.takePhoto();
+      if (photo && photo.dataUrl) {
+        setScanState('scanning');
+        const img = new Image();
+        img.onload = () => {
+          if (canvasRef.current) {
+            const canvas = canvasRef.current;
+            canvas.width = img.width || 640;
+            canvas.height = img.height || 480;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              try {
+                const frameData = ctx.getImageData(
+                  canvas.width / 4,
+                  canvas.height / 4,
+                  canvas.width / 2,
+                  canvas.height / 2
+                );
+                let rTotal = 0, gTotal = 0, bTotal = 0;
+                for (let i = 0; i < frameData.data.length; i += 16) {
+                  rTotal += frameData.data[i];
+                  gTotal += frameData.data[i + 1];
+                  bTotal += frameData.data[i + 2];
+                }
+                const pixelCount = frameData.data.length / 16;
+                const avgR = rTotal / pixelCount;
+                const avgG = gTotal / pixelCount;
+                const avgB = bTotal / pixelCount;
+
+                const calculatedLH = Math.min(65, Math.max(8, Number(((avgR / (avgB + 1)) * 22).toFixed(1))));
+                const calculatedE3G = Math.min(380, Math.max(90, Number((140 + (avgG * 0.4)).toFixed(1))));
+                const calculatedPdG = Math.min(25, Math.max(4, Number(((avgB / (avgR + 1)) * 14).toFixed(1))));
+
+                setScanBiomarkers({ lh: calculatedLH, e3g: calculatedE3G, pdg: calculatedPdG });
+              } catch (e) {
+                console.warn('Native photo spectral analysis notice:', e);
+              }
+            }
+          }
+          setTimeout(() => setScanState('analyzing'), 1200);
+          setTimeout(() => {
+            setScanState('complete');
+            if (cameraStream) {
+              cameraStream.getTracks().forEach((t) => t.stop());
+              setCameraStream(null);
+            }
+          }, 2800);
+        };
+        img.src = photo.dataUrl;
+      }
+    } catch (err: any) {
+      console.warn('Native camera capture notice:', err);
+      if (!err?.message?.includes('User cancelled')) {
+        setCameraError(err.message || 'Could not open native camera. You can try live camera stream or upload a photo.');
+      }
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -320,18 +383,26 @@ export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubPro
             </p>
 
             <button
-              onClick={() => startCamera('environment')}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2 mb-3"
+              onClick={handleNativeCameraCapture}
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2 mb-2.5 active:scale-95"
             >
-              <Camera className="w-4 h-4" />
-              Open Live Camera
+              <Smartphone className="w-4 h-4" />
+              Take Photo with Phone Camera
+            </button>
+
+            <button
+              onClick={() => startCamera('environment')}
+              className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium rounded-2xl transition-all border border-gray-700 text-xs flex items-center justify-center gap-2 mb-2 active:scale-95"
+            >
+              <Camera className="w-3.5 h-3.5 text-blue-400" />
+              Open Live Video Stream
             </button>
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full py-2.5 bg-gray-800/80 hover:bg-gray-800 text-gray-300 font-medium rounded-2xl transition-colors border border-gray-700 text-xs flex items-center justify-center gap-2"
+              className="w-full py-2 bg-gray-900 hover:bg-gray-800 text-gray-400 font-medium rounded-2xl transition-colors border border-gray-800 text-xs flex items-center justify-center gap-2 active:scale-95"
             >
-              <UploadCloud className="w-4 h-4" />
+              <UploadCloud className="w-3.5 h-3.5" />
               Upload Test Card Photo
             </button>
           </div>

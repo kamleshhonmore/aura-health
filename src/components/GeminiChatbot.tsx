@@ -22,6 +22,7 @@ import {
 import { ThemeConfig } from '../types';
 import { CycleStatus } from '../utils/cycleCalculations';
 import { generateMobileOfflineResponse } from '../utils/mobileAiFallback';
+import { NativeBridge } from '../utils/nativeBridge';
 
 const OPENROUTER_FALLBACK_KEY = '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';
 
@@ -259,6 +260,34 @@ export function GeminiChatbot({
       },
     ];
   });
+
+  // Network status for live AI vs on-device intelligence
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+
+  useEffect(() => {
+    NativeBridge.getNetworkStatus()
+      .then((status) => {
+        setIsOnline(status.connected);
+      })
+      .catch(() => {
+        setIsOnline(navigator.onLine);
+      });
+
+    const listenerPromise = NativeBridge.onNetworkChange((status) => {
+      setIsOnline(status.connected);
+    });
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      listenerPromise.then((sub) => sub.remove?.()).catch(() => {});
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Save chat history to localStorage
   useEffect(() => {
@@ -603,6 +632,23 @@ Answer the user's inquiry with empathy, evidence-based reproductive science, bul
 
         {/* Model Selector & Actions */}
         <div className="flex items-center space-x-1.5">
+          {/* Live Connectivity Badge */}
+          <div
+            className={`flex items-center space-x-1 px-2 py-1 rounded-xl text-[10px] font-bold border transition-colors ${
+              isOnline
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
+            }`}
+            title={isOnline ? 'Real-time Live Cloud AI Connected' : 'On-Device Mobile Fallback Engine Active'}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+              }`}
+            />
+            <span className="hidden sm:inline">{isOnline ? 'Live AI' : 'Offline'}</span>
+          </div>
+
           {/* Model Selector */}
           <div className="relative">
             <button
