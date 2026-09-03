@@ -12,6 +12,7 @@ interface ClinicalHubProps {
 export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubProps) {
   const [activeSection, setActiveSection] = useState<'menu' | 'optical' | 'diagnostic' | 'probabilistic'>('menu');
   const [scanState, setScanState] = useState<'idle' | 'live' | 'scanning' | 'analyzing' | 'complete'>('idle');
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -45,6 +46,14 @@ export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubPro
 
   const startCamera = async (facing: 'environment' | 'user' = cameraFacing) => {
     setCameraError(null);
+
+    // EXPLICITLY request native permissions first to avoid "No permissions required" error on real phones
+    const isGranted = await NativeBridge.requestCameraPermissions();
+    if (!isOnline && !isGranted) {
+      setCameraError('Camera permission was not granted. Please allow camera permissions in your device settings to scan in real time.');
+      return;
+    }
+
     if (cameraStream) {
       cameraStream.getTracks().forEach((t) => t.stop());
     }
@@ -104,6 +113,7 @@ export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubPro
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        setCapturedImage(canvas.toDataURL('image/jpeg', 0.8));
         try {
           const frameData = ctx.getImageData(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
           let rTotal = 0, gTotal = 0, bTotal = 0;
@@ -144,6 +154,7 @@ export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubPro
     try {
       const photo = await NativeBridge.takePhoto();
       if (photo && photo.dataUrl) {
+        setCapturedImage(photo.dataUrl);
         setScanState('scanning');
         const img = new Image();
         img.onload = () => {
@@ -479,7 +490,13 @@ export function ClinicalDiagnosticsHub({ theme, onNavigateBack }: ClinicalHubPro
 
         {scanState === 'complete' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gray-950 text-white z-30">
-            <CheckCircle2 className="w-14 h-14 text-emerald-400 mb-3" />
+            {capturedImage ? (
+              <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-400 mb-3 shadow-lg shadow-emerald-500/20">
+                 <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <CheckCircle2 className="w-14 h-14 text-emerald-400 mb-3" />
+            )}
             <h3 className="text-xl font-black mb-1">Optical Scan Verified</h3>
             <p className="text-xs text-emerald-400 font-medium mb-6">Lab-grade 2D Spectral Biomarkers</p>
 

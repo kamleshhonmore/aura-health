@@ -15,6 +15,7 @@
     "@capacitor/core": "^8.5.0",
     "@capacitor/network": "^8.0.1",
     "@google/genai": "^2.19.0",
+    "@google/generative-ai": "^0.24.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/express": "^5.0.6",
     "canvas-confetti": "^1.9.4",

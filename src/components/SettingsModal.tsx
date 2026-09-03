@@ -38,12 +38,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [tempUnit, setTempUnit] = useState(settings.tempUnit);
   const [weightUnit, setWeightUnit] = useState(settings.weightUnit);
   const [waterGoal, setWaterGoal] = useState(settings.waterGoalGlasses);
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('aura_gemini_api_key') || '');
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [isBackingUp, setIsBackingUp] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSave = () => {
+    localStorage.setItem('aura_gemini_api_key', geminiKey);
     onSaveSettings({
       cycleLength: cycleLen,
       periodLength: periodLen,
@@ -270,6 +272,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {backupStatus}
               </p>
             )}
+          </div>
+
+          {/* Section 5: AI Configuration */}
+          <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 space-y-3">
+            <h4 className="font-black font-['Fredoka'] text-xs text-purple-900 flex items-center gap-1.5">
+              <Database className="w-4 h-4 text-purple-600" />
+              Real-Time AI Configuration
+            </h4>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-purple-800">Gemini API Key</label>
+              <input
+                type="password"
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                placeholder="Paste AI API Key here..."
+                className="w-full px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs text-purple-900 placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <p className="text-[9px] text-purple-500 leading-tight">
+                Get your key at <u>aistudio.google.com</u> to enable unrestricted real-time medical insights and cycle analysis.
+              </p>
+            </div>
           </div>
         </div>
 
