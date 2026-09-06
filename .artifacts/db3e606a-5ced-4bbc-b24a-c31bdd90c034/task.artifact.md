@@ -1,0 +1,4 @@
+- [ ] Add logging and improve output handling in `OnnxPredictorPlugin.java`
+- [ ] Implement model metadata logging to verify input/output requirements
+- [ ] Update `ClinicalDiagnosticsHub.tsx` to use actual model results and confidence
+- [ ] Verify fix with multiple test inputs and logcat analysis
