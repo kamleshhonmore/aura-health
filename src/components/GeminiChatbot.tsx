@@ -293,8 +293,10 @@ export function GeminiChatbot({
     };
     checkConn();
 
-    const handle = Network.addListener('networkStatusChange', s => setIsOnline(s.connected));
-    return () => { handle.remove(); };
+    const listenerPromise = Network.addListener('networkStatusChange', s => setIsOnline(s.connected));
+    return () => {
+      listenerPromise.then(handle => handle.remove()).catch(() => {});
+    };
   }, []);
 
   // History with Persistence

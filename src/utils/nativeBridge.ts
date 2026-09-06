@@ -1,6 +1,22 @@
 import { Camera, CameraResultType, CameraSource, PermissionStatus } from '@capacitor/camera';
 import { Network } from '@capacitor/network';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+export interface OnnxInferenceResult {
+  isDetected?: boolean;
+  confidence?: number;
+  riskLevel?: 'low' | 'moderate' | 'high';
+  probability?: number;
+  label?: number;
+  results?: number[];
+  probabilities?: number[];
+}
+
+export interface OnnxPredictorPlugin {
+  runInference(options: { data: number[] }): Promise<OnnxInferenceResult>;
+}
+
+export const OnnxPredictor = registerPlugin<OnnxPredictorPlugin>('OnnxPredictor');
 
 export const NativeBridge = {
   /**
