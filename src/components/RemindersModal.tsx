@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppSettings, ThemeConfig } from '../types';
 import { Bell, Clock, X, Check, Droplets, Pill, Calendar } from 'lucide-react';
+import { NotificationManager } from '../utils/notificationManager';
 
 interface RemindersModalProps {
   isOpen: boolean;
@@ -28,14 +29,16 @@ export const RemindersModal: React.FC<RemindersModalProps> = ({
   if (!isOpen) return null;
 
   const handleSave = () => {
-    onSaveSettings({
+    const updatedSettings = {
       remindPeriodEnabled: remindPeriod,
       remindPeriodDaysBefore: daysBefore,
       remindOvulationEnabled: remindOvulation,
       remindPillEnabled: remindPill,
       remindPillTime: pillTime,
       remindWaterEnabled: remindWater,
-    });
+    };
+    onSaveSettings(updatedSettings);
+    NotificationManager.scheduleReminders(updatedSettings);
     setSavedToast(true);
     setTimeout(() => {
       setSavedToast(false);

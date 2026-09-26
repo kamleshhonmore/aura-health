@@ -292,29 +292,68 @@ export function ClinicalDiagnosticsHub({
     try {
       if (Capacitor.isNativePlatform()) {
         const response = await OnnxPredictor.runInference({ data: vector });
-        const prob = Math.round((response.probability ?? 0.1) * 100);
+        const rawProb = response.probability ?? 0.05;
+        const probPercent = Math.round(rawProb * 100);
+        const calculatedRiskLevel: 'low' | 'moderate' | 'high' =
+          response.riskLevel || (probPercent >= 65 ? 'high' : probPercent >= 35 ? 'moderate' : 'low');
+
         setDiagnosticResult({
-          riskLevel: prob > 65 ? 'high' : prob > 35 ? 'moderate' : 'low',
-          probability: prob,
+          riskLevel: calculatedRiskLevel,
+          probability: probPercent,
           bmi,
-          engineType: 'V3 Precision ONNX',
+          engineType: 'V3 Precision ONNX Engine',
           primaryIndicator:
-            prob > 65
-              ? 'Critical correlation with Rotterdam criteria markers.'
-              : 'Symptom patterns within clinical baseline.',
+            calculatedRiskLevel === 'high'
+              ? 'High correlation with Rotterdam criteria markers (androgenic symptoms & irregular cycle).'
+              : calculatedRiskLevel === 'moderate'
+              ? 'Moderate clinical marker correlation. Continuous monitoring & lifestyle alignment recommended.'
+              : 'Symptom patterns remain within standard physiological baseline.',
         });
       } else {
-        await new Promise((r) => setTimeout(r, 1200));
+        // Web Sandbox Fallback: Deterministic clinical heuristic
+        let webRisk = 10;
+        if (form.irregularCycles) webRisk += 25;
+        if (settings.cycleLength > 35 || settings.cycleLength < 21) webRisk += 20;
+        if (bmi >= 25) webRisk += 15;
+        if (form.hirsutismSeverity >= 5) webRisk += 15;
+        if (form.acneSeverity >= 5) webRisk += 10;
+        if (todayLog?.pillTaken) webRisk -= 10;
+        const clampedWebProb = Math.max(3, Math.min(95, webRisk));
+        const webRiskLevel: 'low' | 'moderate' | 'high' =
+          clampedWebProb >= 65 ? 'high' : clampedWebProb >= 35 ? 'moderate' : 'low';
+
+        await new Promise((r) => setTimeout(r, 800));
         setDiagnosticResult({
-          riskLevel: 'moderate',
-          probability: 42,
+          riskLevel: webRiskLevel,
+          probability: clampedWebProb,
           bmi,
-          engineType: 'Web Sandbox Sim',
-          primaryIndicator: 'Local heuristic evaluation completed.',
+          engineType: 'Web Clinical Heuristic',
+          primaryIndicator:
+            webRiskLevel === 'high'
+              ? 'Elevated correlation with irregular cycles & androgenic markers.'
+              : webRiskLevel === 'moderate'
+              ? 'Moderate clinical markers present. Further tracking advised.'
+              : 'Symptom patterns within normal physiological baseline.',
         });
       }
     } catch (e) {
-      console.error(e);
+      console.error('Inference error:', e);
+      // Clinical safety fallback calculation
+      let fallbackRisk = 12;
+      if (form.irregularCycles) fallbackRisk += 30;
+      if (bmi >= 25) fallbackRisk += 15;
+      const clampedProb = Math.max(5, Math.min(90, fallbackRisk));
+      const fallbackRiskLevel: 'low' | 'moderate' | 'high' =
+        clampedProb >= 65 ? 'high' : clampedProb >= 35 ? 'moderate' : 'low';
+
+      setDiagnosticResult({
+        riskLevel: fallbackRiskLevel,
+        probability: clampedProb,
+        bmi,
+        engineType: 'Clinical Safety Fallback',
+        primaryIndicator:
+          'Native model unavailable. Evaluated using standard clinical heuristic rules.',
+      });
     }
     setIsAnalyzing(false);
   };
@@ -801,13 +840,28 @@ export function ClinicalDiagnosticsHub({
           : 'Execute Precision Inference'}
       </button>
 
+      {/* Clinical Disclaimer Callout Banner */}
+      <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5 shadow-sm">
+        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <span className="font-extrabold uppercase tracking-wider text-[10px] text-amber-800">
+            Clinical Advisory Disclaimer
+          </span>
+          <p className="font-medium text-[11px] leading-relaxed opacity-90">
+            This AI diagnostic screening tool is provided solely for personal educational awareness. It does not provide medical diagnosis, treatment, or clinical decisions under Rotterdam criteria. Please consult a licensed medical provider.
+          </p>
+        </div>
+      </div>
+
       {diagnosticResult && (
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={`p-6 rounded-[32px] border-4 ${
+          className={`p-6 rounded-[32px] border-4 shadow-xl ${
             diagnosticResult.riskLevel === 'high'
               ? 'border-rose-500 bg-rose-50 text-rose-900'
+              : diagnosticResult.riskLevel === 'moderate'
+              ? 'border-amber-500 bg-amber-50 text-amber-900'
               : 'border-emerald-500 bg-emerald-50 text-emerald-900'
           }`}
         >
@@ -820,6 +874,8 @@ export function ClinicalDiagnosticsHub({
               className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${
                 diagnosticResult.riskLevel === 'high'
                   ? 'bg-rose-500 text-white'
+                  : diagnosticResult.riskLevel === 'moderate'
+                  ? 'bg-amber-500 text-white'
                   : 'bg-emerald-500 text-white'
               }`}
             >

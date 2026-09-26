@@ -29,8 +29,10 @@ import { NativeBridge } from '../utils/nativeBridge';
 import { CapacitorHttp, HttpResponse } from '@capacitor/core';
 import { Network } from '@capacitor/network';
 
-// Fallback to OpenRouter only if Gemini API is missing
-const OPENROUTER_FALLBACK_KEY = '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';
+// OpenRouter key loaded securely from env or localStorage
+const getOpenRouterKey = (): string => {
+  return ((import.meta as any).env?.VITE_OPENROUTER_API_KEY as string) || localStorage.getItem('aura_openrouter_api_key') || '';
+};
 
 /**
  * Use CapacitorHttp for Gemini API.
@@ -80,6 +82,11 @@ async function fetchDirectOpenRouter(
   messages: { role: string; content: string }[],
   systemPrompt: string
 ): Promise<{ reply: string; model: string }> {
+  const openRouterKey = getOpenRouterKey();
+  if (!openRouterKey) {
+    throw new Error('MISSING_OPENROUTER_API_KEY');
+  }
+
   const models = [
     'openrouter/free',
     'google/gemini-2.0-flash-exp:free',
@@ -91,7 +98,7 @@ async function fetchDirectOpenRouter(
       const response: HttpResponse = await CapacitorHttp.post({
         url: 'https://openrouter.ai/api/v1/chat/completions',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_FALLBACK_KEY}`,
+          'Authorization': `Bearer ${openRouterKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://aurahealth.app',
           'X-Title': 'Aura Health Mobile',

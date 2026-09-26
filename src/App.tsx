@@ -53,23 +53,61 @@ import {
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'motion/react';
 
+function safeStorageLoad<T>(key: string, fallback: T): T {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return fallback;
+    const parsed = JSON.parse(saved);
+    if (typeof parsed === 'object' && parsed !== null) {
+      return Array.isArray(fallback)
+        ? (Array.isArray(parsed) ? (parsed as unknown as T) : fallback)
+        : ({ ...fallback, ...parsed } as unknown as T);
+    }
+    return (parsed as T) ?? fallback;
+  } catch (e) {
+    console.warn(`Failed to parse localStorage key "${key}", falling back:`, e);
+    return fallback;
+  }
+}
+
+function computeLatestPeriodStart(logsMap: Record<string, DayLog>, cyclesList: CycleRecord[]): string {
+  let latest = '2026-08-01';
+  if (logsMap) {
+    Object.entries(logsMap).forEach(([dateStr, log]) => {
+      if (log?.isPeriod && dateStr > latest) {
+        latest = dateStr;
+      }
+    });
+  }
+  if (cyclesList) {
+    cyclesList.forEach((c) => {
+      if (c?.startDate && c.startDate > latest) {
+        latest = c.startDate;
+      }
+    });
+  }
+  return latest;
+}
+
 export function App() {
-  const [settings, setSettings] = useState<AppSettings>(() => {
-    const saved = localStorage.getItem('period_calendar_settings');
-    return saved ? JSON.parse(saved) : defaultSettings;
+  const [settings, setSettings] = useState<AppSettings>(() =>
+    safeStorageLoad('period_calendar_settings', defaultSettings)
+  );
+
+  const [logs, setLogs] = useState<Record<string, DayLog>>(() =>
+    safeStorageLoad('period_calendar_logs', sampleLogs)
+  );
+
+  const [cycles, setCycles] = useState<CycleRecord[]>(() =>
+    safeStorageLoad('period_calendar_cycles', sampleCycles)
+  );
+
+  const [lastPeriodStart, setLastPeriodStart] = useState<string>(() => {
+    const loadedLogs = safeStorageLoad('period_calendar_logs', sampleLogs);
+    const loadedCycles = safeStorageLoad('period_calendar_cycles', sampleCycles);
+    return computeLatestPeriodStart(loadedLogs, loadedCycles);
   });
 
-  const [logs, setLogs] = useState<Record<string, DayLog>>(() => {
-    const saved = localStorage.getItem('period_calendar_logs');
-    return saved ? JSON.parse(saved) : sampleLogs;
-  });
-
-  const [cycles, setCycles] = useState<CycleRecord[]>(() => {
-    const saved = localStorage.getItem('period_calendar_cycles');
-    return saved ? JSON.parse(saved) : sampleCycles;
-  });
-
-  const [lastPeriodStart, setLastPeriodStart] = useState<string>('2026-08-01');
   const [activeTab, setActiveTab] = useState<
     'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat'
   >('home');
