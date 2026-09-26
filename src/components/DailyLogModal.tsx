@@ -16,6 +16,7 @@ import {
   Plus,
   Minus,
   Trash2,
+  BookOpen,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -195,16 +196,20 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
                   <button
                     key={f}
                     onClick={() => handleFlowSelect(f)}
-                    className={`py-2 px-1 rounded-2xl text-xs font-bold font-['Fredoka'] capitalize flex flex-col items-center gap-1 transition-all cursor-pointer border ${
+                    className={`py-2 px-1 rounded-2xl text-[10px] font-bold font-['Fredoka'] capitalize flex flex-col items-center gap-1 transition-all cursor-pointer border ${
                       isSelected
-                        ? 'bg-[#FF5376] text-white border-[#FF5376] shadow-sm scale-105'
+                        ? 'bg-[#FF5376] text-white border-[#FF5376] shadow-md scale-105'
                         : 'bg-[#FFF9FA] text-[#875C66] border-pink-100 hover:border-pink-300'
                     }`}
                   >
-                    <span className="text-sm">
-                      {f === 'none' ? '⚪' : f === 'spotting' ? '💧' : f === 'light' ? '🩸' : f === 'medium' ? '🩸🩸' : '🩸🩸🩸'}
-                    </span>
-                    <span className="text-[10px]">{f}</span>
+                    <div className="h-6 flex items-center justify-center">
+                      {f === 'none' ? <div className="w-2.5 h-2.5 rounded-full border border-gray-300" /> :
+                       f === 'spotting' ? <Droplets className="w-3.5 h-3.5" /> :
+                       f === 'light' ? <Droplets className="w-4 h-4 fill-current" /> :
+                       f === 'medium' ? <div className="flex -space-x-1"><Droplets className="w-4 h-4 fill-current" /><Droplets className="w-4 h-4 fill-current" /></div> :
+                       <div className="flex -space-x-1.5"><Droplets className="w-4 h-4 fill-current" /><Droplets className="w-4 h-4 fill-current" /><Droplets className="w-4 h-4 fill-current" /></div>}
+                    </div>
+                    <span>{f}</span>
                   </button>
                 );
               })}
@@ -445,14 +450,15 @@ export const DailyLogModal: React.FC<DailyLogModalProps> = ({
           {/* Section 7: Secret Diary Notes */}
           <div className="space-y-1.5">
             <label className="text-xs font-black font-['Fredoka'] text-[#4A2E35] flex items-center gap-1.5">
-              <span>📖</span> Secret Diary Notes
+              <BookOpen className="w-4 h-4 text-rose-500" />
+              Secret Diary Notes
             </label>
             <textarea
               rows={3}
               placeholder="How are you feeling today? Write your personal notes, reflections or doctor notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full p-3 rounded-2xl border border-pink-200 bg-[#FFFDFE] font-medium text-xs text-[#4A2E35] focus:outline-pink-400 placeholder:text-[#B59199]"
+              className="w-full p-4 rounded-2xl border border-pink-100 bg-[#FFFDFE] font-medium text-xs text-[#4A2E35] focus:outline-pink-400 placeholder:text-[#B59199] shadow-inner"
             />
           </div>
         </div>

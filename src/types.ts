@@ -93,6 +93,10 @@ export interface AppSettings {
   isPregnancyMode: boolean;
   pregnancyDueDate: string;
   pregnancyStartDate: string;
+  // User Profile (Centralized Data)
+  userAge: number;
+  userHeight: number;
+  userWeight: number;
   // Reminders
   remindPeriodDaysBefore: number;
   remindPeriodEnabled: boolean;

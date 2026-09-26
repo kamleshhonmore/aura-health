@@ -10,11 +10,11 @@ import {
   Pill,
   Sparkles,
   Edit3,
-  Scale,
   Thermometer,
-  FileText,
   Calendar as CalendarIcon,
+  Info,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface CalendarViewProps {
   theme: ThemeConfig;
@@ -88,134 +88,69 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const selectedLog = logs[selectedDateStr];
 
   return (
-    <div className="space-y-4">
-      {/* Calendar Card */}
+    <div className="space-y-4 font-['Nunito']">
+      {/* Calendar Grid Card */}
       <div
-        className={`p-4 rounded-3xl ${theme.bgCard} border ${theme.borderCard} ${theme.shadowColor} shadow-md transition-all space-y-3`}
+        className={`p-5 rounded-[32px] ${theme.bgCard} border-2 ${theme.borderCard} shadow-xl transition-all space-y-4`}
       >
-        {/* Month Navigation */}
         <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <h2 className={`text-lg font-black font-['Fredoka'] ${theme.textPrimary}`}>
+          <div className="flex items-center gap-3">
+            <h2 className={`text-xl font-black font-['Fredoka'] ${theme.textPrimary}`}>
               {monthNames[viewMonth]} {viewYear}
             </h2>
             <button
               onClick={handleToday}
-              className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-[#FFF0F3] text-[#FF6B8B] hover:bg-[#FFE0E6] transition-colors cursor-pointer"
+              className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-50 text-rose-500 border border-rose-100"
             >
               Today
             </button>
           </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handlePrevMonth}
-              className="p-1.5 rounded-xl hover:bg-pink-50 text-[#875C66] transition-colors cursor-pointer"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleNextMonth}
-              className="p-1.5 rounded-xl hover:bg-pink-50 text-[#875C66] transition-colors cursor-pointer"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+          <div className="flex items-center gap-2">
+            <button onClick={handlePrevMonth} className="p-2 rounded-2xl bg-gray-50 text-gray-400"><ChevronLeft className="w-5 h-5" /></button>
+            <button onClick={handleNextMonth} className="p-2 rounded-2xl bg-gray-50 text-gray-400"><ChevronRight className="w-5 h-5" /></button>
           </div>
         </div>
 
-        {/* Legend Ribbon */}
-        <div className="flex items-center justify-between text-[10px] font-bold text-[#875C66] px-1 py-1.5 bg-[#FFF9FA] rounded-xl border border-pink-50 overflow-x-auto gap-2">
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FF5376]" />
-            <span>Period</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#81C784]" />
-            <span>Fertile</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="text-xs">🌟</span>
-            <span>Ovulation</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full border border-dashed border-[#FF8DA1]" />
-            <span>Forecast</span>
-          </div>
+        {/* Legend */}
+        <div className="flex items-center justify-between px-3 py-2 bg-gray-50/50 rounded-2xl border border-gray-100 gap-4">
+          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#FF5376]" /><span className="text-[9px] font-black uppercase text-gray-500">Period</span></div>
+          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#81C784]" /><span className="text-[9px] font-black uppercase text-gray-500">Fertile</span></div>
+          <div className="flex items-center gap-1.5"><Sparkles className="w-3 h-3 text-amber-500" /><span className="text-[9px] font-black uppercase text-gray-500">Ovulation</span></div>
         </div>
 
-        {/* Day of Week Headers */}
-        <div className="grid grid-cols-7 text-center font-bold text-[11px] text-[#A88B93] pb-1 border-b border-pink-50">
-          <span className="text-[#FF6B8B]">Sun</span>
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span>Thu</span>
-          <span>Fri</span>
-          <span className="text-[#FF6B8B]">Sat</span>
-        </div>
-
-        {/* Calendar Day Cells Grid */}
-        <div className="grid grid-cols-7 gap-1">
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-1.5">
           {calendarDays.map((day) => {
             const isSelected = day.dateStr === selectedDateStr;
-            const hasLog = !!day.log;
             const isPeriod = day.log?.isPeriod;
             const isPredictedPeriod = !isPeriod && day.dayType === 'predicted_period';
             const isOvulation = day.dayType === 'ovulation';
             const isFertile = day.dayType === 'fertile';
-            const hasIntimacy = day.log?.intimacy && day.log.intimacy.length > 0 && day.log.intimacy[0] !== 'none';
-            const hasPill = day.log?.pillTaken;
-            const hasNotes = day.log?.notes && day.log.notes.trim().length > 0;
 
-            // Styling based on day category
-            let cellBg = 'hover:bg-pink-50/70 text-[#4A2E35]';
-            let circleBorder = '';
+            let cellBg = 'bg-white text-rose-950';
+            let cellBorder = 'border-transparent';
 
-            if (isPeriod) {
-              cellBg = 'bg-[#FF5376] text-white shadow-xs';
-            } else if (isPredictedPeriod) {
-              cellBg = 'bg-[#FFF0F3] text-[#E91E63] border border-dashed border-[#FF8DA1]';
-            } else if (isOvulation) {
-              cellBg = 'bg-gradient-to-br from-[#FFF8E1] to-[#FFE082] text-[#F57F17] border border-[#FFD54F]';
-            } else if (isFertile) {
-              cellBg = 'bg-[#E8F8F0] text-[#2E7D32] border border-[#A5D6A7]';
-            }
+            if (isPeriod) cellBg = 'bg-rose-500 text-white shadow-md';
+            else if (isPredictedPeriod) cellBg = 'bg-rose-50 text-rose-400 border-dashed border-rose-200';
+            else if (isOvulation) cellBg = 'bg-amber-100 text-amber-700 border-amber-200';
+            else if (isFertile) cellBg = 'bg-green-50 text-green-700 border-green-100';
 
-            if (!day.isCurrentMonth) {
-              cellBg = 'opacity-35 text-[#B59199] bg-transparent';
-            }
-
-            if (isSelected) {
-              circleBorder = 'ring-2 ring-[#FF2A6D] ring-offset-2';
-            }
+            if (!day.isCurrentMonth) cellBg = 'opacity-20 bg-transparent text-gray-400';
 
             return (
               <button
                 key={day.dateStr}
-                onClick={() => {
-                  setSelectedDateStr(day.dateStr);
-                  onSelectDate(day.dateStr);
-                }}
-                className={`h-13 rounded-2xl flex flex-col items-center justify-between p-1 transition-all cursor-pointer relative ${cellBg} ${circleBorder}`}
+                onClick={() => { setSelectedDateStr(day.dateStr); onSelectDate(day.dateStr); }}
+                className={`h-14 rounded-2xl flex flex-col items-center justify-between p-2 border-2 transition-all ${cellBg} ${cellBorder} ${isSelected ? 'border-rose-500 ring-4 ring-rose-500/10' : ''}`}
               >
-                {/* Top: Day Number & Ovulation/Fertile Icon */}
-                <div className="w-full flex items-center justify-between text-[11px] font-black font-['Fredoka'] px-0.5">
-                  <span className={day.isToday ? 'px-1 rounded bg-[#FF6B8B] text-white font-extrabold' : ''}>
-                    {day.dayOfMonth}
-                  </span>
-                  {isOvulation && <span className="text-[10px] leading-none">🌟</span>}
-                  {isFertile && !isOvulation && <span className="text-[9px] leading-none">🌸</span>}
-                  {isPeriod && <span className="text-[9px] leading-none">🩸</span>}
+                <div className="w-full flex items-center justify-between font-black text-xs">
+                  <span className={day.isToday ? 'w-5 h-5 flex items-center justify-center rounded-full bg-rose-900 text-white' : ''}>{day.dayOfMonth}</span>
+                  {isOvulation && <Sparkles className="w-2.5 h-2.5" />}
                 </div>
-
-                {/* Bottom Badges: Intimacy, Pill, Note, Flow dots */}
-                <div className="flex items-center gap-0.5 h-3">
-                  {hasIntimacy && <Heart className={`w-2.5 h-2.5 ${isPeriod ? 'fill-white text-white' : 'fill-[#E91E63] text-[#E91E63]'}`} />}
-                  {hasPill && <Pill className={`w-2.5 h-2.5 ${isPeriod ? 'text-white' : 'text-[#8E24AA]'}`} />}
-                  {hasNotes && <FileText className={`w-2.5 h-2.5 ${isPeriod ? 'text-white' : 'text-[#FFB300]'}`} />}
-                  {day.log?.waterGlasses && day.log.waterGlasses >= 8 && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#29B6F6]" />
-                  )}
+                <div className="h-2 flex gap-0.5">
+                  {day.log?.pillTaken && <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />}
+                  {day.log?.intimacy && day.log.intimacy[0] !== 'none' && <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />}
                 </div>
               </button>
             );
@@ -223,132 +158,39 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       </div>
 
-      {/* Selected Day Inspector Card */}
+      {/* Info Card */}
       {selectedDayInfo && (
-        <div
-          className={`p-4 rounded-3xl ${theme.bgCard} border ${theme.borderCard} ${theme.shadowColor} shadow-md space-y-3 transition-all`}
-        >
-          <div className="flex items-center justify-between">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-6 rounded-[32px] ${theme.bgCard} border-2 ${theme.borderCard} shadow-lg space-y-4`}>
+          <div className="flex justify-between items-center">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-black font-['Fredoka'] text-[#4A2E35]">
-                  {new Date(selectedDateStr + 'T00:00:00').toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </span>
-                {selectedDayInfo.isToday && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FF6B8B] text-white">
-                    Today
-                  </span>
-                )}
-              </div>
-              <p className="text-xs font-semibold text-[#875C66] mt-0.5">
-                Cycle Day {selectedDayInfo.cycleDay} • Conception Chance: {selectedDayInfo.conceptionChance}
-              </p>
+              <h3 className="text-xl font-black text-rose-950">{new Date(selectedDateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3>
+              <p className="text-xs font-bold text-rose-400 uppercase tracking-widest mt-1">Cycle Day {selectedDayInfo.cycleDay} • {selectedDayInfo.conceptionChance} Chance</p>
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onTogglePeriodOnDate(selectedDateStr)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-['Fredoka'] transition-colors cursor-pointer ${
-                  selectedLog?.isPeriod
-                    ? 'bg-[#FF5376] text-white'
-                    : 'bg-[#FFF0F3] text-[#FF5376] hover:bg-[#FFE0E6]'
-                }`}
-              >
-                {selectedLog?.isPeriod ? '🩸 Period Logged' : '+ Period'}
-              </button>
-
-              <button
-                onClick={() => onOpenLogModalForDate(selectedDateStr)}
-                className="p-2 rounded-xl bg-[#FF6B8B] text-white hover:bg-[#E91E63] transition-colors cursor-pointer shadow-sm"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
+            <div className="flex gap-2">
+              <button onClick={() => onTogglePeriodOnDate(selectedDateStr)} className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md ${selectedLog?.isPeriod ? 'bg-rose-500 text-white' : 'bg-white border border-rose-100 text-rose-500'}`}><Droplets className="w-6 h-6" /></button>
+              <button onClick={() => onOpenLogModalForDate(selectedDateStr)} className="w-12 h-12 rounded-2xl bg-rose-900 text-white shadow-md flex items-center justify-center"><Edit3 className="w-5 h-5" /></button>
             </div>
           </div>
 
-          {/* Details Pill Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
-            {/* Flow */}
-            <div className="p-2.5 rounded-2xl bg-[#FFF9FA] border border-pink-100 flex flex-col">
-              <span className="text-[10px] font-bold text-[#875C66]">Period Flow</span>
-              <span className="font-black font-['Fredoka'] text-[#4A2E35] capitalize">
-                {selectedLog?.flow && selectedLog.flow !== 'none' ? selectedLog.flow : selectedLog?.isPeriod ? 'Medium' : 'None'}
-              </span>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-4 rounded-3xl bg-gray-50 border border-gray-100">
+               <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Flow</label>
+               <span className="text-sm font-black text-rose-900 capitalize">{selectedLog?.flow || (selectedLog?.isPeriod ? 'Medium' : 'None')}</span>
             </div>
-
-            {/* Intimacy */}
-            <div className="p-2.5 rounded-2xl bg-[#FFF9FA] border border-pink-100 flex flex-col">
-              <span className="text-[10px] font-bold text-[#875C66]">Intimacy</span>
-              <span className="font-black font-['Fredoka'] text-[#4A2E35] capitalize truncate">
-                {selectedLog?.intimacy && selectedLog.intimacy.length > 0 && selectedLog.intimacy[0] !== 'none'
-                  ? selectedLog.intimacy[0].replace('_', ' ')
-                  : 'None'}
-              </span>
+            <div className="p-4 rounded-3xl bg-gray-50 border border-gray-100">
+               <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Intimacy</label>
+               <span className="text-sm font-black text-rose-900 capitalize">{selectedLog?.intimacy && selectedLog.intimacy[0] !== 'none' ? selectedLog.intimacy[0] : 'None'}</span>
             </div>
-
-            {/* Pill */}
-            <div className="p-2.5 rounded-2xl bg-[#FFF9FA] border border-pink-100 flex flex-col">
-              <span className="text-[10px] font-bold text-[#875C66]">Pill Status</span>
-              <span className="font-black font-['Fredoka'] text-[#4A2E35]">
-                {selectedLog?.pillTaken ? 'Taken ✅' : 'Not Logged'}
-              </span>
+            <div className="p-4 rounded-3xl bg-gray-50 border border-gray-100">
+               <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Meds</label>
+               <span className="text-sm font-black text-rose-900">{selectedLog?.pillTaken ? 'Logged' : 'No'}</span>
             </div>
-
-            {/* Water */}
-            <div className="p-2.5 rounded-2xl bg-[#FFF9FA] border border-pink-100 flex flex-col">
-              <span className="text-[10px] font-bold text-[#875C66]">Water</span>
-              <span className="font-black font-['Fredoka'] text-[#4A2E35]">
-                {selectedLog?.waterGlasses ? `${selectedLog.waterGlasses * 250} ml` : '0 ml'}
-              </span>
+            <div className="p-4 rounded-3xl bg-gray-50 border border-gray-100">
+               <label className="text-[9px] font-black text-gray-400 uppercase block mb-1">Water</label>
+               <span className="text-sm font-black text-rose-900">{selectedLog?.waterGlasses ? selectedLog.waterGlasses * 250 : 0} ml</span>
             </div>
           </div>
-
-          {/* Symptoms & Moods Display */}
-          {((selectedLog?.symptoms && selectedLog.symptoms.length > 0) ||
-            (selectedLog?.moods && selectedLog.moods.length > 0)) && (
-            <div className="pt-2 border-t border-pink-50 space-y-2">
-              {selectedLog?.symptoms && selectedLog.symptoms.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold text-[#875C66] uppercase mr-1">Symptoms:</span>
-                  {selectedLog.symptoms.map((sId) => {
-                    const sym = symptomList.find((s) => s.id === sId);
-                    return sym ? (
-                      <span key={sId} className="px-2 py-0.5 rounded-lg bg-[#FCE4EC] text-[#C2185B] text-[11px] font-bold">
-                        {sym.emoji} {sym.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              )}
-
-              {selectedLog?.moods && selectedLog.moods.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold text-[#875C66] uppercase mr-1">Moods:</span>
-                  {selectedLog.moods.map((mId) => {
-                    const m = moodList.find((item) => item.id === mId);
-                    return m ? (
-                      <span key={mId} className="px-2 py-0.5 rounded-lg bg-[#EDE7F6] text-[#512DA8] text-[11px] font-bold">
-                        {m.emoji} {m.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Secret Diary Note */}
-          {selectedLog?.notes && selectedLog.notes.trim().length > 0 && (
-            <div className="p-3 rounded-2xl bg-[#FFFDE7] border border-[#FFF59D] text-xs text-[#5D4037] font-medium flex items-start gap-2">
-              <span className="text-sm">📖</span>
-              <p className="flex-1 italic leading-relaxed">{selectedLog.notes}</p>
-            </div>
-          )}
-        </div>
+        </motion.div>
       )}
     </div>
   );

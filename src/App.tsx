@@ -447,6 +447,10 @@ export function App() {
               >
                 <ClinicalDiagnosticsHub 
                   theme={currentTheme}
+                  settings={settings}
+                  todayLog={todayLog}
+                  onUpdateSettings={handleUpdateSettings}
+                  onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
                   onNavigateBack={() => setActiveTab('hub')}
                 />
               </motion.div>

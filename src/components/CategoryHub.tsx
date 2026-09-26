@@ -8,9 +8,11 @@ import {
   Sparkles,
   Baby,
   Activity,
-  BatteryCharging,
-  Flame,
   Calendar,
+  Thermometer,
+  MessageCircle,
+  Leaf,
+  Zap,
 } from 'lucide-react';
 
 interface CategoryHubProps {
@@ -32,17 +34,17 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
 }) => {
   return (
     <div className="w-full max-w-md mx-auto space-y-4 font-['Nunito'] animate-in fade-in duration-200">
-      {/* User Greeting matching Image 3 */}
+      {/* User Greeting */}
       <div className="px-1 pt-1 space-y-0.5">
         <h2 className="text-xl font-black font-['Fredoka'] text-[#2D1B2D] flex items-center gap-1.5">
-          Hello, Aisha <span className="animate-pulse">👋</span>
+          Hello, Aisha <span className="text-xl">👋</span>
         </h2>
         <p className="text-xs font-semibold text-[#875C66]">
           Take charge of your cycle and your well-being.
         </p>
       </div>
 
-      {/* 5 Sleek Category Feature Cards matching Image 3 */}
+      {/* Feature Cards */}
       <div className="space-y-3">
         {/* 1. Period Card */}
         <button
@@ -64,11 +66,9 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Droplets Illustration */}
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">🩸</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center shadow-xs">
+              <Droplets className="w-8 h-8 text-[#FF5376] fill-[#FF5376]" />
             </div>
-            {/* Round Arrow Button */}
             <div className="w-9 h-9 rounded-full bg-[#FF758C]/20 group-hover:bg-[#FF758C] text-[#FF5376] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
             </div>
@@ -89,14 +89,14 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
             </p>
             <div className="pt-1">
               <span className="text-[10px] font-bold text-[#00838F] bg-white/80 px-2 py-0.5 rounded-full border border-teal-200">
-                {status.phase === 'ovulation' ? 'Peak Fertile Today 🌟' : `Fertile Window in ${status.daysUntilOvulation}d`}
+                {status.phase === 'ovulation' ? 'Peak Fertile Today ✨' : `Fertile Window in ${status.daysUntilOvulation}d`}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">🌡️</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center shadow-xs">
+              <Thermometer className="w-8 h-8 text-[#00ACC1]" />
             </div>
             <div className="w-9 h-9 rounded-full bg-[#00ACC1]/20 group-hover:bg-[#00ACC1] text-[#00838F] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
@@ -104,7 +104,7 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
         </button>
 
-        {/* 3. Future Baby AI Generator (From Parents Photo) */}
+        {/* 3. Future Baby AI Generator */}
         <button
           onClick={() => onNavigateTab('babyai')}
           className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF0F5] via-[#FCE4EC] to-[#F3E5F5] border-2 border-pink-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group relative overflow-hidden"
@@ -121,14 +121,14 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
             </p>
             <div className="pt-1 flex items-center gap-1.5">
               <span className="text-[10px] font-bold text-[#D81B60] bg-white/90 px-2 py-0.5 rounded-full border border-pink-200">
-                Photo Upload • Eye/Hair Genetics • Traits
+                Photo Upload • Eye/Hair Genetics
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center text-2xl shadow-xs border border-pink-100">
-              <span className="text-3xl">👶</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center shadow-xs border border-pink-100">
+              <Baby className="w-8 h-8 text-[#EC407A]" />
             </div>
             <div className="w-9 h-9 rounded-full bg-[#EC407A]/20 group-hover:bg-[#EC407A] text-[#D81B60] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
@@ -156,8 +156,8 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">🤰</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center shadow-xs">
+              <Activity className="w-8 h-8 text-[#FB8C00]" />
             </div>
             <div className="w-9 h-9 rounded-full bg-[#FB8C00]/20 group-hover:bg-[#FB8C00] text-[#E65100] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
@@ -185,8 +185,8 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">🧘‍♀️</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center shadow-xs text-purple-600">
+              <Zap className="w-8 h-8" />
             </div>
             <div className="w-9 h-9 rounded-full bg-[#8E24AA]/20 group-hover:bg-[#8E24AA] text-[#7B1FA2] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
@@ -194,7 +194,7 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
         </button>
 
-        {/* 5. Gemini AI Health Companion & Specialist Chat */}
+        {/* 5. Aura AI Chat */}
         <button
           onClick={() => onNavigateTab('aichat')}
           className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF0F5] via-[#F8E8FF] to-[#EDE7F6] border-2 border-pink-300 shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group relative overflow-hidden"
@@ -217,8 +217,8 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center text-2xl shadow-xs border border-pink-100">
-              <span className="text-3xl">💬</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center shadow-xs border border-pink-100">
+              <MessageCircle className="w-8 h-8 text-purple-500" />
             </div>
             <div className="w-9 h-9 rounded-full bg-purple-500/20 group-hover:bg-purple-600 text-purple-700 group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
@@ -240,13 +240,13 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
             </p>
             <div className="pt-1">
               <span className="text-[10px] font-bold text-[#2E7D32] bg-white/80 px-2 py-0.5 rounded-full border border-green-200">
-                Endo & PCOS ML Risk Scans
+                ML Diagnostic V3 Active
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs text-emerald-600">
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center shadow-xs text-emerald-600">
               <Activity className="w-8 h-8" />
             </div>
             <div className="w-9 h-9 rounded-full bg-emerald-500/20 group-hover:bg-emerald-500 text-emerald-700 group-hover:text-white flex items-center justify-center transition-colors">
@@ -275,48 +275,19 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">🌿</span>
+            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center shadow-xs">
+              <Leaf className="w-8 h-8 text-[#FB8C00]" />
             </div>
             <div className="w-9 h-9 rounded-full bg-[#FB8C00]/20 group-hover:bg-[#FB8C00] text-[#E65100] group-hover:text-white flex items-center justify-center transition-colors">
               <ArrowRight className="w-4 h-4" />
             </div>
           </div>
         </button>
-
-        {/* 5. Symptoms & Quick Diary Card */}
-        <button
-          onClick={onOpenLogModal}
-          className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#E3F2FD] to-[#E8EAF6] border border-[#BBDEFB] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group"
-        >
-          <div className="space-y-1">
-            <h3 className="text-base font-black font-['Fredoka'] text-[#2D1B2D]">
-              Symptoms
-            </h3>
-            <p className="text-xs font-semibold text-[#875C66]">
-              Log and monitor your daily symptoms
-            </p>
-            <div className="pt-1">
-              <span className="text-[10px] font-bold text-[#1565C0] bg-white/80 px-2 py-0.5 rounded-full border border-blue-200">
-                {todayLog?.symptoms?.length ? `${todayLog.symptoms.length} Logged Today` : '+ Quick Daily Check-in'}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center text-2xl shadow-xs">
-              <span className="text-3xl">🔋</span>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-[#1E88E5]/20 group-hover:bg-[#1E88E5] text-[#1565C0] group-hover:text-white flex items-center justify-center transition-colors">
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </div>
-        </button>
       </div>
 
-      {/* Quote Banner matching Image 3 */}
+      {/* Quote Banner */}
       <div className="p-4 rounded-3xl bg-white border border-pink-100 shadow-sm flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-xl shrink-0">
+        <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
           <Heart className="w-5 h-5 text-[#E91E63] fill-[#E91E63]" />
         </div>
         <p className="text-xs font-bold text-[#4A2E35] leading-snug">

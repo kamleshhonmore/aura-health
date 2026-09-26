@@ -38,6 +38,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [tempUnit, setTempUnit] = useState(settings.tempUnit);
   const [weightUnit, setWeightUnit] = useState(settings.weightUnit);
   const [waterGoal, setWaterGoal] = useState(settings.waterGoalGlasses);
+  const [userAge, setUserAge] = useState(settings.userAge);
+  const [userHeight, setUserHeight] = useState(settings.userHeight);
+  const [userWeight, setUserWeight] = useState(settings.userWeight);
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('aura_gemini_api_key') || '');
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -53,6 +56,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       tempUnit,
       weightUnit,
       waterGoalGlasses: waterGoal,
+      userAge,
+      userHeight,
+      userWeight,
     });
     onClose();
   };
@@ -88,6 +94,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         <div className="p-5 space-y-4 text-sm max-h-[75vh] overflow-y-auto">
+          {/* Section 0: User Profile */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-rose-50/50 border border-rose-100">
+            <h4 className="font-black font-['Fredoka'] text-xs text-rose-900 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-rose-500" />
+              Biometric Profile
+            </h4>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-rose-800 uppercase">Age</label>
+                <input
+                  type="number"
+                  value={userAge}
+                  onChange={(e) => setUserAge(Math.max(12, Math.min(95, parseInt(e.target.value) || 0)))}
+                  className="w-full px-2 py-2 rounded-xl bg-white border border-rose-200 text-center font-bold text-rose-900 focus:ring-1 focus:ring-rose-400"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-rose-800 uppercase">Height (cm)</label>
+                <input
+                  type="number"
+                  value={userHeight}
+                  onChange={(e) => setUserHeight(Math.max(100, Math.min(220, parseInt(e.target.value) || 0)))}
+                  className="w-full px-2 py-2 rounded-xl bg-white border border-rose-200 text-center font-bold text-rose-900 focus:ring-1 focus:ring-rose-400"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-rose-800 uppercase">Weight ({weightUnit})</label>
+                <input
+                  type="number"
+                  value={userWeight}
+                  onChange={(e) => setUserWeight(Math.max(30, Math.min(300, parseInt(e.target.value) || 0)))}
+                  className="w-full px-2 py-2 rounded-xl bg-white border border-rose-200 text-center font-bold text-rose-900 focus:ring-1 focus:ring-rose-400"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Section 1: Cycle Parameters */}
           <div className="space-y-3 p-3.5 rounded-2xl bg-[#FFF9FA] border border-pink-100">
             <h4 className="font-black font-['Fredoka'] text-xs text-[#4A2E35] flex items-center gap-1.5">

@@ -28,12 +28,12 @@ export const StatusCard: React.FC<StatusCardProps> = ({
     headline = `Day ${status.currentCycleDay} of Period`;
     subText = `Predicted to last ~${status.periodLength} days`;
     badgeColor = 'bg-[#FF5376] text-white';
-    badgeText = '🩸 Menstruation Active';
+    badgeText = 'Menstruation Active';
   } else if (status.phase === 'ovulation') {
-    headline = 'Ovulation Day! 🌟';
+    headline = 'Ovulation Day! ✨';
     subText = 'Peak fertility today • 33% chance';
     badgeColor = 'bg-[#FFB300] text-[#4A3200]';
-    badgeText = '✨ Peak Ovulation';
+    badgeText = 'Peak Ovulation';
   } else if (status.phase === 'fertile') {
     headline = 'Fertile Window 🌸';
     subText = `Ovulation predicted in ~${Math.max(1, status.daysUntilOvulation)} days`;
@@ -43,7 +43,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
     headline = `Period in ${status.daysUntilNextPeriod} Days`;
     subText = `Next cycle begins ~${status.nextPeriodDate}`;
     badgeColor = 'bg-[#F48FB1] text-white';
-    badgeText = `🌸 Cycle Day ${status.currentCycleDay}/${status.totalCycleDays}`;
+    badgeText = `Cycle Day ${status.currentCycleDay}/${status.totalCycleDays}`;
   }
 
   // Ring arc math

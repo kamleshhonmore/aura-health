@@ -26,12 +26,21 @@ public class OnnxPredictorPlugin extends Plugin {
         super.load();
         try {
             env = OrtEnvironment.getEnvironment();
-            InputStream inputStream = getContext().getAssets().open("pcos_app_model.onnx");
-            byte[] modelBytes = new byte[inputStream.available()];
-            inputStream.read(modelBytes);
+            // Load the new v3 model with internal scaling
+            InputStream inputStream = getContext().getAssets().open("pcos_app_model_v3.onnx");
+            int size = inputStream.available();
+            byte[] buffer = new byte[size];
+            int read = inputStream.read(buffer);
             inputStream.close();
-            session = env.createSession(modelBytes);
+            
+            if (read != size) {
+                throw new Exception("Failed to read the complete model file");
+            }
+            
+            session = env.createSession(buffer);
+            System.out.println("ONNX Runtime v3: Model loaded successfully from assets.");
         } catch (Exception e) {
+            System.err.println("ONNX Runtime: Failed to load model - " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -39,43 +48,40 @@ public class OnnxPredictorPlugin extends Plugin {
     @PluginMethod
     public void runInference(PluginCall call) {
         if (session == null) {
-            call.reject("Model not loaded");
+            call.reject("Model not initialized.");
             return;
         }
 
         try {
-            JSArray inputData = call.getArray("data");
-            if (inputData == null) {
-                call.reject("Input data is missing");
+            JSArray data = call.getArray("data");
+            if (data == null || data.length() < 16) {
+                call.reject("Invalid input vector. Expected 16 features for v3 model.");
                 return;
             }
 
-            float[] floatInput = new float[inputData.length()];
-            for (int i = 0; i < inputData.length(); i++) {
-                floatInput[i] = (float) inputData.getDouble(i);
+            // --- V3 DIRECT PASS: No Manual Scaling, 16 Features ---
+            float[] processedInput = new float[16];
+            for (int i = 0; i < 16; i++) {
+                processedInput[i] = (float) data.getDouble(i);
             }
 
-            // Create input tensor (assuming [1, N] shape for small models)
-            long[] shape = new long[]{1, floatInput.length};
-            OnnxTensor inputTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(floatInput), shape);
-            
-            // Get the first input name from the model
+            // Assemble tensor and run
             String inputName = session.getInputNames().iterator().next();
-            
-            // Run inference
-            OrtSession.Result result = session.run(Collections.singletonMap(inputName, inputTensor));
-            
-            // Assume the first output is what we want
-            float[][] output = (float[][]) result.get(0).getValue();
-            
-            JSObject ret = new JSObject();
-            JSArray outArray = new JSArray();
-            for (float f : output[0]) {
-                outArray.put(f);
-            }
-            ret.put("results", outArray);
-            call.resolve(ret);
+            long[] shape = new long[]{1, 16};
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(processedInput), shape);
 
+            try (OrtSession.Result result = session.run(Collections.singletonMap(inputName, inputTensor))) {
+                JSObject response = new JSObject();
+                
+                // Extract label and probabilities
+                long label = ((long[]) result.get(0).getValue())[0];
+                float[][] probs = (float[][]) result.get(1).getValue();
+                
+                // Pass raw probabilities directly (v3 model handles bias internally)
+                response.put("probability", probs[0][1]);
+                response.put("label", (int) label);
+                call.resolve(response);
+            }
         } catch (Exception e) {
             call.reject("Inference failed: " + e.getMessage());
         }
