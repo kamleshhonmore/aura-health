@@ -18,7 +18,7 @@ import {
   Sliders,
   Sparkle,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface FutureBabyGeneratorProps {
   onBack?: () => void;
@@ -153,7 +153,7 @@ export const FutureBabyGenerator: React.FC<FutureBabyGeneratorProps> = ({ onBack
     setTimeout(() => {
       setBabyIndex((prev) => prev + 1);
       setIsGenerating(false);
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },

@@ -30,6 +30,9 @@ import { FutureBabyGenerator } from './components/FutureBabyGenerator';
 import { ClinicalDiagnosticsHub } from './components/ClinicalDiagnosticsHub';
 import { PerimenopauseScreen } from './components/PerimenopauseScreen';
 import { GeminiChatbot } from './components/GeminiChatbot';
+import { NavDock } from './components/NavDock';
+import { SleekSymptomLogger } from './components/SleekSymptomLogger';
+import { InteractiveIntakeWizard } from './components/InteractiveIntakeWizard';
 
 import { DailyLogModal } from './components/DailyLogModal';
 import { ThemeModal } from './components/ThemeModal';
@@ -40,17 +43,11 @@ import { SettingsModal } from './components/SettingsModal';
 import {
   Home,
   LayoutGrid,
-  Leaf,
   Calendar as CalendarIcon,
-  BarChart2,
-  Sparkles,
-  PlusCircle,
-  Baby,
-  MessageSquare,
   Bot,
-  Activity,
+  PlusCircle,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from './utils/confetti';
 import { motion, AnimatePresence } from 'motion/react';
 
 function safeStorageLoad<T>(key: string, fallback: T): T {
@@ -111,7 +108,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<
     'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat'
   >('home');
-  const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('scenic');
+  const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('desk');
 
   // Modals state
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -121,6 +118,7 @@ export function App() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isPinSetupOpen, setIsPinSetupOpen] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
+  const [isInteractiveWizardOpen, setIsInteractiveWizardOpen] = useState(false);
 
   // Sync to local storage
   useEffect(() => {
@@ -155,7 +153,6 @@ export function App() {
     const nextLogs = { ...logs, [dateStr]: log };
     setLogs(nextLogs);
 
-    // If marked as period, check if it updates lastPeriodStart
     if (log.isPeriod) {
       if (dateStr > lastPeriodStart) {
         setLastPeriodStart(dateStr);
@@ -187,11 +184,11 @@ export function App() {
     };
     handleSaveLog(todayStr, updated);
     if (!isCurrentlyPeriod) {
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 60,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#FF5376', '#FF758C', '#FF8FA3'],
+        colors: ['#FF5376', '#10B981', '#F59E0B'],
       });
     }
   };
@@ -293,10 +290,10 @@ export function App() {
   };
 
   return (
-    <div className={`min-h-screen ${currentTheme.bgMain} flex flex-col font-['Nunito'] antialiased transition-colors`}>
-      {/* Mobile App Canvas Container */}
-      <div className="w-full max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative bg-transparent pb-24">
-        {/* Top App Header */}
+    <div className={`min-h-screen ${currentTheme.bgMain} flex flex-col font-['Nunito'] antialiased transition-colors text-[#1A1A24]`}>
+      {/* Mobile App Frame Container */}
+      <div className="w-full max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative bg-[#F8F9FC] pb-24 border-x border-[#EAECEF]">
+        {/* Top Header */}
         <DeskHeader
           theme={currentTheme}
           pet={currentPet}
@@ -309,16 +306,17 @@ export function App() {
           onOpenReminders={() => setIsRemindersModalOpen(true)}
           onOpenSettings={() => setIsSettingsModalOpen(true)}
           onOpenAiChat={() => setActiveTab('aichat')}
+          onSearchClick={() => setActiveTab('hub')}
           onTogglePregnancy={() => {
             const nextMode = !settings.isPregnancyMode;
             handleUpdateSettings({ isPregnancyMode: nextMode });
             if (nextMode) {
               setActiveTab('pregnancy');
-              confetti({
+              fireCelebrationConfetti({
                 particleCount: 80,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ['#FFB74D', '#FF8A65', '#FF80AB'],
+                colors: ['#F59E0B', '#FF5376', '#7C3AED'],
               });
             } else {
               setActiveTab('home');
@@ -328,20 +326,18 @@ export function App() {
         />
 
         {/* Main Tab Content View */}
-        <main className="flex-1 p-3.5 overflow-x-hidden overflow-y-auto">
+        <main className="flex-1 p-4 overflow-x-hidden overflow-y-auto">
           <AnimatePresence mode="wait">
-            {/* TAB 1: HOME (Scenic or Desk) */}
             {activeTab === 'home' && (
               <motion.div
                 key="home"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-                className="space-y-3.5"
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="space-y-4"
               >
                 {homeViewStyle === 'scenic' ? (
-                  /* Scenic View matching Image 4 */
                   <ScenicCountdownView
                     status={cycleStatus}
                     theme={currentTheme}
@@ -355,7 +351,6 @@ export function App() {
                     onOpenAiChat={() => setActiveTab('aichat')}
                   />
                 ) : (
-                  /* Classic Desk View */
                   <>
                     <StatusCard
                       status={cycleStatus}
@@ -365,13 +360,22 @@ export function App() {
                       onOpenCalendar={() => setActiveTab('calendar')}
                     />
 
-                    <PetMascot
-                      pet={currentPet}
-                      theme={currentTheme}
-                      cyclePhase={cycleStatus.phase}
-                      isWaterGoalReached={(todayLog?.waterGlasses || 0) >= settings.waterGoalGlasses}
-                      onOpenPetSelector={() => setIsThemeModalOpen(true)}
-                    />
+                    {/* Interactive Wellness Intake Flow Banner */}
+                    <div
+                      onClick={() => setIsInteractiveWizardOpen(true)}
+                      className="p-4 bg-gradient-to-r from-[#F4EBE6] to-[#FAF3F0] rounded-2xl border border-[#C86D51]/30 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#C86D51] flex items-center justify-center text-white text-xl">
+                          🪷
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-[#2C2A29]">Interactive Wellness Intake Flow</h4>
+                          <p className="text-xs text-[#7A7571]">Calming intro, branching logic, visual chips & zero typing</p>
+                        </div>
+                      </div>
+                      <span className="text-[#C86D51] font-bold text-sm">→</span>
+                    </div>
 
                     <WaterTracker
                       currentGlasses={todayLog?.waterGlasses || 0}
@@ -388,25 +392,31 @@ export function App() {
                       onTogglePill={handleTogglePillToday}
                     />
 
-                    <QuickLogBar
+                    <SleekSymptomLogger
+                      currentPhase={
+                        cycleStatus.phase === 'period'
+                          ? 'Period'
+                          : cycleStatus.phase === 'fertile' || cycleStatus.phase === 'ovulation'
+                          ? 'Follicular'
+                          : 'Luteal'
+                      }
                       todayLog={todayLog}
                       theme={currentTheme}
-                      onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
                       onToggleSymptom={handleToggleQuickSymptom}
+                      onOpenLogModal={() => handleOpenLogModalForDate(todayStr)}
                     />
                   </>
                 )}
               </motion.div>
             )}
 
-            {/* TAB 2: HUB ("Understand Your Body" matching Image 3) */}
             {activeTab === 'hub' && (
               <motion.div
                 key="hub"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <CategoryHub
                   status={cycleStatus}
@@ -419,27 +429,25 @@ export function App() {
               </motion.div>
             )}
 
-            {/* TAB 3: AYURVEDA ("Ancient Remedies" matching Image 5 & Image 6) */}
             {activeTab === 'ayurveda' && (
               <motion.div
                 key="ayurveda"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <AyurvedicHub />
               </motion.div>
             )}
 
-            {/* TAB 4: CALENDAR */}
             {activeTab === 'calendar' && (
               <motion.div
                 key="calendar"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <CalendarView
                   theme={currentTheme}
@@ -455,14 +463,13 @@ export function App() {
               </motion.div>
             )}
 
-            {/* TAB 5: CHARTS / ANALYSIS */}
             {activeTab === 'charts' && (
               <motion.div
                 key="charts"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <ChartsView
                   theme={currentTheme}
@@ -474,16 +481,15 @@ export function App() {
               </motion.div>
             )}
 
-            {/* TAB 10: CLINICAL AI */}
             {activeTab === 'clinical' && (
               <motion.div
                 key="clinical"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
-                <ClinicalDiagnosticsHub 
+                <ClinicalDiagnosticsHub
                   theme={currentTheme}
                   settings={settings}
                   todayLog={todayLog}
@@ -494,27 +500,25 @@ export function App() {
               </motion.div>
             )}
 
-            {/* TAB 6: BABY AI / FUTURE BABY GENERATOR matching Image 1 */}
             {activeTab === 'babyai' && (
               <motion.div
                 key="babyai"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <FutureBabyGenerator onBack={() => setActiveTab('hub')} />
               </motion.div>
             )}
 
-            {/* TAB 7: PREGNANCY MODE */}
             {activeTab === 'pregnancy' && (
               <motion.div
                 key="pregnancy"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <PregnancyModeView
                   settings={settings}
@@ -525,14 +529,13 @@ export function App() {
               </motion.div>
             )}
 
-            {/* TAB 8: PERI-MENOPAUSE CARE */}
             {activeTab === 'perimenopause' && (
               <motion.div
                 key="perimenopause"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <PerimenopauseScreen
                   theme={currentTheme}
@@ -542,14 +545,13 @@ export function App() {
               </motion.div>
             )}
 
-            {/* TAB 9: GEMINI AI MULTI-TURN CHATBOT */}
             {activeTab === 'aichat' && (
               <motion.div
                 key="aichat"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 <GeminiChatbot
                   theme={currentTheme}
@@ -563,80 +565,16 @@ export function App() {
           </AnimatePresence>
         </main>
 
-        {/* Floating Quick Action Button for Instant Logging */}
-        <div className="fixed bottom-20 right-1/2 translate-x-1/2 max-w-md w-full pointer-events-none flex justify-end px-4 z-40">
-          <button
-            onClick={() => handleOpenLogModalForDate(todayStr)}
-            title="Quick Daily Log"
-            className="pointer-events-auto p-3.5 rounded-full bg-gradient-to-r from-[#FF758C] to-[#FF7EB3] hover:from-[#FF6580] hover:to-[#FF6F9A] text-white shadow-xl shadow-pink-500/30 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all border-2 border-white"
-          >
-            <PlusCircle className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Modern Bottom Navigation Bar */}
-        <nav
-          className={`fixed bottom-0 left-1/2 -translate-x-1/2 max-w-md w-full ${currentTheme.bgCard} border-t ${currentTheme.borderCard} px-1 py-2 flex items-center justify-around z-40 shadow-xl backdrop-blur-lg`}
-        >
-          {/* Home */}
-          <button
-            onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'home'
-                ? 'text-[#FF5376] font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <Home className={`w-4.5 h-4.5 ${activeTab === 'home' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Home</span>
-          </button>
-
-          {/* Calendar */}
-          <button
-            onClick={() => setActiveTab('calendar')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'calendar'
-                ? 'text-[#FF5376] font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <CalendarIcon className={`w-4.5 h-4.5 ${activeTab === 'calendar' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Calendar</span>
-          </button>
-
-          {/* Hub */}
-          <button
-            onClick={() => setActiveTab('hub')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer ${
-              activeTab === 'hub'
-                ? 'text-[#FF5376] font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <LayoutGrid className={`w-4.5 h-4.5 ${activeTab === 'hub' ? 'stroke-[2.5]' : ''}`} />
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">Hub</span>
-          </button>
-
-          {/* AI Chat (Gemini) */}
-          <button
-            onClick={() => setActiveTab('aichat')}
-            className={`flex flex-col items-center py-1 px-1.5 rounded-2xl transition-all cursor-pointer relative ${
-              activeTab === 'aichat'
-                ? 'text-purple-600 font-black scale-105'
-                : `${currentTheme.textMuted} hover:${currentTheme.textSecondary}`
-            }`}
-          >
-            <div className="relative">
-              <Bot className={`w-4.5 h-4.5 ${activeTab === 'aichat' ? 'stroke-[2.5]' : ''}`} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 animate-ping" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500" />
-            </div>
-            <span className="text-[10px] font-['Fredoka'] mt-0.5">AI Chat</span>
-          </button>
-        </nav>
+        {/* Floating Glassmorphic Navigation Dock */}
+        {!(isLogModalOpen || isThemeModalOpen || isRemindersModalOpen || isSettingsModalOpen || isPinSetupOpen || isAppLocked) && (
+          <NavDock
+            activeTab={activeTab}
+            onTabChange={(tab) => setActiveTab(tab === 'ai' ? 'aichat' : (tab as any))}
+          />
+        )}
       </div>
 
-      {/* Daily Diary Modal */}
+      {/* Modals */}
       <DailyLogModal
         isOpen={isLogModalOpen}
         dateStr={logModalDate}
@@ -649,7 +587,6 @@ export function App() {
         onDeleteLog={handleDeleteLog}
       />
 
-      {/* Theme and Pet Picker Modal */}
       <ThemeModal
         isOpen={isThemeModalOpen}
         currentTheme={settings.theme}
@@ -660,7 +597,6 @@ export function App() {
         onClose={() => setIsThemeModalOpen(false)}
       />
 
-      {/* Reminders & Alarms Modal */}
       <RemindersModal
         isOpen={isRemindersModalOpen}
         settings={settings}
@@ -669,7 +605,6 @@ export function App() {
         onClose={() => setIsRemindersModalOpen(false)}
       />
 
-      {/* App Settings Modal */}
       <SettingsModal
         isOpen={isSettingsModalOpen}
         settings={settings}
@@ -679,7 +614,6 @@ export function App() {
         onClose={() => setIsSettingsModalOpen(false)}
       />
 
-      {/* PIN Setup Modal */}
       {isPinSetupOpen && (
         <PinLockModal
           isOpen={isPinSetupOpen}
@@ -694,7 +628,6 @@ export function App() {
         />
       )}
 
-      {/* Active PIN Lock Screen */}
       {isAppLocked && (
         <PinLockModal
           isOpen={isAppLocked}
@@ -703,6 +636,12 @@ export function App() {
           onSuccess={() => setIsAppLocked(false)}
         />
       )}
+
+      <InteractiveIntakeWizard
+        isOpen={isInteractiveWizardOpen}
+        onClose={() => setIsInteractiveWizardOpen(false)}
+        onComplete={(data) => console.log('Intake completed:', data)}
+      />
     </div>
   );
 }

@@ -178,66 +178,119 @@ fun QuizQuestionnaireView(
 
       Spacer(modifier = Modifier.height(20.dp))
 
-      // Options
-      Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        currentQuestion.options.forEach { option ->
-          val isSelected = uiState.selectedOptionIds.contains(option.id)
-
-          Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = if (isSelected) BlushRoseContainer else AuraSurface,
-            border = androidx.compose.foundation.BorderStroke(
-              1.dp,
-              if (isSelected) BlushRose else GlassStroke
-            ),
-            modifier = Modifier
-              .fillMaxWidth()
-              .clip(RoundedCornerShape(20.dp))
-              .clickable { onSelectOption(currentQuestion, option.id) }
-          ) {
+      // Options with InputType support (Segmented, Chips Grid, Cards)
+      if (currentQuestion.inputType == QuizInputType.CHIPS_GRID) {
+        val chunked = currentQuestion.options.chunked(2)
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+          chunked.forEach { rowOptions ->
             Row(
-              modifier = Modifier.padding(16.dp),
-              verticalAlignment = Alignment.CenterVertically
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-              Box(
-                modifier = Modifier
-                  .size(24.dp)
-                  .clip(CircleShape)
-                  .background(if (isSelected) BlushRose else AuraSurfaceVariant)
-                  .border(
+              rowOptions.forEach { option ->
+                val isSelected = uiState.selectedOptionIds.contains(option.id)
+                Surface(
+                  shape = RoundedCornerShape(16.dp),
+                  color = if (isSelected) BlushRoseContainer else AuraSurface,
+                  border = androidx.compose.foundation.BorderStroke(
                     1.dp,
-                    if (isSelected) BlushRose else TextMuted,
-                    CircleShape
+                    if (isSelected) BlushRose else GlassStroke
                   ),
-                contentAlignment = Alignment.Center
-              ) {
-                if (isSelected) {
-                  Icon(
-                    imageVector = Icons.Rounded.Check,
-                    contentDescription = null,
-                    tint = TextOnAccent,
-                    modifier = Modifier.size(16.dp)
-                  )
+                  modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { onSelectOption(currentQuestion, option.id) }
+                ) {
+                  Column(
+                    modifier = Modifier.padding(14.dp),
+                    horizontalAlignment = Alignment.Start
+                  ) {
+                    if (option.icon.isNotEmpty()) {
+                      Text(text = option.icon, fontSize = 22.sp)
+                      Spacer(modifier = Modifier.height(6.dp))
+                    }
+                    Text(
+                      text = option.title,
+                      style = MaterialTheme.typography.labelMedium,
+                      color = TextPrimary,
+                      fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                      maxLines = 2
+                    )
+                  }
                 }
               }
+              if (rowOptions.size == 1) {
+                Spacer(modifier = Modifier.weight(1f))
+              }
+            }
+          }
+        }
+      } else {
+        // Standard list / Cards / Segmented with Icons
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+          currentQuestion.options.forEach { option ->
+            val isSelected = uiState.selectedOptionIds.contains(option.id)
 
-              Spacer(modifier = Modifier.width(14.dp))
+            Surface(
+              shape = RoundedCornerShape(20.dp),
+              color = if (isSelected) BlushRoseContainer else AuraSurface,
+              border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (isSelected) BlushRose else GlassStroke
+              ),
+              modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .clickable { onSelectOption(currentQuestion, option.id) }
+            ) {
+              Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                if (option.icon.isNotEmpty()) {
+                  Text(text = option.icon, fontSize = 24.sp)
+                  Spacer(modifier = Modifier.width(12.dp))
+                } else {
+                  Box(
+                    modifier = Modifier
+                      .size(24.dp)
+                      .clip(CircleShape)
+                      .background(if (isSelected) BlushRose else AuraSurfaceVariant)
+                      .border(
+                        1.dp,
+                        if (isSelected) BlushRose else TextMuted,
+                        CircleShape
+                      ),
+                    contentAlignment = Alignment.Center
+                  ) {
+                    if (isSelected) {
+                      Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = null,
+                        tint = TextOnAccent,
+                        modifier = Modifier.size(16.dp)
+                      )
+                    }
+                  }
+                  Spacer(modifier = Modifier.width(14.dp))
+                }
 
-              Column(modifier = Modifier.weight(1f)) {
-                Text(
-                  text = option.title,
-                  style = MaterialTheme.typography.labelLarge,
-                  color = if (isSelected) TextPrimary else TextPrimary,
-                  fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                )
-                if (option.subtitle.isNotEmpty()) {
-                  Spacer(modifier = Modifier.height(2.dp))
+                Column(modifier = Modifier.weight(1f)) {
                   Text(
-                    text = option.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary,
-                    fontSize = 12.sp
+                    text = option.title,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextPrimary,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                   )
+                  if (option.subtitle.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                      text = option.subtitle,
+                      style = MaterialTheme.typography.bodySmall,
+                      color = TextSecondary,
+                      fontSize = 12.sp
+                    )
+                  }
                 }
               }
             }
@@ -246,7 +299,28 @@ fun QuizQuestionnaireView(
       }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(8.dp))
+
+    // Friendly Inline Validation & Auto-save status
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = if (hasSelectionForCurrent) "✓ Ready to proceed" else "⚡ Tap an option to continue",
+        style = MaterialTheme.typography.bodySmall,
+        color = if (hasSelectionForCurrent) SageGreen else ChampagneGold,
+        fontWeight = FontWeight.Medium
+      )
+      Text(
+        text = "💾 Progress auto-saved",
+        style = MaterialTheme.typography.bodySmall,
+        color = TextMuted
+      )
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
 
     // Navigation Buttons Row
     Row(

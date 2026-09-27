@@ -26,11 +26,19 @@ enum class PcosRiskLevel(
   )
 }
 
+enum class QuizInputType {
+  SEGMENTED,   // 2 to 4 choices -> Instant mutual-exclusion tapping
+  CHIPS_GRID,  // 4 to 6 choices -> Visual Option Chips (2x3 grid)
+  CARDS,       // Complex choices -> Large Interactive Cards with Icons/Emojis
+  SLIDER       // Numbers / Ranges -> Sliders or Steppers (+ / -)
+}
+
 data class QuizOption(
   val id: String,
   val title: String,
   val subtitle: String = "",
-  val points: Int = 0
+  val points: Int = 0,
+  val icon: String = "" // Emoji or visual icon representation
 )
 
 data class QuizQuestion(
@@ -39,6 +47,7 @@ data class QuizQuestion(
   val title: String,
   val explanation: String,
   val isMultiSelect: Boolean = false,
+  val inputType: QuizInputType = QuizInputType.CARDS,
   val options: List<QuizOption>
 )
 

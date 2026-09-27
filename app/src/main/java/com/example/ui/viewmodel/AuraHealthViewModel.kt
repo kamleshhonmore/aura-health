@@ -19,6 +19,8 @@ data class AuraUiState(
   val currentScreenIndex: Int = 0, // 0: Home, 1: PCOS, 2: Vision Scanner, 3: Insights
   val isLogSheetOpen: Boolean = false,
   val isNotificationSheetOpen: Boolean = false,
+  val isInteractiveIntakeOpen: Boolean = false,
+  val intakeSteps: List<IntakeStepData> = emptyList(),
   val notifications: List<Pair<String, String>> = emptyList(),
   val unreadNotifications: Int = 2,
   
@@ -67,6 +69,7 @@ class AuraHealthViewModel(
     val trends = repository.getHistoricalTrends()
     val summary = repository.getCycleSummary()
     val notifications = repository.getNotifications()
+    val intakeSteps = repository.getIntakeSteps()
 
     _uiState.update {
       it.copy(
@@ -81,6 +84,7 @@ class AuraHealthViewModel(
         historicalTrends = trends,
         cycleSummary = summary,
         notifications = notifications,
+        intakeSteps = intakeSteps,
         unreadNotifications = notifications.size
       )
     }
@@ -88,6 +92,14 @@ class AuraHealthViewModel(
 
   fun setScreen(index: Int) {
     _uiState.update { it.copy(currentScreenIndex = index) }
+  }
+
+  fun openInteractiveIntake() {
+    _uiState.update { it.copy(isInteractiveIntakeOpen = true) }
+  }
+
+  fun closeInteractiveIntake() {
+    _uiState.update { it.copy(isInteractiveIntakeOpen = false) }
   }
 
   fun openLogSheet() {

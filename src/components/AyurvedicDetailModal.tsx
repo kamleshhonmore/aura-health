@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface AyurvedicDetailModalProps {
   concern: AyurvedicConcern;
@@ -39,7 +39,7 @@ export const AyurvedicDetailModal: React.FC<AyurvedicDetailModalProps> = ({
       }, 1000);
     } else if (brewTimerSeconds === 0 && isBrewing) {
       setIsBrewing(false);
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 50,
         spread: 50,
         origin: { y: 0.6 },

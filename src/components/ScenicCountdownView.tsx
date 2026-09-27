@@ -14,7 +14,7 @@ import {
   Umbrella,
   Waves,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface ScenicCountdownViewProps {
   status: CycleStatus;
@@ -207,7 +207,7 @@ export const ScenicCountdownView: React.FC<ScenicCountdownViewProps> = ({
             {pregnancyChanceText}
           </p>
 
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col gap-1.5">
             <button
               onClick={onTogglePeriodToday}
               className={`w-full py-1.5 px-3 rounded-xl text-[11px] font-black font-['Fredoka'] cursor-pointer transition-all ${
@@ -217,6 +217,12 @@ export const ScenicCountdownView: React.FC<ScenicCountdownViewProps> = ({
               }`}
             >
               {status.isPeriodToday ? 'Period Active (Tap to Edit)' : '+ Period Started'}
+            </button>
+            <button
+              onClick={onOpenLogModal}
+              className="w-full py-1.5 px-3 rounded-xl text-[11px] font-black font-['Fredoka'] bg-white border border-pink-200 text-[#FF5376] hover:bg-pink-50 cursor-pointer shadow-xs flex items-center justify-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" /> Log Symptoms
             </button>
           </div>
         </div>
@@ -244,16 +250,6 @@ export const ScenicCountdownView: React.FC<ScenicCountdownViewProps> = ({
             {dailyQuotes[quoteIdx]}
           </p>
         </div>
-
-        {/* Red/Coral Circular Floating Action Button "+ Log" matching Image 4 */}
-        <button
-          onClick={onOpenLogModal}
-          title="Quick Log"
-          className="absolute bottom-16 right-5 z-20 w-14 h-14 rounded-full bg-gradient-to-tr from-[#E53935] to-[#FF5252] hover:from-[#D32F2F] hover:to-[#FF1744] text-white shadow-xl shadow-red-500/40 flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all border-2 border-white"
-        >
-          <Plus className="w-5 h-5 stroke-[3]" />
-          <span className="text-[9px] font-black font-['Fredoka'] uppercase tracking-wider">Log</span>
-        </button>
       </div>
     </div>
   );

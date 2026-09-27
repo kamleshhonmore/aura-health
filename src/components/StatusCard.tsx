@@ -1,7 +1,7 @@
 import React from 'react';
 import { CycleStatus } from '../utils/cycleCalculations';
 import { ThemeConfig } from '../types';
-import { Heart, Sparkles, Droplets, PlusCircle, Check, Calendar } from 'lucide-react';
+import { Heart, Droplets, PlusCircle, Sparkles } from 'lucide-react';
 
 interface StatusCardProps {
   status: CycleStatus;
@@ -18,7 +18,6 @@ export const StatusCard: React.FC<StatusCardProps> = ({
   onTogglePeriodToday,
   onOpenCalendar,
 }) => {
-  // Determine primary headline
   let headline = '';
   let subText = '';
   let badgeColor = '';
@@ -26,28 +25,27 @@ export const StatusCard: React.FC<StatusCardProps> = ({
 
   if (status.isPeriodToday) {
     headline = `Day ${status.currentCycleDay} of Period`;
-    subText = `Predicted to last ~${status.periodLength} days`;
+    subText = `Active period flow • ~${status.periodLength} days remaining`;
     badgeColor = 'bg-[#FF5376] text-white';
     badgeText = 'Menstruation Active';
   } else if (status.phase === 'ovulation') {
-    headline = 'Ovulation Day! ✨';
-    subText = 'Peak fertility today • 33% chance';
-    badgeColor = 'bg-[#FFB300] text-[#4A3200]';
+    headline = 'Ovulation Day';
+    subText = 'Peak fertility today • 33% conception probability';
+    badgeColor = 'bg-[#F59E0B] text-black font-bold';
     badgeText = 'Peak Ovulation';
   } else if (status.phase === 'fertile') {
-    headline = 'Fertile Window 🌸';
+    headline = 'Fertile Window';
     subText = `Ovulation predicted in ~${Math.max(1, status.daysUntilOvulation)} days`;
-    badgeColor = 'bg-[#81C784] text-[#1B4D20]';
-    badgeText = `🌱 Fertile (${status.conceptionPercent}%)`;
+    badgeColor = 'bg-[#10B981] text-white';
+    badgeText = `Fertile Window (${status.conceptionPercent}%)`;
   } else {
     headline = `Period in ${status.daysUntilNextPeriod} Days`;
     subText = `Next cycle begins ~${status.nextPeriodDate}`;
-    badgeColor = 'bg-[#F48FB1] text-white';
+    badgeColor = 'bg-purple-600 text-white';
     badgeText = `Cycle Day ${status.currentCycleDay}/${status.totalCycleDays}`;
   }
 
-  // Ring arc math
-  const size = 170;
+  const size = 150;
   const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -55,58 +53,58 @@ export const StatusCard: React.FC<StatusCardProps> = ({
   const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
   return (
-    <div
-      className={`relative rounded-3xl p-5 ${theme.bgCard} border ${theme.borderCard} ${theme.shadowColor} shadow-xl transition-all overflow-hidden`}
-    >
-      {/* Background soft ambient pastel blob */}
+    <div className="relative rounded-[32px] p-6 bg-white border border-[#EAECEF] shadow-xl transition-all overflow-hidden group card-stack-layer">
+      {/* Micro-glow ambient backdrop */}
       <div
-        className="absolute -top-12 -right-12 w-44 h-44 rounded-full pointer-events-none opacity-20 blur-2xl"
+        className="absolute -top-16 -right-16 w-52 h-52 rounded-full pointer-events-none opacity-25 blur-3xl glow-pink"
         style={{ backgroundColor: theme.accentPink }}
       />
 
-      <div className="flex items-center justify-between gap-4">
-        {/* Left: Info & Countdown */}
-        <div className="flex-1 space-y-2">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-xs ${badgeColor}`}>
+      <div className="flex items-center justify-between gap-4 relative z-10">
+        <div className="flex-1 space-y-3">
+          <span className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black shadow-xs ${badgeColor}`}>
+            <Sparkles className="w-3 h-3" />
             {badgeText}
           </span>
 
           <div>
-            <h2 className={`text-2xl font-black font-['Fredoka'] tracking-tight leading-tight ${theme.textPrimary}`}>
+            <h2 className="text-2xl font-black font-['Fredoka'] tracking-tight text-[#1A1A24] leading-tight">
               {headline}
             </h2>
-            <p className={`text-xs font-medium mt-0.5 ${theme.textSecondary}`}>
+            <p className="text-xs font-medium text-[#646478] mt-1 leading-relaxed">
               {subText}
             </p>
           </div>
 
           <div className="flex items-center gap-2 pt-1">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#E91E63] bg-[#FCE4EC] px-2.5 py-0.5 rounded-lg">
-              <Heart className="w-3 h-3 fill-[#E91E63]" />
-              Conception: {status.conceptionChance} ({status.conceptionPercent}%)
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#FF5376] bg-[#FFE3E9] px-3 py-1 rounded-full border border-pink-200">
+              <Heart className="w-3.5 h-3.5 fill-[#FF5376] text-[#FF5376]" />
+              Conception Chance: {status.conceptionChance}
             </span>
           </div>
         </div>
 
-        {/* Right: Circular Day Dial */}
-        <div className="relative flex items-center justify-center shrink-0">
+        {/* Circular Dial with Inner Layered Glass Effect */}
+        <div
+          onClick={onOpenCalendar}
+          title="View Calendar Details"
+          className="relative flex items-center justify-center shrink-0 cursor-pointer group-hover:scale-105 transition-transform"
+        >
           <svg width={size} height={size} className="transform -rotate-90">
-            {/* Background track */}
             <circle
               cx={size / 2}
               cy={size / 2}
               r={radius}
               fill="transparent"
-              stroke="#FCE4EC"
+              stroke="#F0F2F5"
               strokeWidth={strokeWidth}
             />
-            {/* Progress arc */}
             <circle
               cx={size / 2}
               cy={size / 2}
               r={radius}
               fill="transparent"
-              stroke={status.isPeriodToday ? '#FF5376' : status.phase === 'ovulation' ? '#FFB300' : theme.accentPink}
+              stroke={status.isPeriodToday ? '#FF5376' : status.phase === 'ovulation' ? '#F59E0B' : '#10B981'}
               strokeWidth={strokeWidth}
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -115,41 +113,40 @@ export const StatusCard: React.FC<StatusCardProps> = ({
             />
           </svg>
 
-          {/* Center Dial Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${theme.textMuted}`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2 rounded-full bg-white/40 backdrop-blur-xs">
+            <span className="text-[9px] font-black uppercase tracking-widest text-[#9696AA]">
               DAY
             </span>
-            <span className={`text-3xl font-black font-['Fredoka'] leading-none ${theme.textPrimary}`}>
+            <span className="text-3xl font-black font-['Fredoka'] text-[#1A1A24] leading-none">
               {status.currentCycleDay}
             </span>
-            <span className={`text-[10px] font-semibold ${theme.textSecondary}`}>
-              of {status.totalCycleDays} days
+            <span className="text-[9px] font-semibold text-[#646478]">
+              of {status.totalCycleDays}d
             </span>
           </div>
         </div>
       </div>
 
-      {/* Dual Big Action Buttons */}
-      <div className="grid grid-cols-2 gap-2.5 mt-4 pt-3 border-t border-pink-50">
+      {/* Embedded Action Bar */}
+      <div className="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-[#EAECEF] relative z-10">
         <button
           onClick={onTogglePeriodToday}
-          className={`py-2.5 px-3 rounded-2xl text-xs font-black font-['Fredoka'] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md ${
+          className={`py-3 px-4 rounded-2xl text-xs font-black font-['Fredoka'] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs ${
             status.isPeriodToday
-              ? 'bg-[#FF5376] hover:bg-[#E84365] text-white shadow-pink-200'
-              : 'bg-[#FFF0F3] hover:bg-[#FFE0E6] text-[#E91E63] border border-[#FFCDD2]'
+              ? 'bg-[#FF5376] hover:bg-[#E04365] text-white shadow-pink-200'
+              : 'bg-[#F4F6F9] hover:bg-[#EAECEF] text-[#1A1A24] border border-[#EAECEF]'
           }`}
         >
-          <Droplets className="w-4 h-4" />
+          <Droplets className="w-4 h-4 text-[#FF5376]" />
           {status.isPeriodToday ? 'Period Active (Edit)' : '+ Period Started'}
         </button>
 
         <button
           onClick={onOpenLogModal}
-          className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-[#FF758C] to-[#FF7EB3] hover:from-[#FF6580] hover:to-[#FF6F9A] text-white text-xs font-black font-['Fredoka'] flex items-center justify-center gap-1.5 shadow-md shadow-pink-200 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+          className="py-3 px-4 rounded-2xl bg-gradient-to-r from-[#FF5376] via-[#FF758C] to-[#FF8FA3] hover:from-[#E04365] hover:to-[#FF5376] text-white text-xs font-black font-['Fredoka'] flex items-center justify-center gap-2 shadow-md shadow-pink-200 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] glow-pink"
         >
           <PlusCircle className="w-4 h-4" />
-          Log Symptoms & Mood
+          Log Symptoms
         </button>
       </div>
     </div>

@@ -4,130 +4,130 @@ export const pets: Record<PetId, PetCompanion> = {
   kitty: {
     id: 'kitty',
     name: 'Mimi',
-    avatar: '🐱',
+    avatar: 'A',
     personality: 'Sweet & Playful Kitten',
     greetings: {
       period: [
-        'Meow~ Wrap yourself in a warm blanket today! 🍵',
-        'Here is a warm purr for your cramps. Rest well! 💕',
-        'Remember to drink warm water and take it easy, cutie! 🌸',
+        'Wrap yourself in a warm blanket today and rest well.',
+        'Here is warm support for your cramps. Rest well!',
+        'Remember to drink warm water and take it easy, cutie!',
       ],
       fertile: [
-        'Purr~ Your energy is shining bright today! ✨',
-        'Fertile window is here! You look glowing! 💖',
-        'Great day for light stretching and good vibes! 🌷',
+        'Your energy is shining bright today!',
+        'Fertile window is here! You look glowing!',
+        'Great day for light stretching and good vibes!',
       ],
       ovulation: [
-        'Peak ovulation day today! High sparkle energy! 🌟',
-        'Your body is at its peak harmony today! 💖',
+        'Peak ovulation day today! High sparkle energy!',
+        'Your body is at its peak harmony today!',
       ],
       standard: [
-        'Good morning, beautiful! Mimi is here with you! 🐾',
-        'Stay happy and keep smiling today! 🌸',
-        'Remember to log your mood today, nya~ ✨',
+        'Good morning, beautiful! Mimi is here with you!',
+        'Stay happy and keep smiling today!',
+        'Remember to log your mood today,nya~',
       ],
       waterGoal: [
-        'Purr-fect! You finished your water goal today! 💧🎉',
-        'Yay! Hydrated and radiant! Great job! 🌟',
+        'Purr-fect! You finished your water goal today!',
+        'Yay! Hydrated and radiant! Great job!',
       ],
     },
   },
   bunny: {
     id: 'bunny',
     name: 'Lulu',
-    avatar: '🐰',
+    avatar: 'B',
     personality: 'Gentle & Loving Bunny',
     greetings: {
       period: [
-        'Sending soft bunny hugs for your period day! 🌷',
-        'Rest your body, drink chamomile tea, and stay cozy! 🥕',
+        'Sending soft hugs for your period day!',
+        'Rest your body, drink chamomile tea, and stay cozy!',
       ],
       fertile: [
-        'Hoppy day! Estrogen is rising and you are vibrant! 🌺',
-        'Such glowing energy today! Enjoy your day! ✨',
+        'Hoppy day! Estrogen is rising and you are vibrant!',
+        'Such glowing energy today! Enjoy your day!',
       ],
       ovulation: [
-        'Ovulation day! You are at your peak radiance! 🌸',
+        'Ovulation day! You are at your peak radiance!',
       ],
       standard: [
-        'Hop hop! Have a sweet and peaceful day! 🌿',
-        'Sending love and positive thoughts your way! 💖',
+        'Hop hop! Have a sweet and peaceful day!',
+        'Sending love and positive thoughts your way!',
       ],
       waterGoal: [
-        'Hooray! Fresh and fully hydrated like a morning blossom! 💧🌸',
+        'Hooray! Fresh and fully hydrated like a morning blossom!',
       ],
     },
   },
   puppy: {
     id: 'puppy',
     name: 'Coco',
-    avatar: '🐶',
+    avatar: 'C',
     personality: 'Enthusiastic & Cheerful Pup',
     greetings: {
       period: [
-        'Woof! I am guarding you while you rest today! 🧸',
-        'Take it slow today, friend! You are doing amazing! 🐾',
+        'I am guarding you while you rest today!',
+        'Take it slow today, friend! You are doing amazing!',
       ],
       fertile: [
-        'High stamina day! Let us go for a nice stroll! 🏃‍♀️✨',
-        'So much vitality! You are unstoppable today! 🎾',
+        'High stamina day! Let us go for a nice stroll!',
+        'So much vitality! You are unstoppable today!',
       ],
       ovulation: [
-        'Peak energy day! High five! 🌟🐾',
+        'Peak energy day! High five!',
       ],
       standard: [
-        'Woof! Always cheering for you every single day! 💖',
-        'Did you take your vitamins today? Good job! 💊',
+        'Always cheering for you every single day!',
+        'Did you take your vitamins today? Good job!',
       ],
       waterGoal: [
-        'Water goal unlocked! High paws! 💧🐾🎉',
+        'Water goal unlocked! High paws!',
       ],
     },
   },
   teddy: {
     id: 'teddy',
     name: 'Bibi',
-    avatar: '🧸',
+    avatar: 'D',
     personality: 'Cozy & Caring Bear',
     greetings: {
       period: [
-        'Warm bear hugs! Put on warm socks and cuddle up. ☕',
-        'I am here to keep you warm and cozy all day long. 🧸',
+        'Warm bear hugs! Put on warm socks and cuddle up.',
+        'I am here to keep you warm and cozy all day long.',
       ],
       fertile: [
-        'A lovely breezy day filled with creative joy! 🌻',
+        'A lovely breezy day filled with creative joy!',
       ],
       ovulation: [
-        'Peak fertility today! Harmony in every step! 💫',
+        'Peak fertility today! Harmony in every step!',
       ],
       standard: [
-        'Take a deep breath and have a wonderful day! 🍃',
+        'Take a deep breath and have a wonderful day!',
       ],
       waterGoal: [
-        'Splendid! All 8 glasses complete! 💧🧸',
+        'Splendid! All 8 glasses complete!',
       ],
     },
   },
   flora: {
     id: 'flora',
     name: 'Flora',
-    avatar: '🌸',
+    avatar: 'E',
     personality: 'Blossoming Garden Fairy',
     greetings: {
       period: [
-        'Every petal renews itself in quiet stillness. Rest gently. 🌺',
+        'Every petal renews itself in quiet stillness. Rest gently.',
       ],
       fertile: [
-        'In full bloom! Your creative power is flourishing! 🌷',
+        'In full bloom! Your creative power is flourishing!',
       ],
       ovulation: [
-        'The golden blossom shines brightest today! 🌼✨',
+        'The golden blossom shines brightest today!',
       ],
       standard: [
-        'May your day blossom with joy and peace! 💐',
+        'May your day blossom with joy and peace!',
       ],
       waterGoal: [
-        'Your garden is fully watered and radiant! 💧🌱',
+        'Your garden is fully watered and radiant!',
       ],
     },
   },
@@ -141,33 +141,33 @@ export interface SymptomItem {
 }
 
 export const symptomList: SymptomItem[] = [
-  { id: 'cramps', name: 'Cramps', emoji: '⚡', category: 'body' },
-  { id: 'tender_breasts', name: 'Tender Breasts', emoji: '🍈', category: 'body' },
-  { id: 'headache', name: 'Headache', emoji: '🤕', category: 'body' },
-  { id: 'backache', name: 'Backache', emoji: '🦴', category: 'body' },
-  { id: 'fatigue', name: 'Fatigue', emoji: '😴', category: 'body' },
-  { id: 'bloating', name: 'Bloating', emoji: '🎈', category: 'body' },
-  { id: 'nausea', name: 'Nausea', emoji: '🤢', category: 'body' },
+  { id: 'cramps', name: 'Cramps', emoji: '🩹', category: 'body' },
+  { id: 'tender_breasts', name: 'Tender Breasts', emoji: '🌸', category: 'body' },
+  { id: 'headache', name: 'Headache', emoji: '💫', category: 'body' },
+  { id: 'backache', name: 'Backache', emoji: '🛋️', category: 'body' },
+  { id: 'fatigue', name: 'Fatigue', emoji: '🔋', category: 'body' },
+  { id: 'bloating', name: 'Bloating', emoji: '🫧', category: 'body' },
+  { id: 'nausea', name: 'Nausea', emoji: '🍵', category: 'body' },
   { id: 'insomnia', name: 'Insomnia', emoji: '🌙', category: 'body' },
-  { id: 'hot_flashes', name: 'Hot Flashes', emoji: '🔥', category: 'body' },
-  { id: 'dizziness', name: 'Dizziness', emoji: '💫', category: 'body' },
-  { id: 'ovulation_pain', name: 'Mittelschmerz', emoji: '✨', category: 'body' },
+  { id: 'hot_flashes', name: 'Hot Flashes', emoji: '☀️', category: 'body' },
+  { id: 'dizziness', name: 'Dizziness', emoji: '🌀', category: 'body' },
+  { id: 'ovulation_pain', name: 'Mittelschmerz', emoji: '🎯', category: 'body' },
 
-  { id: 'acne', name: 'Acne / Breakout', emoji: '🧖‍♀️', category: 'skin' },
-  { id: 'oily_skin', name: 'Oily Skin', emoji: '✨', category: 'skin' },
-  { id: 'dry_skin', name: 'Dry Skin', emoji: '🍂', category: 'skin' },
+  { id: 'acne', name: 'Acne / Breakout', emoji: '✨', category: 'skin' },
+  { id: 'oily_skin', name: 'Oily Skin', emoji: '💧', category: 'skin' },
+  { id: 'dry_skin', name: 'Dry Skin', emoji: '🌵', category: 'skin' },
   { id: 'glowing_skin', name: 'Glowing Skin', emoji: '🌟', category: 'skin' },
 
   { id: 'cravings_sweet', name: 'Sweet Cravings', emoji: '🍫', category: 'digestion' },
-  { id: 'cravings_salty', name: 'Salty Cravings', emoji: '🍟', category: 'digestion' },
-  { id: 'constipation', name: 'Constipation', emoji: '🪨', category: 'digestion' },
-  { id: 'diarrhea', name: 'Diarrhea', emoji: '💧', category: 'digestion' },
-  { id: 'gas', name: 'Gas / Indigestion', emoji: '💨', category: 'digestion' },
-  { id: 'high_appetite', name: 'Increased Appetite', emoji: '🍔', category: 'digestion' },
+  { id: 'cravings_salty', name: 'Salty Cravings', emoji: '🥨', category: 'digestion' },
+  { id: 'constipation', name: 'Constipation', emoji: '🍃', category: 'digestion' },
+  { id: 'diarrhea', name: 'Diarrhea', emoji: '🌊', category: 'digestion' },
+  { id: 'gas', name: 'Gas / Indigestion', emoji: '🌬️', category: 'digestion' },
+  { id: 'high_appetite', name: 'Increased Appetite', emoji: '🥗', category: 'digestion' },
 
-  { id: 'chills', name: 'Chills', emoji: '🥶', category: 'other' },
-  { id: 'swelling', name: 'Water Retention', emoji: '💦', category: 'other' },
-  { id: 'restless_legs', name: 'Restless Legs', emoji: '🦵', category: 'other' },
+  { id: 'chills', name: 'Chills', emoji: '❄️', category: 'other' },
+  { id: 'swelling', name: 'Water Retention', emoji: '💧', category: 'other' },
+  { id: 'restless_legs', name: 'Restless Legs', emoji: '⚡', category: 'other' },
 ];
 
 export interface MoodItem {
@@ -178,22 +178,22 @@ export interface MoodItem {
 }
 
 export const moodList: MoodItem[] = [
-  { id: 'happy', name: 'Happy', emoji: '😊', color: '#FFD54F' },
-  { id: 'calm', name: 'Calm', emoji: '😌', color: '#81C784' },
-  { id: 'in_love', name: 'In Love', emoji: '🥰', color: '#FF80AB' },
-  { id: 'energetic', name: 'Energetic', emoji: '⚡', color: '#FFB74D' },
-  { id: 'playful', name: 'Playful', emoji: '🥳', color: '#BA68C8' },
-  { id: 'sensitive', name: 'Sensitive', emoji: '🥺', color: '#4FC3F7' },
-  { id: 'sad', name: 'Sad', emoji: '😢', color: '#90CAF9' },
-  { id: 'anxious', name: 'Anxious', emoji: '😰', color: '#E0E0E0' },
-  { id: 'irritable', name: 'Irritable', emoji: '😤', color: '#FF8A65' },
-  { id: 'angry', name: 'Angry', emoji: '😡', color: '#E57373' },
-  { id: 'stressed', name: 'Stressed', emoji: '🤯', color: '#B0BEC5' },
-  { id: 'tired', name: 'Exhausted', emoji: '🥱', color: '#A1887F' },
-  { id: 'confused', name: 'Brain Fog', emoji: '😶‍🌫️', color: '#CE93D8' },
-  { id: 'mood_swings', name: 'Mood Swings', emoji: '🎭', color: '#F06292' },
-  { id: 'sensual', name: 'Sensual', emoji: '💋', color: '#E91E63' },
-  { id: 'confident', name: 'Confident', emoji: '💅', color: '#AB47BC' },
+  { id: 'happy', name: 'Happy', emoji: '😊', color: '#C86D51' },
+  { id: 'calm', name: 'Calm', emoji: '🍃', color: '#5B8A72' },
+  { id: 'in_love', name: 'In Love', emoji: '🥰', color: '#C86D51' },
+  { id: 'energetic', name: 'Energetic', emoji: '⚡', color: '#D97706' },
+  { id: 'playful', name: 'Playful', emoji: '🌸', color: '#7B6B8D' },
+  { id: 'sensitive', name: 'Sensitive', emoji: '🥺', color: '#5B8A72' },
+  { id: 'sad', name: 'Sad', emoji: '🌧️', color: '#7B6B8D' },
+  { id: 'anxious', name: 'Anxious', emoji: '🌊', color: '#9E948C' },
+  { id: 'irritable', name: 'Irritable', emoji: '💢', color: '#C86D51' },
+  { id: 'angry', name: 'Angry', emoji: '😡', color: '#C86D51' },
+  { id: 'stressed', name: 'Stressed', emoji: '🤯', color: '#7A7571' },
+  { id: 'tired', name: 'Exhausted', emoji: '🔋', color: '#7A7571' },
+  { id: 'confused', name: 'Brain Fog', emoji: '☁️', color: '#7B6B8D' },
+  { id: 'mood_swings', name: 'Mood Swings', emoji: '🦋', color: '#C86D51' },
+  { id: 'sensual', name: 'Sensual', emoji: '🌹', color: '#C86D51' },
+  { id: 'confident', name: 'Confident', emoji: '👑', color: '#5B8A72' },
 ];
 
 export const defaultSettings: AppSettings = {
@@ -229,7 +229,6 @@ export const sampleCycles: CycleRecord[] = [
   { id: 'c5', startDate: '2026-08-01', endDate: '2026-08-28', cycleLength: 28, periodLength: 5, ovulationDate: '2026-08-15' },
 ];
 
-// Initial seeded day logs around August & September 2026
 export const sampleLogs: Record<string, DayLog> = {
   '2026-08-01': {
     date: '2026-08-01',
@@ -290,7 +289,7 @@ export const sampleLogs: Record<string, DayLog> = {
     waterGlasses: 8,
     temperature: 97.5,
     weight: 58.0,
-    notes: 'Energy returning nicely!',
+    notes: 'Energy returning nicely.',
   },
   '2026-08-05': {
     date: '2026-08-05',
@@ -305,7 +304,7 @@ export const sampleLogs: Record<string, DayLog> = {
     waterGlasses: 8,
     temperature: 97.6,
     weight: 57.9,
-    notes: 'Period ended.',
+    notes: 'Period concluded.',
   },
   '2026-08-14': {
     date: '2026-08-14',
@@ -335,7 +334,7 @@ export const sampleLogs: Record<string, DayLog> = {
     temperature: 98.1,
     weight: 57.8,
     cervicalMucus: 'egg_white',
-    notes: 'Ovulation Day! Slight pinch on left side.',
+    notes: 'Ovulation Day. Peak fertility markers active.',
   },
   '2026-08-28': {
     date: '2026-08-28',
@@ -351,6 +350,6 @@ export const sampleLogs: Record<string, DayLog> = {
     temperature: 98.4,
     weight: 58.2,
     cervicalMucus: 'sticky',
-    notes: 'Luteal phase. Period anticipated in 1 day.',
+    notes: 'Luteal phase. Period anticipated soon.',
   },
 };

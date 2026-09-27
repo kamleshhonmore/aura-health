@@ -13,7 +13,7 @@ import {
   HelpCircle,
   Database,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -69,7 +69,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => {
       setIsBackingUp(false);
       setBackupStatus('Cloud Backup Completed! ☁️ Last synced: Just now');
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 50,
         spread: 50,
         origin: { y: 0.7 },

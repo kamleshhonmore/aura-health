@@ -1,33 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Camera,
   BrainCircuit,
   Activity,
   ShieldCheck,
-  CheckCircle2,
   AlertTriangle,
   Scan,
-  Shield,
   ActivitySquare,
   Brain,
   RefreshCw,
-  UploadCloud,
-  Smartphone,
   Sparkles,
   Zap,
   Check,
-  Info,
   Leaf,
-  Smile,
-  PlusCircle,
   Thermometer,
   Clock,
   Droplets,
   HeartPulse,
   Plus,
-  ChevronRight,
-  FileText,
-  Image as ImageIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Capacitor } from '@capacitor/core';
@@ -75,17 +65,17 @@ const MasterNumericInput = ({
     <div
       className={`p-4 rounded-3xl transition-all border-2 ${
         isFocused
-          ? 'bg-white border-rose-500 shadow-lg scale-[1.03]'
-          : 'bg-rose-50/20 border-rose-100/50'
+          ? 'bg-white border-rose-500 shadow-md scale-[1.02]'
+          : 'bg-white/90 border-rose-100 shadow-xs'
       }`}
     >
       <div className="flex items-center gap-2 mb-2">
         <Icon
           className={`w-3.5 h-3.5 ${
-            isFocused ? 'text-rose-500' : 'text-rose-300'
+            isFocused ? 'text-rose-500' : 'text-rose-400'
           }`}
         />
-        <label className="text-[10px] font-black tracking-widest text-[#A0707E] uppercase">
+        <label className="text-[10px] font-black tracking-widest text-[#7E525E] uppercase">
           {label}
         </label>
       </div>
@@ -100,10 +90,10 @@ const MasterNumericInput = ({
             onChange(Math.max(min, Math.min(max, num)));
           }}
           onChange={(e) => setLocalValue(e.target.value)}
-          className="w-full text-2xl font-black text-rose-900 bg-transparent focus:outline-none"
+          className="w-full text-2xl font-black text-rose-950 bg-transparent focus:outline-none"
           placeholder="--"
         />
-        <span className="text-[10px] font-bold text-rose-300 pb-1.5 uppercase">
+        <span className="text-[10px] font-bold text-rose-400 pb-1.5 uppercase">
           {unit}
         </span>
       </div>
@@ -210,7 +200,7 @@ export function ClinicalDiagnosticsHub({
           estimate: '38.5 mIU/mL',
           status: 'Peak Surge Detected',
           recommendation: 'Fertile Window Peak: Ovulation likely in 12-36 hours. Optimal time for conception planning.',
-          color: 'text-rose-600 bg-rose-50 border-rose-200',
+          color: 'text-rose-700 bg-rose-50 border-rose-200',
         });
       } else if (stripType === 'E3G') {
         setStripAnalysis({
@@ -219,7 +209,7 @@ export function ClinicalDiagnosticsHub({
           estimate: '215 ng/mL',
           status: 'Estrogen Rising',
           recommendation: 'Follicular growth active. Cervical mucus changes expected in 24-48 hours.',
-          color: 'text-blue-600 bg-blue-50 border-blue-200',
+          color: 'text-blue-700 bg-blue-50 border-blue-200',
         });
       } else {
         setStripAnalysis({
@@ -228,7 +218,7 @@ export function ClinicalDiagnosticsHub({
           estimate: '8.4 ug/mL',
           status: 'Ovulation Confirmed',
           recommendation: 'Luteal phase confirmed. Progesterone levels support healthy endometrial lining.',
-          color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+          color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
         });
       }
     }, 1500);
@@ -338,7 +328,6 @@ export function ClinicalDiagnosticsHub({
       }
     } catch (e) {
       console.error('Inference error:', e);
-      // Clinical safety fallback calculation
       let fallbackRisk = 12;
       if (form.irregularCycles) fallbackRisk += 30;
       if (bmi >= 25) fallbackRisk += 15;
@@ -364,7 +353,7 @@ export function ClinicalDiagnosticsHub({
       <div className="flex justify-between items-center">
         <button
           onClick={() => setActiveSection('menu')}
-          className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl cursor-pointer"
+          className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl cursor-pointer hover:bg-rose-100 transition-colors"
         >
           &larr; BACK
         </button>
@@ -372,7 +361,7 @@ export function ClinicalDiagnosticsHub({
           <h2 className="text-lg font-black text-rose-950 tracking-tight">
             OPTICAL SCANNER
           </h2>
-          <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
             Hormone Test Strip AI
           </span>
         </div>
@@ -387,7 +376,7 @@ export function ClinicalDiagnosticsHub({
             className={`flex-1 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer ${
               stripType === type
                 ? 'bg-rose-500 text-white shadow-md'
-                : 'text-rose-400 hover:bg-rose-50'
+                : 'text-rose-600 hover:bg-rose-50'
             }`}
           >
             {type === 'LH'
@@ -414,7 +403,7 @@ export function ClinicalDiagnosticsHub({
               <p className="text-xs font-bold text-slate-300">
                 Position Hormone Test Strip inside frame
               </p>
-              <span className="text-[10px] text-slate-500 mt-1">
+              <span className="text-[10px] text-slate-400 mt-1">
                 Align Control (C) & Test (T) lines under clear light
               </span>
             </>
@@ -465,7 +454,7 @@ export function ClinicalDiagnosticsHub({
       <div className="flex justify-between items-center">
         <button
           onClick={() => setActiveSection('menu')}
-          className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl cursor-pointer"
+          className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl cursor-pointer hover:bg-rose-100 transition-colors"
         >
           &larr; BACK
         </button>
@@ -473,7 +462,7 @@ export function ClinicalDiagnosticsHub({
           <h2 className="text-lg font-black text-rose-950 tracking-tight">
             GENERATIVE AI
           </h2>
-          <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+          <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
             Cycle Gap Synthesizer
           </span>
         </div>
@@ -491,9 +480,9 @@ export function ClinicalDiagnosticsHub({
         </div>
 
         <div className="space-y-3">
-          <div className="flex justify-between text-xs font-black text-rose-900">
+          <div className="flex justify-between text-xs font-black text-rose-950">
             <span>Missing Cycle Log Gap</span>
-            <span className="text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-lg">
+            <span className="text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-100">
               {gapDays} Days
             </span>
           </div>
@@ -503,14 +492,14 @@ export function ClinicalDiagnosticsHub({
             max="30"
             value={gapDays}
             onChange={(e) => setGapDays(parseInt(e.target.value))}
-            className="w-full h-2 bg-emerald-100 rounded-full appearance-none accent-emerald-600 cursor-pointer"
+            className="w-full custom-slider custom-slider-emerald cursor-pointer"
           />
         </div>
 
         <div className="space-y-3">
-          <div className="flex justify-between text-xs font-black text-rose-900">
+          <div className="flex justify-between text-xs font-black text-rose-950">
             <span>Perceived Stress / Cortisol</span>
-            <span className="text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-lg">
+            <span className="text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-lg border border-rose-100">
               {stressLevel}/10
             </span>
           </div>
@@ -520,7 +509,7 @@ export function ClinicalDiagnosticsHub({
             max="10"
             value={stressLevel}
             onChange={(e) => setStressLevel(parseInt(e.target.value))}
-            className="w-full h-2 bg-rose-100 rounded-full appearance-none accent-rose-600 cursor-pointer"
+            className="w-full custom-slider cursor-pointer"
           />
         </div>
 
@@ -543,11 +532,11 @@ export function ClinicalDiagnosticsHub({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-5 rounded-[28px] bg-emerald-950 text-white space-y-3 shadow-xl"
+          className="p-5 rounded-[28px] bg-gradient-to-br from-emerald-900 to-teal-950 text-white space-y-3 shadow-xl"
         >
           <div className="flex justify-between items-center text-xs font-black text-emerald-300 uppercase tracking-wider">
             <span>Generative Gap Synthesis</span>
-            <span className="bg-emerald-800 px-2.5 py-0.5 rounded-full text-white">
+            <span className="bg-emerald-800/80 border border-emerald-600 px-2.5 py-0.5 rounded-full text-white">
               Anovulatory Risk: {generativeOutput.anovulatoryRisk}
             </span>
           </div>
@@ -568,29 +557,25 @@ export function ClinicalDiagnosticsHub({
       <div className="flex justify-between items-start">
         <button
           onClick={() => setActiveSection('menu')}
-          className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl cursor-pointer"
+          className="text-xs font-black text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl cursor-pointer hover:bg-rose-100 transition-colors"
         >
           &larr; BACK
         </button>
         <div className="text-right">
-          <h2 className="text-xl font-black text-rose-900 tracking-tight">
+          <h2 className="text-xl font-black text-rose-950 tracking-tight">
             PRECISION V3
           </h2>
-          <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
+          <span className="text-[9px] font-bold text-rose-600 uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
             Neural Graph Active
           </span>
         </div>
       </div>
 
-      {/* LIVE SENSOR HARDWARE DASHBOARD */}
-      <div className="bg-rose-900 rounded-[32px] p-6 text-white shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-20">
-          <ActivitySquare className="w-24 h-24 rotate-12" />
-        </div>
-
+      {/* LIVE SENSOR HARDWARE DASHBOARD - Glassmorphic Soft Depth Palette */}
+      <div className="bg-gradient-to-br from-[#FF5376] via-[#FF6584] to-[#E04365] rounded-[32px] p-6 text-white shadow-xl relative overflow-hidden">
         <div className="flex items-center justify-between mb-4 relative z-10">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping" />
             <h3 className="text-xs font-black tracking-widest uppercase">
               Live Hardware Sync
             </h3>
@@ -598,33 +583,33 @@ export function ClinicalDiagnosticsHub({
           {isSyncingHardware && <RefreshCw className="w-4 h-4 animate-spin" />}
         </div>
 
-        <div className="grid grid-cols-3 gap-4 relative z-10">
-          <div className="text-center">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-2">
-              <Thermometer className="w-5 h-5 text-rose-300" />
+        <div className="grid grid-cols-3 gap-3 relative z-10">
+          <div className="text-center p-2 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-1">
+              <Thermometer className="w-4 h-4 text-white" />
             </div>
             <div className="text-lg font-black">{liveTemp}°C</div>
-            <div className="text-[8px] font-bold text-rose-300 uppercase">
+            <div className="text-[8px] font-bold text-rose-100 uppercase">
               Area Temp
             </div>
           </div>
-          <div className="text-center">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-2">
-              <HeartPulse className="w-5 h-5 text-rose-300" />
+          <div className="text-center p-2 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-1">
+              <HeartPulse className="w-4 h-4 text-white" />
             </div>
             <div className="text-lg font-black">{form.restingHeartRate}</div>
-            <div className="text-[8px] font-bold text-rose-300 uppercase">
+            <div className="text-[8px] font-bold text-rose-100 uppercase">
               Active HR
             </div>
           </div>
-          <div className="text-center">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-2">
-              <Clock className="w-5 h-5 text-rose-300" />
+          <div className="text-center p-2 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center mx-auto mb-1">
+              <Clock className="w-4 h-4 text-white" />
             </div>
             <div className="text-lg font-black">
               {Math.floor(form.screenTimeMins / 60)}h {form.screenTimeMins % 60}m
             </div>
-            <div className="text-[8px] font-bold text-rose-300 uppercase">
+            <div className="text-[8px] font-bold text-rose-100 uppercase">
               Usage Stats
             </div>
           </div>
@@ -632,17 +617,17 @@ export function ClinicalDiagnosticsHub({
       </div>
 
       {/* CARD 1: BIOMETRIC CORE */}
-      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-xl shadow-rose-200/20 space-y-4">
+      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-4">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-[#FF5376] flex items-center justify-center text-white shadow-sm">
             <Activity className="w-4 h-4" />
           </div>
-          <h3 className="font-black text-rose-900 text-sm">
+          <h3 className="font-black text-rose-950 text-sm">
             System Biometrics
           </h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <MasterNumericInput
             label="Age"
             value={settings.userAge}
@@ -652,11 +637,11 @@ export function ClinicalDiagnosticsHub({
             icon={Clock}
             unit="Yrs"
           />
-          <div className="p-4 rounded-3xl bg-rose-900 text-white flex flex-col justify-center shadow-lg">
-            <label className="text-[9px] font-black text-rose-300 uppercase mb-1">
+          <div className="p-4 rounded-3xl bg-pink-50 border border-pink-200 text-[#4A2E35] flex flex-col justify-center shadow-xs">
+            <label className="text-[9px] font-black text-[#875C66] uppercase mb-1">
               Calculated BMI
             </label>
-            <div className="text-2xl font-black">
+            <div className="text-2xl font-black text-[#1A1A24]">
               {(
                 settings.userWeight /
                 Math.pow(settings.userHeight / 100, 2)
@@ -665,7 +650,7 @@ export function ClinicalDiagnosticsHub({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <MasterNumericInput
             label="Weight"
             value={settings.userWeight}
@@ -688,21 +673,21 @@ export function ClinicalDiagnosticsHub({
       </div>
 
       {/* CARD 2: PHYSIOLOGICAL FLOW */}
-      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-xl shadow-rose-200/20 space-y-5">
+      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-5">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm">
             <HeartPulse className="w-4 h-4" />
           </div>
-          <h3 className="font-black text-rose-900 text-sm">
+          <h3 className="font-black text-rose-950 text-sm">
             Real-time Detection
           </h3>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-[10px] font-black text-rose-400 uppercase">
+            <div className="flex justify-between text-[10px] font-black text-rose-900 uppercase">
               <span>Resting Heart Rate</span>
-              <span className="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg">
+              <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">
                 {form.restingHeartRate} BPM
               </span>
             </div>
@@ -714,14 +699,14 @@ export function ClinicalDiagnosticsHub({
               onChange={(e) =>
                 setForm({ ...form, restingHeartRate: parseInt(e.target.value) })
               }
-              className="w-full h-2 bg-rose-100 rounded-full appearance-none accent-rose-600 cursor-pointer"
+              className="w-full custom-slider cursor-pointer"
             />
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between text-[10px] font-black text-rose-400 uppercase">
+            <div className="flex justify-between text-[10px] font-black text-rose-900 uppercase">
               <span>Screen Time Sync</span>
-              <span className="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg">
+              <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">
                 {form.screenTimeMins} MIN
               </span>
             </div>
@@ -733,25 +718,25 @@ export function ClinicalDiagnosticsHub({
               onChange={(e) =>
                 setForm({ ...form, screenTimeMins: parseInt(e.target.value) })
               }
-              className="w-full h-2 bg-rose-100 rounded-full appearance-none accent-rose-600 cursor-pointer"
+              className="w-full custom-slider cursor-pointer"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-3xl bg-blue-50 border border-blue-100 flex flex-col justify-center">
-              <label className="text-[9px] font-black text-blue-400 uppercase mb-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-4 rounded-3xl bg-blue-50/80 border border-blue-100 flex flex-col justify-center">
+              <label className="text-[9px] font-black text-blue-700 uppercase mb-1">
                 Log Temp (BBT)
               </label>
-              <div className="text-lg font-black text-blue-900 flex items-center gap-1">
-                <Thermometer className="w-4 h-4" /> {todayLog?.temperature || 98.2}°
+              <div className="text-lg font-black text-blue-950 flex items-center gap-1">
+                <Thermometer className="w-4 h-4 text-blue-600" /> {todayLog?.temperature || 98.2}°
               </div>
             </div>
-            <div className="p-4 rounded-3xl bg-emerald-50 border border-emerald-100 flex flex-col justify-center">
-              <label className="text-[9px] font-black text-emerald-400 uppercase mb-1">
+            <div className="p-4 rounded-3xl bg-emerald-50/80 border border-emerald-100 flex flex-col justify-center">
+              <label className="text-[9px] font-black text-emerald-700 uppercase mb-1">
                 Hydration
               </label>
-              <div className="text-lg font-black text-emerald-900 flex items-center gap-1">
-                <Droplets className="w-4 h-4" />{' '}
+              <div className="text-lg font-black text-emerald-950 flex items-center gap-1">
+                <Droplets className="w-4 h-4 text-emerald-600" />{' '}
                 {todayLog?.waterGlasses ? todayLog.waterGlasses * 250 : 0}ml
               </div>
             </div>
@@ -760,16 +745,16 @@ export function ClinicalDiagnosticsHub({
       </div>
 
       {/* CARD 3: SYMPTOM MATRIX */}
-      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-xl shadow-rose-200/20 space-y-6">
+      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-6">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white shadow-sm">
             <Zap className="w-4 h-4" />
           </div>
-          <h3 className="font-black text-rose-900 text-sm">Intensity Matrix</h3>
+          <h3 className="font-black text-rose-950 text-sm">Intensity Matrix</h3>
         </div>
 
         {[
-          { key: 'acneSeverity', label: 'Acne Severity', color: 'bg-amber-400' },
+          { key: 'acneSeverity', label: 'Acne Severity', color: 'bg-amber-500' },
           { key: 'hirsutismSeverity', label: 'Hair Growth', color: 'bg-rose-500' },
           { key: 'moodSwingsSeverity', label: 'Mood Shifts', color: 'bg-purple-500' },
           { key: 'fatigueSeverity', label: 'Energy Depletion', color: 'bg-blue-500' },
@@ -777,7 +762,7 @@ export function ClinicalDiagnosticsHub({
           <div key={key} className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-rose-950">
               <span>{label}</span>
-              <span className="opacity-40">
+              <span className="font-mono text-rose-700">
                 {form[key as keyof typeof form]}/10
               </span>
             </div>
@@ -786,10 +771,10 @@ export function ClinicalDiagnosticsHub({
                 <button
                   key={i}
                   onClick={() => setForm({ ...form, [key]: i })}
-                  className={`flex-1 rounded-full transition-all ${
+                  className={`flex-1 rounded-full transition-all cursor-pointer ${
                     i <= (form[key as keyof typeof form] as number)
-                      ? color + ' shadow-sm'
-                      : 'bg-gray-100'
+                      ? color + ' shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200'
                   }`}
                 />
               ))}
@@ -801,10 +786,10 @@ export function ClinicalDiagnosticsHub({
           onClick={() =>
             setForm({ ...form, irregularCycles: !form.irregularCycles })
           }
-          className={`w-full p-4 rounded-3xl border-2 flex items-center justify-between transition-all ${
+          className={`w-full p-4 rounded-3xl border-2 flex items-center justify-between transition-all cursor-pointer ${
             form.irregularCycles
-              ? 'bg-rose-900 border-rose-900 text-white shadow-lg'
-              : 'bg-white border-rose-100 text-rose-400'
+              ? 'bg-rose-500 border-rose-500 text-white shadow-md'
+              : 'bg-white border-rose-100 text-rose-700 hover:bg-rose-50'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -814,12 +799,12 @@ export function ClinicalDiagnosticsHub({
           <div
             className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
               form.irregularCycles
-                ? 'bg-rose-500 border-rose-500'
-                : 'border-rose-100'
+                ? 'bg-white border-white text-rose-500'
+                : 'border-rose-300'
             }`}
           >
             {form.irregularCycles && (
-              <Check className="w-4 h-4 text-white stroke-[4]" />
+              <Check className="w-4 h-4 stroke-[4]" />
             )}
           </div>
         </button>
@@ -828,7 +813,7 @@ export function ClinicalDiagnosticsHub({
       <button
         onClick={handleAnalyzeRisk}
         disabled={isAnalyzing}
-        className="w-full py-5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-black rounded-[28px] shadow-2xl shadow-rose-500/40 active:scale-95 disabled:opacity-50 uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 border-b-4 border-rose-800 cursor-pointer"
+        className="w-full py-4.5 bg-gradient-to-r from-rose-600 via-[#FF5376] to-pink-600 text-white font-black rounded-[28px] shadow-xl shadow-rose-200 active:scale-95 disabled:opacity-50 uppercase tracking-wider text-xs flex items-center justify-center gap-3 cursor-pointer"
       >
         {isAnalyzing ? (
           <RefreshCw className="animate-spin" />
@@ -841,7 +826,7 @@ export function ClinicalDiagnosticsHub({
       </button>
 
       {/* Clinical Disclaimer Callout Banner */}
-      <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5 shadow-sm">
+      <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5 shadow-xs">
         <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-extrabold uppercase tracking-wider text-[10px] text-amber-800">
@@ -857,18 +842,18 @@ export function ClinicalDiagnosticsHub({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={`p-6 rounded-[32px] border-4 shadow-xl ${
+          className={`p-6 rounded-[32px] border-2 shadow-xl ${
             diagnosticResult.riskLevel === 'high'
-              ? 'border-rose-500 bg-rose-50 text-rose-900'
+              ? 'border-rose-500 bg-rose-50 text-rose-950'
               : diagnosticResult.riskLevel === 'moderate'
-              ? 'border-amber-500 bg-amber-50 text-amber-900'
-              : 'border-emerald-500 bg-emerald-50 text-emerald-900'
+              ? 'border-amber-500 bg-amber-50 text-amber-950'
+              : 'border-emerald-500 bg-emerald-50 text-emerald-950'
           }`}
         >
           <div className="flex justify-between items-center mb-3">
             <h4 className="text-2xl font-black">
               {diagnosticResult.probability}%{' '}
-              <span className="text-sm uppercase opacity-60">RISK</span>
+              <span className="text-sm uppercase opacity-70">RISK</span>
             </h4>
             <div
               className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${
@@ -885,7 +870,7 @@ export function ClinicalDiagnosticsHub({
           <p className="text-sm font-bold leading-relaxed mb-4">
             {diagnosticResult.primaryIndicator}
           </p>
-          <div className="flex justify-between items-center text-[10px] font-black opacity-40 border-t border-current/10 pt-3 uppercase tracking-widest">
+          <div className="flex justify-between items-center text-[10px] font-black opacity-60 border-t border-current/10 pt-3 uppercase tracking-widest">
             <span>BMI: {diagnosticResult.bmi}</span>
             <span>{diagnosticResult.engineType}</span>
           </div>
@@ -905,7 +890,7 @@ export function ClinicalDiagnosticsHub({
             exit={{ opacity: 0, y: -15 }}
             className="space-y-4 pt-2"
           >
-            {/* Header Title Section matching Image 1 */}
+            {/* Header Title Section */}
             <div className="px-1 pb-1">
               <h1 className="text-2xl font-black text-[#3A1F28] tracking-tight">
                 Clinical AI Engine
@@ -983,15 +968,6 @@ export function ClinicalDiagnosticsHub({
                 </p>
               </div>
             </div>
-
-            {/* Floating Action Button (+) matching Image 1 */}
-            <button
-              onClick={onOpenLogModal}
-              title="Quick Log"
-              className="fixed bottom-24 right-5 w-14 h-14 rounded-full bg-[#FF5376] text-white flex items-center justify-center shadow-xl shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all z-30 ring-4 ring-white cursor-pointer"
-            >
-              <Plus className="w-7 h-7 stroke-[2.5]" />
-            </button>
           </motion.div>
         ) : activeSection === 'optical' ? (
           renderOpticalScanner()

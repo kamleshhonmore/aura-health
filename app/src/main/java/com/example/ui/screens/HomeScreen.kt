@@ -32,6 +32,7 @@ fun HomeScreen(
   onOpenLogSheet: () -> Unit,
   onToggleQuickSymptom: (String) -> Unit,
   onStartPcosAssessment: () -> Unit,
+  onStartInteractiveIntake: () -> Unit,
   onOpenScanner: () -> Unit,
   onOpenInsights: () -> Unit,
   modifier: Modifier = Modifier
@@ -75,6 +76,54 @@ fun HomeScreen(
       assessmentResult = uiState.pcosResult,
       onStartAssessment = onStartPcosAssessment
     )
+
+    Spacer(modifier = Modifier.height(14.dp))
+
+    // 4.5 Comprehensive Interactive Wellness Intake Assessment Banner (All 4 Phases)
+    Surface(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 20.dp)
+        .clickable { onStartInteractiveIntake() },
+      shape = RoundedCornerShape(24.dp),
+      color = BlushRoseContainer,
+      border = androidx.compose.foundation.BorderStroke(1.5.dp, BlushRose.copy(alpha = 0.5f))
+    ) {
+      Row(
+        modifier = Modifier.padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Box(
+          modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(BlushRose),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(text = "🪷", fontSize = 24.sp)
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+          Text(
+            text = "Interactive Wellness Intake Flow",
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary,
+            fontWeight = FontWeight.Bold
+          )
+          Spacer(modifier = Modifier.height(2.dp))
+          Text(
+            text = "Calming intro, branching logic, visual chips & zero-typing inputs",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary
+          )
+        }
+        Icon(
+          imageVector = Icons.Rounded.ArrowForward,
+          contentDescription = null,
+          tint = BlushRose
+        )
+      }
+    }
 
     Spacer(modifier = Modifier.height(14.dp))
 

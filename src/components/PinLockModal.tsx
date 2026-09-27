@@ -10,7 +10,7 @@ import {
   Shield,
   HelpCircle,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface PinLockModalProps {
   isOpen: boolean;
@@ -77,7 +77,7 @@ export const PinLockModal: React.FC<PinLockModalProps> = ({
     setBiometricStatus(type === 'fingerprint' ? 'Scanning Fingerprint...' : 'Recognizing Face ID...');
     setTimeout(() => {
       setBiometricStatus('Verified! Welcome back ✨');
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 50,
         spread: 60,
         origin: { y: 0.6 },

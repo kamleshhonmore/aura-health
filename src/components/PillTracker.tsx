@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThemeConfig } from '../types';
-import { Pill, Check, Clock, Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Pill, Check, Clock } from 'lucide-react';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface PillTrackerProps {
   isTaken: boolean;
@@ -21,58 +21,56 @@ export const PillTracker: React.FC<PillTrackerProps> = ({
   const handleTake = () => {
     onTogglePill();
     if (!isTaken) {
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 60,
         spread: 50,
         origin: { y: 0.8 },
-        colors: ['#AB47BC', '#BA68C8', '#E1BEE7'],
+        colors: ['#C86D51', '#7B6B8D', '#E8ACA0'],
       });
     }
   };
 
   return (
-    <div
-      className={`p-4 rounded-3xl ${theme.bgCard} border ${theme.borderCard} ${theme.shadowColor} shadow-md transition-all flex items-center justify-between gap-3`}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={`w-11 h-11 rounded-2xl flex items-center justify-center text-lg shadow-xs transition-colors ${
-            isTaken
-              ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]'
-              : 'bg-[#F3E5F5] text-[#8E24AA] border border-[#E1BEE7]'
-          }`}
-        >
-          <Pill className={`w-5 h-5 ${isTaken ? 'text-[#2E7D32]' : 'text-[#8E24AA]'}`} />
+    <div className="w-full product-card rounded-[32px] p-5 space-y-4 flex flex-col justify-between">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs transition-colors ${
+              isTaken
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-[#F5EBE6] text-[#C86D51] border border-[#E8ACA0]'
+            }`}
+          >
+            <Pill className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-[#2C2A29]">
+              Pill Tracker
+            </h3>
+            <p className="text-xs font-semibold text-[#7A7571] flex items-center gap-1 mt-0.5">
+              <Clock className="w-3 h-3 text-[#C86D51]" />
+              {isTaken ? `Logged ${pillTime || '9:00 PM'}` : 'Scheduled 9:00 PM'} • Day {cycleDay}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <div className="flex items-center gap-1.5">
-            <h3 className={`font-black text-xs font-['Fredoka'] ${theme.textPrimary}`}>
-              Contraceptive & Vitamin Pill
-            </h3>
-            {isTaken && (
-              <span className="text-[10px] text-[#2E7D32] font-bold px-1.5 py-0.2 rounded-full bg-[#E8F5E9]">
-                Taken!
-              </span>
-            )}
-          </div>
-          <p className={`text-[10px] font-semibold ${theme.textSecondary} flex items-center gap-1 mt-0.5`}>
-            <Clock className="w-3 h-3 text-[#AB47BC]" />
-            {isTaken ? `Logged at ${pillTime || '9:00 PM'}` : 'Scheduled for 9:00 PM'} • Pill #{cycleDay}
-          </p>
-        </div>
+        {isTaken && (
+          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+            Taken
+          </span>
+        )}
       </div>
 
       <button
         onClick={handleTake}
-        className={`px-3.5 py-2 rounded-2xl text-xs font-black font-['Fredoka'] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+        className={`w-full py-3 px-4 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
           isTaken
-            ? 'bg-[#E8F5E9] text-[#2E7D32] hover:bg-[#C8E6C9] border border-[#A5D6A7]'
-            : 'bg-gradient-to-r from-[#AB47BC] to-[#BA68C8] hover:from-[#8E24AA] hover:to-[#AB47BC] text-white shadow-purple-200'
+            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200'
+            : 'bg-[#C86D51] hover:bg-[#B05B41] text-white shadow-sm glow-primary'
         }`}
       >
-        <Check className={`w-4 h-4 stroke-[3] ${isTaken ? 'text-[#2E7D32]' : 'text-white'}`} />
-        {isTaken ? 'Taken' : 'Take Pill'}
+        <Check className="w-4 h-4 stroke-[3]" />
+        {isTaken ? 'Pill Taken (Undo)' : 'Take Daily Pill'}
       </button>
     </div>
   );

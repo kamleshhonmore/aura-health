@@ -57,11 +57,12 @@ class AuraHealthRepository {
         title = "How regular and predictable are your menstrual cycles?",
         explanation = "Cycle intervals under 21 days or over 35 days (oligo/amenorrhea) are primary markers of irregular ovulatory cycles under the Rotterdam Consensus.",
         isMultiSelect = false,
+        inputType = QuizInputType.SEGMENTED,
         options = listOf(
-          QuizOption("c1", "Very Regular (26–32 days)", "Predictable month-to-month variation within 2–3 days", 0),
-          QuizOption("c2", "Slightly Variable (33–38 days)", "Cycles occasionally skip or arrive 1–2 weeks late", 15),
-          QuizOption("c3", "Infrequent / Oligomenorrhea (>36–90 days)", "Fewer than 8 periods per calendar year", 30),
-          QuizOption("c4", "Absent / Amenorrhea (>90 days without period)", "No natural menstruation without hormonal medication", 35)
+          QuizOption("c1", "Very Regular (26–32 days)", "Predictable variation within 2–3 days", 0, "🌸"),
+          QuizOption("c2", "Slightly Variable (33–38 days)", "Occasionally skip or arrive 1–2 weeks late", 15, "⚡"),
+          QuizOption("c3", "Infrequent / Oligomenorrhea (>36–90 days)", "Fewer than 8 periods per calendar year", 30, "⏳"),
+          QuizOption("c4", "Absent / Amenorrhea (>90 days without period)", "No natural menstruation without medication", 35, "🛑")
         )
       ),
       QuizQuestion(
@@ -70,11 +71,12 @@ class AuraHealthRepository {
         title = "Do you experience persistent androgenic signs (acne, hair thinning, or facial hair)?",
         explanation = "Elevated bioavailable androgens can trigger stubborn lower-jawline cystic acne, hirsutism (coarse chin/lip hair), or crown hair thinning.",
         isMultiSelect = true,
+        inputType = QuizInputType.CHIPS_GRID,
         options = listOf(
-          QuizOption("a1", "Stubborn cystic acne along jawline / chin", "Resistant to standard topical skincare routines", 15),
-          QuizOption("a2", "Excess coarse hair growth on chin, upper lip, or abdomen", "Hirsutism pattern requiring frequent removal", 20),
-          QuizOption("a3", "Hair thinning or excessive shedding at scalp crown", "Androgenic-pattern diffuse thinning", 15),
-          QuizOption("a4", "None of the above / balanced skin & hair", "No noticeable excess androgen symptoms", 0)
+          QuizOption("a1", "Stubborn cystic acne along jawline / chin", "Resistant to standard skincare", 15, "🌿"),
+          QuizOption("a2", "Excess coarse hair growth on chin, upper lip, or abdomen", "Hirsutism pattern", 20, "🪞"),
+          QuizOption("a3", "Hair thinning or excessive shedding at scalp crown", "Androgenic diffuse thinning", 15, "✨"),
+          QuizOption("a4", "None of the above / balanced skin & hair", "No noticeable symptoms", 0, "🍃")
         )
       ),
       QuizQuestion(
@@ -83,11 +85,12 @@ class AuraHealthRepository {
         title = "Have you noticed metabolic, weight, or insulin-related resistance markers?",
         explanation = "Up to 70% of individuals with PCOS have underlying insulin resistance, impacting cellular glucose uptake, cravings, and abdominal fat distribution.",
         isMultiSelect = true,
+        inputType = QuizInputType.CHIPS_GRID,
         options = listOf(
-          QuizOption("m1", "Difficulty losing weight despite calorie & activity control", "Stubborn resistance, particularly central/visceral", 15),
-          QuizOption("m2", "Intense post-meal energy crashes & sugar cravings", "Frequent reactive hypoglycemia sensation", 10),
-          QuizOption("m3", "Acanthosis nigricans (darkened velvety skin on neck/underarms)", "Classic visual dermatological indicator of insulin resistance", 20),
-          QuizOption("m4", "No metabolic or energy irregularities noted", "Stable daily energy and weight balance", 0)
+          QuizOption("m1", "Difficulty losing weight despite calorie & activity control", "Stubborn central/visceral resistance", 15, "⚖️"),
+          QuizOption("m2", "Intense post-meal energy crashes & sugar cravings", "Reactive hypoglycemia sensation", 10, "🍯"),
+          QuizOption("m3", "Acanthosis nigricans (darkened velvety skin on neck/underarms)", "Visual insulin indicator", 20, "🔍"),
+          QuizOption("m4", "No metabolic or energy irregularities noted", "Stable daily energy", 0, "⚡")
         )
       ),
       QuizQuestion(
@@ -96,11 +99,12 @@ class AuraHealthRepository {
         title = "What is your clinical ultrasound and first-degree family history?",
         explanation = "Ultrasound findings showing 12+ peripheral antral follicles ('string of pearls') or maternal/sibling PCOS history indicate genetic susceptibility.",
         isMultiSelect = false,
+        inputType = QuizInputType.CARDS,
         options = listOf(
-          QuizOption("h1", "No known family history & normal pelvic ultrasound", "Never diagnosed with polycystic ovarian morphology", 0),
-          QuizOption("h2", "Mother, sister, or aunt diagnosed with PCOS or Type 2 Diabetes", "Positive first-degree genetic predisposition", 15),
-          QuizOption("h3", "Pelvic ultrasound previously showed polycystic morphology", "Confirmed clinical ultrasound visualization of enlarged ovaries", 30),
-          QuizOption("h4", "Never had an ovarian ultrasound performed", "Ovarian morphology status currently unconfirmed", 5)
+          QuizOption("h1", "No known family history & normal pelvic ultrasound", "Never diagnosed", 0, "🧬"),
+          QuizOption("h2", "Mother, sister, or aunt diagnosed with PCOS or Type 2 Diabetes", "Positive family history", 15, "👩‍👩‍👧"),
+          QuizOption("h3", "Pelvic ultrasound previously showed polycystic morphology", "Confirmed ultrasound findings", 30, "🩺"),
+          QuizOption("h4", "Never had an ovarian ultrasound performed", "Ovarian status unconfirmed", 5, "❓")
         )
       ),
       QuizQuestion(
@@ -109,10 +113,11 @@ class AuraHealthRepository {
         title = "How severe are your premenstrual or ovulatory physical symptoms?",
         explanation = "Chronic pelvic fullness, severe luteal mood disruptions (PMDD), or lack of distinct fertile cervical mucus patterns can reflect anovulatory cycles.",
         isMultiSelect = false,
+        inputType = QuizInputType.SEGMENTED,
         options = listOf(
-          QuizOption("p1", "Mild or manageable PMS", "Slight breast tenderness or mild cramping on day 1", 0),
-          QuizOption("p2", "Moderate PMS with noticeable mood shifts and fatigue", "Manageable with lifestyle adjustments", 10),
-          QuizOption("p3", "Severe premenstrual dysphoria (PMDD) & chronic pelvic aches", "Debilitating monthly flare-ups and intense bloating", 20)
+          QuizOption("p1", "Mild or manageable PMS", "Slight tenderness / mild cramps", 0, "🌤️"),
+          QuizOption("p2", "Moderate PMS with noticeable mood shifts and fatigue", "Manageable with lifestyle adjustments", 10, "🌧️"),
+          QuizOption("p3", "Severe premenstrual dysphoria (PMDD) & chronic pelvic aches", "Debilitating monthly flare-ups", 20, "⛈️")
         )
       )
     )
@@ -352,6 +357,107 @@ class AuraHealthRepository {
       "Follicular Energy Surge" to "Day 8: Estrogen is steadily rising. This is your prime window for cognitive focus and high-intensity workouts.",
       "Hydration & Skin Health" to "Optimal hydration today supports dermal barrier function before your fertile window opens in 4 days.",
       "PCOS Risk Assessment" to "Your baseline score is Low Risk (22%). Retake every 90 days to monitor long-term hormonal stability."
+    )
+  }
+
+  fun getIntakeSteps(): List<IntakeStepData> {
+    return listOf(
+      // Phase 1: Regulate Before You Request (Calming Intro)
+      IntakeStepData(
+        id = 1,
+        domainTag = "Phase 1: Regulate Before You Request",
+        title = "Take a deep breath. You're in safe hands.",
+        subtitle = "We use clinical intelligence and secure privacy standards to tailor your hormonal wellness journey gently and effectively. No rushing, no judgment.",
+        type = IntakeQuestionType.CALMING_INTRO,
+        options = listOf(
+          IntakeOption("ready", "I'm ready to begin", "Let's personalize your plan", "✨")
+        )
+      ),
+      // Phase 2: Branching / Conditional Logic (Domain Selection)
+      IntakeStepData(
+        id = 2,
+        domainTag = "Phase 2: Branching Intelligence",
+        title = "What is your primary health & wellness focus today?",
+        subtitle = "Instantly tailor your path. Select your main domain to bypass irrelevant questions.",
+        type = IntakeQuestionType.DOMAIN_SELECT,
+        options = listOf(
+          IntakeOption("pcos", "PCOS & Hormonal Balance", "Rotterdam criteria & androgenic markers", "🌸"),
+          IntakeOption("cycle", "Cycle Regularity & Fertility", "Ovulation tracking & predictability", "📅"),
+          IntakeOption("metabolic", "Metabolic & Insulin Support", "Weight resistance & energy crashes", "⚖️"),
+          IntakeOption("perimenopause", "Perimenopause & Vitality", "Luteal transition & symptom relief", "🌿")
+        )
+      ),
+      // Phase 3: Segmented Controls (2-4 choices)
+      IntakeStepData(
+        id = 3,
+        domainTag = "Phase 3: Segmented Tap Control",
+        title = "How predictable is your typical cycle length?",
+        subtitle = "Select your most frequent cycle duration pattern.",
+        type = IntakeQuestionType.SEGMENTED,
+        options = listOf(
+          IntakeOption("reg_28", "Regular (26–32 days)", "Predictable variation", "🌸"),
+          IntakeOption("var_35", "Variable (33–42 days)", "Occasional delays", "⚡"),
+          IntakeOption("long_90", "Infrequent (>42–90 days)", "Oligomenorrhea pattern", "⏳"),
+          IntakeOption("absent", "Absent (>90 days)", "Amenorrhea pattern", "🛑")
+        )
+      ),
+      // Phase 3: Visual Option Chips (2x3 Grid for 4-6 choices)
+      IntakeStepData(
+        id = 4,
+        domainTag = "Phase 3: Visual Option Chips (2x3 Grid)",
+        title = "Which physical or skin signs do you notice most often?",
+        subtitle = "Select all that apply without scrolling through a wall of text.",
+        type = IntakeQuestionType.CHIPS_GRID,
+        options = listOf(
+          IntakeOption("acne", "Jawline Acne", "Resistant breakouts", "🌿"),
+          IntakeOption("hair", "Hair Thinning", "Crown shedding", "✨"),
+          IntakeOption("fatigue", "Energy Crashes", "Post-meal slumps", "🍯"),
+          IntakeOption("bloating", "Pelvic Bloating", "Luteal water retention", "💧"),
+          IntakeOption("mood", "Mood Shifts", "Anxiety or PMS swings", "🦋"),
+          IntakeOption("none", "Balanced", "No major symptoms", "🍃")
+        )
+      ),
+      // Phase 3: Large Interactive Cards with Icons
+      IntakeStepData(
+        id = 5,
+        domainTag = "Phase 3: Interactive Cards",
+        title = "What is your preferred lifestyle or nutrition approach?",
+        subtitle = "Helps our AI tailor daily Ayurvedic and clinical recommendations.",
+        type = IntakeQuestionType.CARDS_WITH_ICONS,
+        options = listOf(
+          IntakeOption("balanced", "Whole Food & Low Glycemic", "Focus on blood sugar stability & steady energy", "🥗"),
+          IntakeOption("ayurvedic", "Ayurvedic & Herbal Infusions", "Seed cycling, spearmint tea & adaptogens", "🍵"),
+          IntakeOption("active", "Strength & High Protein", "Metabolic resilience and lean mass support", "🏋️‍♀️")
+        )
+      ),
+      // Phase 3: Interactive Sliders & Steppers
+      IntakeStepData(
+        id = 6,
+        domainTag = "Phase 3: Sliders & Steppers",
+        title = "Average nightly sleep duration (hours)",
+        subtitle = "Slide or use steppers to set your resting baseline without keyboard typing.",
+        type = IntakeQuestionType.SLIDER_RANGE,
+        sliderMin = 4f,
+        sliderMax = 10f,
+        sliderStep = 0.5f,
+        unit = "hours"
+      ),
+      // Phase 4: Data Hook Loader
+      IntakeStepData(
+        id = 7,
+        domainTag = "Phase 4: Data Hook Loader",
+        title = "Analyzing your hormonal profile...",
+        subtitle = "Synthesizing Rotterdam criteria, sleep metrics, and metabolic markers into your personalized blueprint.",
+        type = IntakeQuestionType.LOADER
+      ),
+      // Phase 4: Results & Auto-saved Report
+      IntakeStepData(
+        id = 8,
+        domainTag = "Phase 4: Auto-Saved Personalized Report",
+        title = "Your Aura Wellness Blueprint is Ready!",
+        subtitle = "Progress auto-saved securely. Access anytime in your clinical profile.",
+        type = IntakeQuestionType.RESULTS
+      )
     )
   }
 }

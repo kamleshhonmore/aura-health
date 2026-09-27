@@ -12,7 +12,7 @@ import {
   TrendingDown,
   BookOpen,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface PerimenopauseScreenProps {
   theme: ThemeConfig;
@@ -48,7 +48,7 @@ export const PerimenopauseScreen: React.FC<PerimenopauseScreenProps> = ({
 
   const handleLogHotFlash = () => {
     setHotFlashCount((prev) => prev + 1);
-    confetti({
+    fireCelebrationConfetti({
       particleCount: 40,
       spread: 50,
       origin: { y: 0.6 },

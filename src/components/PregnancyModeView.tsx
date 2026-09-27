@@ -12,7 +12,7 @@ import {
   Award,
   BookOpen,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface PregnancyModeViewProps {
   settings: AppSettings;
@@ -88,7 +88,7 @@ export const PregnancyModeView: React.FC<PregnancyModeViewProps> = ({
 
     if (nextCount === 10) {
       setIsTimerRunning(false);
-      confetti({
+      fireCelebrationConfetti({
         particleCount: 70,
         spread: 60,
         origin: { y: 0.6 },

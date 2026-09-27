@@ -36,6 +36,7 @@ import com.example.ui.components.LogSymptomsSheet
 import com.example.ui.components.NotificationSheet
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.InsightsScreen
+import com.example.ui.screens.InteractiveIntakeAssessmentScreen
 import com.example.ui.screens.PcosScreen
 import com.example.ui.screens.VisionScannerScreen
 import com.example.ui.theme.*
@@ -138,6 +139,7 @@ fun AuraApp(
             onOpenLogSheet = { viewModel.openLogSheet() },
             onToggleQuickSymptom = { viewModel.toggleQuickSymptom(it) },
             onStartPcosAssessment = { viewModel.startPcosQuiz() },
+            onStartInteractiveIntake = { viewModel.openInteractiveIntake() },
             onOpenScanner = { viewModel.setScreen(2) },
             onOpenInsights = { viewModel.setScreen(3) }
           )
@@ -184,6 +186,21 @@ fun AuraApp(
           notifications = uiState.notifications,
           onDismiss = { viewModel.closeNotificationSheet() }
         )
+      }
+
+      // Interactive Wellness Intake Assessment Modal
+      if (uiState.isInteractiveIntakeOpen) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .background(AuraBackground)
+        ) {
+          InteractiveIntakeAssessmentScreen(
+            steps = uiState.intakeSteps,
+            onClose = { viewModel.closeInteractiveIntake() },
+            onComplete = { viewModel.closeInteractiveIntake() }
+          )
+        }
       }
     }
   }

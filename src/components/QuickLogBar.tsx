@@ -1,6 +1,7 @@
 import React from 'react';
 import { ThemeConfig, DayLog } from '../types';
 import { symptomList, moodList } from '../data';
+import { SymptomChip } from './SymptomChip';
 import { Sparkles, Heart, Activity, Scale, Thermometer, Plus, Edit3 } from 'lucide-react';
 
 interface QuickLogBarProps {
@@ -97,25 +98,20 @@ export const QuickLogBar: React.FC<QuickLogBarProps> = ({
             if (!sym) return null;
             const isSelected = activeSymptoms.includes(symId);
             return (
-              <button
+              <SymptomChip
                 key={symId}
-                onClick={() => onToggleSymptom(symId)}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold font-['Fredoka'] flex items-center gap-1.5 transition-all cursor-pointer border ${
-                  isSelected
-                    ? 'bg-[#FF6B8B] text-white border-[#FF6B8B] shadow-xs scale-105'
-                    : 'bg-[#F9F9FB] text-[#614950] border-[#EAE4E7] hover:border-pink-300'
-                }`}
-              >
-                <span>{sym.emoji}</span>
-                <span>{sym.name}</span>
-              </button>
+                id={symId}
+                label={sym.name}
+                isSelected={isSelected}
+                onToggle={() => onToggleSymptom(symId)}
+              />
             );
           })}
           <button
             onClick={onOpenLogModal}
-            className="px-2.5 py-1.5 rounded-xl text-xs font-bold font-['Fredoka'] bg-[#FFF0F3] text-[#E91E63] border border-[#FFCDD2] flex items-center gap-1 hover:bg-[#FFE0E6] cursor-pointer"
+            className="px-3.5 py-2 rounded-full text-xs font-bold font-['Fredoka'] bg-[#FFF0F3] text-[#E91E63] border border-[#FFCDD2] flex items-center gap-1 hover:bg-[#FFE0E6] cursor-pointer"
           >
-            <Plus className="w-3 h-3" /> More
+            <Plus className="w-3.5 h-3.5" /> More
           </button>
         </div>
       </div>
@@ -127,8 +123,8 @@ export const QuickLogBar: React.FC<QuickLogBarProps> = ({
             {activeMoods.map((mId) => {
               const m = moodList.find((item) => item.id === mId);
               return m ? (
-                <span key={mId} className="px-2 py-0.5 rounded-lg bg-[#FFF2F5] text-[#875C66] font-bold text-[11px] border border-pink-100">
-                  {m.emoji} {m.name}
+                <span key={mId} className="px-2.5 py-1 rounded-full bg-[#FFF2F5] text-[#875C66] font-bold text-[11px] border border-pink-100 flex items-center gap-1">
+                  <Heart className="w-3 h-3 text-[#FF5376]" /> {m.name}
                 </span>
               ) : null;
             })}
