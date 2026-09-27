@@ -1,0 +1,6 @@
+{
+  "name": "Period Calendar",
+  "description": "A modern, aesthetic Period Calendar & Cycle Tracker featuring Gemini AI Multi-Turn Health Chatbot with 5 specialized roles, cycle predictions, fertile window, Ayurvedic wellness remedies, Future Baby AI generator, Keep It Secret PIN lock, scenic countdown, and pet companion diary.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+android/app/build/
+android/build/
+.externalNativeBuild
+.cxx
+
+# IDE & Editor files
+.idea/
+*.iml
+.gradle/
+.kotlin/
+.DS_Store
+
+# Environment & Keys
+.env
+local.properties
+debug.keystore
+
+# Internal Agent Artifacts
+.artifacts/
+.build-outputs/
