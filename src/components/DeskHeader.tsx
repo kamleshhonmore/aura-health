@@ -29,6 +29,10 @@ interface DeskHeaderProps {
   onLockApp: () => void;
   onOpenAiChat?: () => void;
   onSearchClick?: () => void;
+  onOpenAuth?: () => void;
+  userEmail?: string | null;
+  userPhoto?: string | null;
+  syncStatus?: 'synced' | 'syncing' | 'offline' | 'local';
 }
 
 export const DeskHeader: React.FC<DeskHeaderProps> = ({
@@ -43,6 +47,10 @@ export const DeskHeader: React.FC<DeskHeaderProps> = ({
   onTogglePregnancy,
   onLockApp,
   onOpenAiChat,
+  onOpenAuth,
+  userEmail,
+  userPhoto,
+  syncStatus = 'local',
 }) => {
   return (
     <header className="px-4 pt-2.5 pb-3 border-b border-[#EAECEF] flex flex-col gap-2.5 transition-colors bg-white/95 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
@@ -88,13 +96,24 @@ export const DeskHeader: React.FC<DeskHeaderProps> = ({
           </div>
         </div>
 
-        {/* Profile / Sync Status Chip */}
+        {/* User Account / Sync Status Chip */}
         <button
-          onClick={onOpenTheme}
-          className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-[#EAECEF] text-[#1A1A24] text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+          onClick={onOpenAuth || onOpenTheme}
+          title="Account & Database Sync Settings"
+          className="px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-[#EAECEF] text-[#1A1A24] text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer"
         >
-          <Activity className="w-3.5 h-3.5 text-[#FF5376]" />
-          <span>Active Sync</span>
+          {userPhoto ? (
+            <img src={userPhoto} alt="User" className="w-5 h-5 rounded-full object-cover border border-[#FF5376]" />
+          ) : userEmail ? (
+            <div className="w-5 h-5 rounded-full bg-[#FF5376] text-white text-[10px] flex items-center justify-center font-bold">
+              {userEmail[0].toUpperCase()}
+            </div>
+          ) : (
+            <Activity className="w-3.5 h-3.5 text-[#FF5376]" />
+          )}
+          <span className="max-w-[85px] truncate">
+            {userEmail ? (syncStatus === 'synced' ? 'Synced' : 'Cloud') : 'Guest'}
+          </span>
           <ChevronRight className="w-3 h-3 text-[#646478]" />
         </button>
       </div>
@@ -133,6 +152,14 @@ export const DeskHeader: React.FC<DeskHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={onOpenTheme}
+            title="Themes"
+            className="p-2 rounded-xl bg-white hover:bg-slate-50 border border-[#EAECEF] text-[#646478] transition-all cursor-pointer shadow-xs"
+          >
+            <Palette className="w-3.5 h-3.5" />
+          </button>
+
           <button
             onClick={onOpenReminders}
             title="Reminders"

@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Health check endpoint for testConnection
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Schema Validators
+    function isValidUserProfile(data) {
+      return data.uid is string && data.uid == request.auth.uid
+        && (!('email' in data) || (data.email is string && data.email.size() <= 200))
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 150))
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1000))
+        && (!('cycleLength' in data) || data.cycleLength is number)
+        && (!('periodLength' in data) || data.periodLength is number)
+        && (!('lutealLength' in data) || data.lutealLength is number)
+        && (!('waterGoalGlasses' in data) || data.waterGoalGlasses is number);
+    }
+
+    function isValidDayLog(data) {
+      return data.userId is string && data.userId == request.auth.uid
+        && data.date is string
+        && data.isPeriod is bool
+        && (!('flow' in data) || data.flow is string)
+        && (!('waterGlasses' in data) || data.waterGlasses is number)
+        && (!('pillTaken' in data) || data.pillTaken is bool)
+        && (!('temperature' in data) || data.temperature == null || data.temperature is number)
+        && (!('weight' in data) || data.weight == null || data.weight is number)
+        && (!('cervicalMucus' in data) || data.cervicalMucus == null || data.cervicalMucus is string)
+        && (!('symptoms' in data) || data.symptoms is list)
+        && (!('moods' in data) || data.moods is list)
+        && (!('intimacy' in data) || data.intimacy is list)
+        && (!('orgasms' in data) || data.orgasms is number)
+        && (!('notes' in data) || data.notes is string);
+    }
+
+    function isValidCycle(data) {
+      return data.userId is string && data.userId == request.auth.uid
+        && data.startDate is string
+        && data.cycleLength is number
+        && data.periodLength is number;
+    }
+
+    function isValidAssessment(data) {
+      return data.userId is string && data.userId == request.auth.uid
+        && (!('riskScore' in data) || data.riskScore is number)
+        && (!('riskLevel' in data) || data.riskLevel is string);
+    }
+
+    function isValidAyurvedic(data) {
+      return data.userId is string && data.userId == request.auth.uid
+        && (!('primaryDosha' in data) || data.primaryDosha is string);
+    }
+
+    // Match users collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUserProfile(incoming());
+      allow delete: if isOwner(userId);
+
+      // Subcollection: Daily Logs
+      match /dailyLogs/{date} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(date) && isValidDayLog(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: Cycle Records
+      match /cycles/{cycleId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(cycleId) && isValidCycle(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: Assessments
+      match /assessments/{assessmentId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidId(assessmentId) && isValidAssessment(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: Ayurvedic Profile
+      match /ayurvedicProfile/{docId} {
+        allow get, list: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidAyurvedic(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

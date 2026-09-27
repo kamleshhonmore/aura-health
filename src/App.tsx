@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Cloud } from 'lucide-react';
 import {
   ThemeId,
   PetId,
@@ -39,6 +40,9 @@ import { ThemeModal } from './components/ThemeModal';
 import { RemindersModal } from './components/RemindersModal';
 import { PinLockModal } from './components/PinLockModal';
 import { SettingsModal } from './components/SettingsModal';
+import { AuthModal } from './components/AuthModal';
+import { useAuth } from './context/AuthContext';
+import { getDatabaseProvider } from './services/db';
 
 import {
   Home,
@@ -110,6 +114,11 @@ export function App() {
   >('home');
   const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('desk');
 
+  // Auth & Database Context
+  const { user, userProfile, syncStatus, updateSettings: updateProfileSettings, syncOfflineData } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [onlineSyncToast, setOnlineSyncToast] = useState<string | null>(null);
+
   // Modals state
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [logModalDate, setLogModalDate] = useState<string>(formatDateStr(new Date()));
@@ -120,7 +129,79 @@ export function App() {
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isInteractiveWizardOpen, setIsInteractiveWizardOpen] = useState(false);
 
-  // Sync to local storage
+  // Keep references to latest logs and cycles for event handlers
+  const logsRef = useRef(logs);
+  const cyclesRef = useRef(cycles);
+  useEffect(() => {
+    logsRef.current = logs;
+  }, [logs]);
+  useEffect(() => {
+    cyclesRef.current = cycles;
+  }, [cycles]);
+
+  // Database sync: fetch remote logs and listen to updates
+  useEffect(() => {
+    if (!user) return;
+    const repo = getDatabaseProvider();
+
+    // 1. Fetch existing remote logs
+    repo.getDailyLogs(user.uid).then((cloudLogs) => {
+      if (cloudLogs && Object.keys(cloudLogs).length > 0) {
+        setLogs((prev) => ({ ...prev, ...cloudLogs }));
+      }
+    }).catch((err) => console.warn('Database logs fetch error:', err));
+
+    // 2. Fetch existing cycles
+    repo.getCycles(user.uid).then((cloudCycles) => {
+      if (cloudCycles && cloudCycles.length > 0) {
+        setCycles(cloudCycles);
+      }
+    }).catch((err) => console.warn('Database cycles fetch error:', err));
+
+    // 3. Realtime subscription if supported
+    if (repo.subscribeDailyLogs) {
+      const unsub = repo.subscribeDailyLogs(user.uid, (incoming) => {
+        setLogs((prev) => ({ ...prev, ...incoming }));
+      });
+      return () => unsub();
+    }
+  }, [user]);
+
+  // Automatic offline-to-online sync when internet connection is restored
+  useEffect(() => {
+    if (!user) return;
+
+    const performSync = async (trigger: 'initial' | 'reconnect') => {
+      try {
+        if (trigger === 'reconnect') {
+          setOnlineSyncToast('Internet restored! Syncing offline logs to cloud...');
+        }
+        const result = await syncOfflineData(logsRef.current, cyclesRef.current);
+        if (result.migratedLogs > 0 || result.migratedCycles > 0) {
+          setOnlineSyncToast(`Synced ${result.migratedLogs} offline logs & ${result.migratedCycles} cycles to cloud.`);
+          setTimeout(() => setOnlineSyncToast(null), 4000);
+        } else if (trigger === 'reconnect') {
+          setOnlineSyncToast('All offline logs are synced with cloud.');
+          setTimeout(() => setOnlineSyncToast(null), 3000);
+        }
+      } catch (e) {
+        console.warn('Auto sync check deferred:', e);
+      }
+    };
+
+    if (navigator.onLine) {
+      performSync('initial');
+    }
+
+    const handleBackOnline = () => {
+      performSync('reconnect');
+    };
+
+    window.addEventListener('online', handleBackOnline);
+    return () => window.removeEventListener('online', handleBackOnline);
+  }, [user, syncOfflineData]);
+
+  // Sync to local storage for offline fast startup
   useEffect(() => {
     localStorage.setItem('period_calendar_settings', JSON.stringify(settings));
   }, [settings]);
@@ -148,22 +229,37 @@ export function App() {
     settings.lutealLength
   );
 
-  // Handlers for logging
+  // Handlers for logging with Database sync
   const handleSaveLog = (dateStr: string, log: DayLog) => {
-    const nextLogs = { ...logs, [dateStr]: log };
+    const logWithTimestamp: DayLog = {
+      ...log,
+      updatedAt: new Date().toISOString(),
+    };
+    const nextLogs = { ...logs, [dateStr]: logWithTimestamp };
     setLogs(nextLogs);
 
-    if (log.isPeriod) {
+    if (logWithTimestamp.isPeriod) {
       if (dateStr > lastPeriodStart) {
         setLastPeriodStart(dateStr);
       }
     }
+
+    // Persist to current Database provider (Firestore or LocalStorage)
+    const repo = getDatabaseProvider();
+    repo.saveDailyLog(user?.uid || 'guest', logWithTimestamp).catch((err) =>
+      console.warn('Database log persist error (safely kept in offline local storage):', err)
+    );
   };
 
   const handleDeleteLog = (dateStr: string) => {
     const nextLogs = { ...logs };
     delete nextLogs[dateStr];
     setLogs(nextLogs);
+
+    const repo = getDatabaseProvider();
+    repo.deleteDailyLog(user?.uid || 'guest', dateStr).catch((err) =>
+      console.warn('Database log delete error:', err)
+    );
   };
 
   const handleTogglePeriodToday = () => {
@@ -287,6 +383,21 @@ export function App() {
 
   const handleUpdateSettings = (updated: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...updated }));
+    if (user) {
+      updateProfileSettings({
+        cycleLength: updated.cycleLength ?? settings.cycleLength,
+        periodLength: updated.periodLength ?? settings.periodLength,
+        lutealLength: updated.lutealLength ?? settings.lutealLength,
+        waterGoalGlasses: updated.waterGoalGlasses ?? settings.waterGoalGlasses,
+        activeTheme: updated.theme ?? settings.theme,
+        activePet: updated.pet ?? settings.pet,
+        pinLockEnabled: updated.pinLockEnabled ?? settings.pinLockEnabled,
+        isPregnancyMode: updated.isPregnancyMode ?? settings.isPregnancyMode,
+        userAge: updated.userAge ?? settings.userAge,
+        userHeight: updated.userHeight ?? settings.userHeight,
+        userWeight: updated.userWeight ?? settings.userWeight,
+      });
+    }
   };
 
   return (
@@ -307,6 +418,10 @@ export function App() {
           onOpenSettings={() => setIsSettingsModalOpen(true)}
           onOpenAiChat={() => setActiveTab('aichat')}
           onSearchClick={() => setActiveTab('hub')}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
+          userEmail={user?.email}
+          userPhoto={user?.photoURL}
+          syncStatus={syncStatus}
           onTogglePregnancy={() => {
             const nextMode = !settings.isPregnancyMode;
             handleUpdateSettings({ isPregnancyMode: nextMode });
@@ -324,6 +439,22 @@ export function App() {
           }}
           onLockApp={() => setIsAppLocked(true)}
         />
+
+        {/* Online Sync Notification Banner */}
+        {onlineSyncToast && (
+          <div className="mx-4 mt-2 px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-md flex items-center justify-between z-30 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <Cloud className="w-4 h-4 shrink-0 animate-pulse text-emerald-200" />
+              <span>{onlineSyncToast}</span>
+            </div>
+            <button
+              onClick={() => setOnlineSyncToast(null)}
+              className="ml-2 text-white/80 hover:text-white text-xs font-bold px-1"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Main Tab Content View */}
         <main className="flex-1 p-4 overflow-x-hidden overflow-y-auto">
@@ -611,6 +742,7 @@ export function App() {
         theme={currentTheme}
         onSaveSettings={handleUpdateSettings}
         onOpenPinSetup={() => setIsPinSetupOpen(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
         onClose={() => setIsSettingsModalOpen(false)}
       />
 
@@ -640,7 +772,25 @@ export function App() {
       <InteractiveIntakeWizard
         isOpen={isInteractiveWizardOpen}
         onClose={() => setIsInteractiveWizardOpen(false)}
-        onComplete={(data) => console.log('Intake completed:', data)}
+        onComplete={(data) => {
+          const repo = getDatabaseProvider();
+          repo.saveAssessment(user?.uid || 'guest', {
+            id: `assessment_${Date.now()}`,
+            userId: user?.uid || 'guest',
+            createdAt: new Date().toISOString(),
+            riskScore: typeof data?.score === 'number' ? data.score : 30,
+            riskLevel: data?.level || 'low',
+            answers: data || {},
+          }).catch((e) => console.warn('Failed to save assessment to repository:', e));
+        }}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        theme={currentTheme}
+        currentLogs={logs}
+        currentCycles={cycles}
       />
     </div>
   );

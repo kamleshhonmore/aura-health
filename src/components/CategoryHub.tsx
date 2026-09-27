@@ -284,7 +284,7 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
             <div className="pt-2">
               <GraphicalLogHub
                 onOpenLogModal={onOpenLogModal}
-                onNavigateTab={onNavigateTab}
+                onNavigateTab={(tab) => onNavigateTab(tab as any)}
               />
             </div>
           </div>

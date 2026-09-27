@@ -23,3 +23,4 @@ debug.keystore
 
 # Internal Agent Artifacts
 .artifacts/
+.build-outputs/

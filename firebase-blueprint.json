@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and global tracking configuration",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Firebase Auth user ID" },
+        "displayName": { "type": "string", "maxLength": 100, "description": "User display name" },
+        "email": { "type": "string", "format": "email", "maxLength": 150, "description": "User email address" },
+        "photoURL": { "type": "string", "maxLength": 500, "description": "Profile picture URL" },
+        "cycleLength": { "type": "number", "description": "Default cycle length in days (typically 21-45)" },
+        "periodLength": { "type": "number", "description": "Default period duration in days (typically 2-10)" },
+        "lutealLength": { "type": "number", "description": "Default luteal phase length in days" },
+        "activeTheme": { "type": "string", "maxLength": 50, "description": "Chosen app theme" },
+        "activePet": { "type": "string", "maxLength": 50, "description": "Chosen pet companion" },
+        "waterGoalGlasses": { "type": "number", "description": "Daily water intake goal in glasses" },
+        "pinLockEnabled": { "type": "boolean", "description": "Whether PIN lock privacy is enabled" },
+        "isPregnancyMode": { "type": "boolean", "description": "Whether pregnancy mode is active" },
+        "userAge": { "type": "number", "description": "User age in years" },
+        "userHeight": { "type": "number", "description": "User height in cm" },
+        "userWeight": { "type": "number", "description": "User weight in kg" },
+        "updatedAt": { "type": "string", "description": "Server timestamp of last update" }
+      },
+      "required": ["uid", "email"]
+    },
+    "DayLog": {
+      "title": "DayLog",
+      "description": "Daily symptom, flow, mood, water and health log entry",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "User UID who owns this log" },
+        "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "Date string in YYYY-MM-DD" },
+        "isPeriod": { "type": "boolean", "description": "Whether menstruation occurred on this day" },
+        "flow": { "type": "string", "enum": ["none", "spotting", "light", "medium", "heavy"], "description": "Flow intensity" },
+        "symptoms": { "type": "array", "description": "List of recorded symptoms" },
+        "moods": { "type": "array", "description": "List of recorded moods" },
+        "waterGlasses": { "type": "number", "description": "Number of glasses of water logged" },
+        "pillTaken": { "type": "boolean", "description": "Whether contraceptive or health pill was taken" },
+        "pillTime": { "type": "string", "maxLength": 20, "description": "Time pill was taken" },
+        "temperature": { "type": "number", "description": "Basal body temperature" },
+        "weight": { "type": "number", "description": "Weight measurement" },
+        "notes": { "type": "string", "maxLength": 1000, "description": "Personal journal / health notes" },
+        "updatedAt": { "type": "string", "description": "Server timestamp of update" }
+      },
+      "required": ["userId", "date", "isPeriod", "flow", "waterGlasses", "pillTaken"]
+    },
+    "CycleRecord": {
+      "title": "CycleRecord",
+      "description": "Past or ongoing cycle records for prediction models",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique cycle ID" },
+        "userId": { "type": "string", "description": "UID of cycle owner" },
+        "startDate": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "Cycle start date YYYY-MM-DD" },
+        "endDate": { "type": "string", "maxLength": 10, "description": "Cycle end date YYYY-MM-DD" },
+        "cycleLength": { "type": "number", "description": "Length of cycle in days" },
+        "periodLength": { "type": "number", "description": "Length of period in days" },
+        "ovulationDate": { "type": "string", "maxLength": 10, "description": "Calculated ovulation date" },
+        "updatedAt": { "type": "string", "description": "Server timestamp of update" }
+      },
+      "required": ["id", "userId", "startDate", "cycleLength", "periodLength"]
+    },
+    "AssessmentRecord": {
+      "title": "AssessmentRecord",
+      "description": "PCOS intake diagnostic assessment and ML score history",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique assessment identifier" },
+        "userId": { "type": "string", "description": "UID of owner" },
+        "createdAt": { "type": "string", "description": "Assessment submission timestamp" },
+        "riskScore": { "type": "number", "description": "Calculated or ONNX ML risk probability (0-100)" },
+        "riskLevel": { "type": "string", "enum": ["low", "moderate", "high"], "description": "Risk category" },
+        "answers": { "type": "object", "description": "Survey answers for clinical intake" }
+      },
+      "required": ["id", "userId", "riskScore", "riskLevel"]
+    },
+    "AyurvedicProfile": {
+      "title": "AyurvedicProfile",
+      "description": "User Prakriti dosha assessment breakdown and recommendations",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of owner" },
+        "primaryDosha": { "type": "string", "maxLength": 30, "description": "Vata, Pitta, or Kapha" },
+        "vataScore": { "type": "number", "description": "Vata percentage score" },
+        "pittaScore": { "type": "number", "description": "Pitta percentage score" },
+        "kaphaScore": { "type": "number", "description": "Kapha percentage score" },
+        "updatedAt": { "type": "string", "description": "Assessment date" }
+      },
+      "required": ["userId", "primaryDosha"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profile, configuration, and default cycle metrics"
+    },
+    "/users/{userId}/dailyLogs/{date}": {
+      "schema": { "$ref": "#/entities/DayLog" },
+      "description": "Daily symptoms and logs indexed by date YYYY-MM-DD"
+    },
+    "/users/{userId}/cycles/{cycleId}": {
+      "schema": { "$ref": "#/entities/CycleRecord" },
+      "description": "Cycle history entries"
+    },
+    "/users/{userId}/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/AssessmentRecord" },
+      "description": "PCOS and clinical risk assessments"
+    },
+    "/users/{userId}/ayurvedicProfile/current": {
+      "schema": { "$ref": "#/entities/AyurvedicProfile" },
+      "description": "Current Prakriti and Dosha constitution assessment"
+    }
+  }
+}

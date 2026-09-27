@@ -231,7 +231,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                           <span className="text-2xl">{opt.icon}</span>
                           <div>
                             <h4 className="text-sm font-semibold text-[#2C2A29]">{opt.title}</h4>
-                            {opt.subtitle && <p className="text-xs text-[#7A7571]">{opt.subtitle}</p>}
+                            {'subtitle' in opt && opt.subtitle && <p className="text-xs text-[#7A7571]">{opt.subtitle}</p>}
                           </div>
                         </div>
                         {isSelected && <Check className="w-5 h-5 text-[#C86D51]" />}
@@ -286,7 +286,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                         <span className="text-3xl">{opt.icon}</span>
                         <div>
                           <h4 className="text-sm font-bold text-[#2C2A29]">{opt.title}</h4>
-                          <p className="text-xs text-[#7A7571] mt-0.5">{opt.subtitle}</p>
+                          {'subtitle' in opt && opt.subtitle && <p className="text-xs text-[#7A7571] mt-0.5">{opt.subtitle}</p>}
                         </div>
                       </div>
                     );
@@ -311,8 +311,9 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                   <div className="flex justify-between">
                     <button
                       onClick={() => {
-                        const cur = answers[step] || currentStepData.defaultVal;
-                        const next = Math.max(currentStepData.min, cur - 0.5);
+                        const cur = answers[step] || currentStepData.defaultVal || 0;
+                        const minVal = currentStepData.min ?? 0;
+                        const next = Math.max(minVal, cur - 0.5);
                         setAnswers({ ...answers, [step]: next });
                       }}
                       className="px-4 py-2 bg-[#EFECE6] text-[#2C2A29] rounded-xl text-xs font-semibold hover:bg-[#E2DDD5]"
@@ -321,8 +322,9 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                     </button>
                     <button
                       onClick={() => {
-                        const cur = answers[step] || currentStepData.defaultVal;
-                        const next = Math.min(currentStepData.max, cur + 0.5);
+                        const cur = answers[step] || currentStepData.defaultVal || 0;
+                        const maxVal = currentStepData.max ?? 24;
+                        const next = Math.min(maxVal, cur + 0.5);
                         setAnswers({ ...answers, [step]: next });
                       }}
                       className="px-4 py-2 bg-[#EFECE6] text-[#2C2A29] rounded-xl text-xs font-semibold hover:bg-[#E2DDD5]"

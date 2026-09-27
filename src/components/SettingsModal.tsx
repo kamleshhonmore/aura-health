@@ -21,6 +21,7 @@ interface SettingsModalProps {
   theme: ThemeConfig;
   onSaveSettings: (updated: Partial<AppSettings>) => void;
   onOpenPinSetup: () => void;
+  onOpenAuth?: () => void;
   onClose: () => void;
 }
 
@@ -30,6 +31,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   theme,
   onSaveSettings,
   onOpenPinSetup,
+  onOpenAuth,
   onClose,
 }) => {
   const [cycleLen, setCycleLen] = useState(settings.cycleLength);
@@ -292,23 +294,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Section 4: Cloud Backup & Restore */}
-          <div className="p-3.5 rounded-2xl bg-[#F0F7FF] border border-[#D0E2FF] space-y-2">
+          <div className="p-3.5 rounded-2xl bg-[#F0F7FF] border border-[#D0E2FF] space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Cloud className="w-4 h-4 text-[#0062FF]" />
                 <div>
-                  <span className="font-bold text-xs text-[#0043CE]">Google Account Backup</span>
-                  <p className="text-[10px] text-[#525252]">Securely sync cycle data</p>
+                  <span className="font-bold text-xs text-[#0043CE]">Cloud Database & Sync</span>
+                  <p className="text-[10px] text-[#525252]">Google Cloud Firestore & LocalStorage</p>
                 </div>
               </div>
-              <button
-                onClick={handleCloudBackup}
-                disabled={isBackingUp}
-                className="px-3 py-1.5 rounded-xl bg-[#0062FF] hover:bg-[#0043CE] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isBackingUp ? 'animate-spin' : ''}`} />
-                {isBackingUp ? 'Syncing...' : 'Backup Now'}
-              </button>
+              {onOpenAuth && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenAuth();
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#0062FF] hover:bg-[#0043CE] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-95"
+                >
+                  <Database className="w-3.5 h-3.5" />
+                  <span>Account & DB</span>
+                </button>
+              )}
             </div>
             {backupStatus && (
               <p className="text-[11px] font-bold text-[#0043CE] pt-1 border-t border-[#D0E2FF]">

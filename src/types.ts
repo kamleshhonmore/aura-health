@@ -55,6 +55,7 @@ export interface DayLog {
   weight?: number; // e.g. 58.5 kg or 129 lbs
   cervicalMucus?: CervicalMucusType;
   notes: string;
+  updatedAt?: string;
 }
 
 export interface DayCalendarInfo {
