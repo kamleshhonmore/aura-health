@@ -43,14 +43,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [userAge, setUserAge] = useState(settings.userAge);
   const [userHeight, setUserHeight] = useState(settings.userHeight);
   const [userWeight, setUserWeight] = useState(settings.userWeight);
-  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('aura_gemini_api_key') || '');
+  const [openrouterKey, setOpenrouterKey] = useState(() => localStorage.getItem('aura_openrouter_api_key') || '');
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [isBackingUp, setIsBackingUp] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSave = () => {
-    localStorage.setItem('aura_gemini_api_key', geminiKey);
+    localStorage.setItem('aura_openrouter_api_key', openrouterKey);
     onSaveSettings({
       cycleLength: cycleLen,
       periodLength: periodLen,
@@ -330,16 +330,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               Real-Time AI Configuration
             </h4>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-purple-800">Gemini API Key</label>
+              <label className="text-[11px] font-bold text-purple-800">OpenRouter API Key</label>
               <input
                 type="password"
-                value={geminiKey}
-                onChange={(e) => setGeminiKey(e.target.value)}
-                placeholder="Paste AI API Key here..."
+                value={openrouterKey}
+                onChange={(e) => setOpenrouterKey(e.target.value)}
+                placeholder="sk-or-v1-..."
                 className="w-full px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs text-purple-900 placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
               />
               <p className="text-[9px] text-purple-500 leading-tight">
-                Get your key at <u>aistudio.google.com</u> to enable unrestricted real-time medical insights and cycle analysis.
+                Get your OpenRouter key at <u>openrouter.ai</u> to enable unrestricted real-time AI medical insights and cycle analysis.
               </p>
             </div>
           </div>

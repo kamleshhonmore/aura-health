@@ -11,32 +11,77 @@ import {
 } from 'lucide-react';
 import { ThemeConfig } from '../types';
 import { CycleStatus } from '../utils/cycleCalculations';
+import { generateMasterAuraResponse } from '../utils/aiMasterEngine';
 
 /**
- * Fetches AI completions from the unified server-side Gemini intelligence endpoint.
+ * Fetches AI completions directly from OpenRouter client-side with automatic model failover.
  */
 async function fetchServerAIChat(
   messages: { role: string; content: string }[],
   userCycleContext?: any
 ): Promise<{ reply: string; model: string }> {
-  const response = await fetch('/api/ai/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages,
-      userCycleContext,
-    }),
-  });
+  const customApiKey = localStorage.getItem('aura_openrouter_api_key') || '';
+  const apiKeyToUse = customApiKey;
 
-  if (!response.ok) {
-    throw new Error(`API HTTP ${response.status}`);
+  let systemInstruction = `You are "Aura AI", the powerful, unified all-in-one Master Women's Health, Clinical, and App Navigation Intelligence. Always answer warmly, authoritatively, and clearly using clean markdown, bullet points, and actionable tips.`;
+
+  if (userCycleContext) {
+    systemInstruction += `\n\nUser's Current Cycle Context:\n- Cycle Day: ${userCycleContext.cycleDay || "Unknown"}\n- Current Phase: ${userCycleContext.phase || "Unknown"}\n- Cycle Length: ${userCycleContext.cycleLength || 28} days\n- Next Period In: ${userCycleContext.daysUntilPeriod ?? "N/A"} days\n- Current Logged Symptoms/Mood: ${userCycleContext.symptoms || "None reported today"}`;
   }
 
-  const data = await response.json();
-  return {
-    reply: data.reply || '',
-    model: data.modelUsed || 'gemini-3.8-flash',
-  };
+  const formattedMessages = [
+    { role: "system", content: systemInstruction },
+    ...messages.map((m) => ({
+      role: m.role === "assistant" || m.role === "model" ? "assistant" : "user",
+      content: m.content,
+    })),
+  ];
+
+  const candidateModels = [
+    "openrouter/auto",
+    "meta-llama/llama-3.3-70b-instruct",
+    "deepseek/deepseek-chat",
+    "qwen/qwen-2.5-72b-instruct",
+  ];
+
+  for (const model of candidateModels) {
+    try {
+      console.log('[AURA-AI-CLIENT] Calling OpenRouter directly with model:', model);
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKeyToUse}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://aistudio.google.com",
+          "X-Title": "Aura Women Health App",
+        },
+        body: JSON.stringify({
+          model,
+          messages: formattedMessages,
+          temperature: 0.7,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content;
+        if (text && typeof text === "string" && text.trim().length > 0) {
+          console.log('[AURA-AI-CLIENT] Success with model:', model);
+          return {
+            reply: text.trim(),
+            model: 'Aura AI • OpenRouter Live Online',
+          };
+        }
+      } else {
+        const errText = await response.text();
+        console.warn(`[AURA-AI-CLIENT] Model ${model} failed:`, errText);
+      }
+    } catch (err) {
+      console.warn(`[AURA-AI-CLIENT] Model ${model} error:`, err);
+    }
+  }
+
+  throw new Error("Online AI request failed. Please check your internet connection.");
 }
 
 export interface ChatMessage {
@@ -77,6 +122,18 @@ export function GeminiChatbot({
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -281,9 +338,11 @@ How can I assist your body, mood, or app navigation today?`,
         </div>
 
         <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="hidden sm:inline">Live AI Active</span>
+          <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${
+            isOnline ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+            <span>{isOnline ? 'Online • OpenRouter' : 'Offline'}</span>
           </div>
           <button
             onClick={handleClearHistory}

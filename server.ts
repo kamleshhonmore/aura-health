@@ -2,15 +2,11 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import * as dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
 
 const app = express();
 const PORT = 3000;
-
-// Initialize Google GenAI SDK (uses GEMINI_API_KEY from environment)
-const ai = new GoogleGenAI({});
 
 // Enable CORS for mobile devices, Capacitor WebView, and web browsers
 app.use((req, res, next) => {
@@ -50,8 +46,14 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 async function generateLiveAIContent(
   systemInstruction: string,
   messages: { role: string; content: string }[],
-  isJson = false
+  isJson = false,
+  clientApiKey = ""
 ): Promise<string> {
+  const apiKeyToUse = clientApiKey || OPENROUTER_API_KEY;
+  if (!apiKeyToUse) {
+    throw new Error("OpenRouter API key not configured. Please set OPENROUTER_API_KEY in .env or Settings.");
+  }
+
   const candidateModels = [
     "openrouter/auto",
     "meta-llama/llama-3.3-70b-instruct",
@@ -76,7 +78,7 @@ async function generateLiveAIContent(
         method: "POST",
         signal: controller.signal,
         headers: {
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          Authorization: `Bearer ${apiKeyToUse}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "https://aistudio.google.com",
           "X-Title": "Aura Women Health App",
@@ -92,6 +94,8 @@ async function generateLiveAIContent(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        const errBody = await response.text();
+        console.warn(`OpenRouter model ${model} failed (status ${response.status}):`, errBody);
         continue;
       }
 
@@ -101,21 +105,11 @@ async function generateLiveAIContent(
         return text.trim();
       }
     } catch (e) {
-      // Try next candidate model
+      console.warn(`OpenRouter model ${model} error:`, e);
     }
   }
 
-  // Also attempt Google Gemini if available
-  try {
-    const geminiText = await generateGeminiContent(systemInstruction, messages, isJson);
-    if (geminiText && geminiText.trim().length > 0) {
-      return geminiText.trim();
-    }
-  } catch (gemErr) {
-    // Graceful fallback to master internal knowledge
-  }
-
-  throw new Error("Live models temporarily responding via Master Core");
+  throw new Error("OpenRouter API request failed. Please check your OpenRouter API key and account credits.");
 }
 
 // Master comprehensive intelligence engine for all user queries & app guidance
@@ -184,7 +178,8 @@ function generateMasterAuraResponse(query: string, cycleContext?: any): string {
 
 // API: Multi-turn Chat
 app.post("/api/ai/chat", async (req, res) => {
-  const { messages, userCycleContext } = req.body || {};
+  const { messages, userCycleContext, apiKey } = req.body || {};
+  console.log("[AURA-AI-SERVER] Received /api/ai/chat request. Messages:", messages?.length, "Has API Key:", !!apiKey);
   try {
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Messages array is required." });
@@ -196,32 +191,16 @@ app.post("/api/ai/chat", async (req, res) => {
       systemInstruction += `\n\nUser's Current Cycle Context:\n- Cycle Day: ${userCycleContext.cycleDay || "Unknown"}\n- Current Phase: ${userCycleContext.phase || "Unknown"}\n- Cycle Length: ${userCycleContext.cycleLength || 28} days\n- Next Period In: ${userCycleContext.daysUntilPeriod ?? "N/A"} days\n- Current Logged Symptoms/Mood: ${userCycleContext.symptoms || "None reported today"}`;
     }
 
-    try {
-      const replyText = await generateLiveAIContent(systemInstruction, messages, false);
-      if (replyText && replyText.trim().length > 0) {
-        return res.json({
-          reply: replyText.trim(),
-          modelUsed: "Aura AI • Live Master Intelligence",
-        });
-      }
-    } catch (genAiError) {
-      console.warn("Live model query notice, engaging master intelligence engine:", genAiError);
-    }
-
-    const latestMsg = messages[messages.length - 1]?.content || "";
-    const masterReply = generateMasterAuraResponse(latestMsg, userCycleContext);
+    const replyText = await generateLiveAIContent(systemInstruction, messages, false, apiKey);
+    console.log("[AURA-AI-SERVER] Successfully generated reply. Length:", replyText.length);
     return res.json({
-      reply: masterReply,
-      modelUsed: "Aura AI • Live Master Intelligence",
+      reply: replyText,
+      modelUsed: "Aura AI • OpenRouter Live Online",
     });
   } catch (error: any) {
-    console.error("Error in /api/ai/chat:", error);
-    const latestMsg = req.body?.messages?.[req.body?.messages?.length - 1]?.content || "";
-    const masterReply = generateMasterAuraResponse(latestMsg, req.body?.userCycleContext);
-
-    return res.json({
-      reply: masterReply,
-      modelUsed: "Aura AI • Live Master Intelligence",
+    console.error("[AURA-AI-SERVER ERROR] /api/ai/chat failed:", error?.message || error);
+    return res.status(500).json({
+      error: error.message || "Online AI request failed. Please check your internet connection and OpenRouter API key in Settings."
     });
   }
 });
@@ -229,7 +208,7 @@ app.post("/api/ai/chat", async (req, res) => {
 // API: Diagnostic Screening Engine (using AI to parse symptoms and calculate risk)
 app.post("/api/ai/diagnostic", async (req, res) => {
   try {
-    const { painLevel, irregularCycles, hirsutism, missingPeriods, activityLogs } = req.body;
+    const { painLevel, irregularCycles, hirsutism, missingPeriods, activityLogs, apiKey } = req.body;
     
     const prompt = `You are a strict, clinical Diagnostic Screening Engine and Probabilistic Cycle Modeler.
 Evaluate the following patient markers:
@@ -255,7 +234,8 @@ Output ONLY valid JSON.`;
       const replyText = await generateLiveAIContent(
         MASTER_AURA_SYSTEM_PROMPT,
         [{ role: "user", content: prompt }],
-        true
+        true,
+        apiKey
       );
       const jsonStr = replyText.replace(/```json/g, "").replace(/```/g, "").trim();
       return res.json(JSON.parse(jsonStr));
@@ -287,7 +267,7 @@ Output ONLY valid JSON.`;
 // API: Quick Cycle Symptom Analysis / Instant Insight
 app.post("/api/ai/analyze-symptoms", async (req, res) => {
   try {
-    const { symptoms, mood, phase, cycleDay } = req.body;
+    const { symptoms, mood, phase, cycleDay, apiKey } = req.body;
 
     const prompt = `Based on the following user status:
 - Cycle Day: ${cycleDay}
@@ -305,7 +285,8 @@ Keep it warm, empathetic, and under 150 words.`;
       const replyText = await generateLiveAIContent(
         MASTER_AURA_SYSTEM_PROMPT,
         [{ role: "user", content: prompt }],
-        false
+        false,
+        apiKey
       );
       if (replyText) {
         return res.json({ analysis: replyText });
