@@ -40,6 +40,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     activeProvider,
     providerName,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOutUser,
     continueAsGuest,
     switchDatabase,
@@ -50,8 +52,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPopupBlocked, setIsPopupBlocked] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    try {
+      if (isSignUp) {
+        await signUpWithEmail(emailInput, passwordInput);
+        setSyncMessage('Account created and logged in successfully!');
+      } else {
+        await signInWithEmail(emailInput, passwordInput);
+        setSyncMessage('Logged in successfully with email!');
+      }
+      setTimeout(() => setSyncMessage(null), 3500);
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Authentication failed. Please check your credentials.');
+    }
+  };
 
   const handleGoogleLogin = async (useRedirect = false) => {
     setErrorMessage(null);
@@ -278,12 +300,54 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               )}
 
+              <form onSubmit={handleEmailAuth} className="space-y-3 pt-3 text-left border-t border-black/10 mt-3">
+                <div className="text-xs font-semibold opacity-80 text-center">Or Sign in with Email / Password</div>
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 rounded-xl border text-xs outline-none bg-black/5"
+                  style={{ borderColor: theme.borderCard }}
+                />
+                <input
+                  type="password"
+                  placeholder="Password (min 6 chars)"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full px-3 py-2.5 rounded-xl border text-xs outline-none bg-black/5"
+                  style={{ borderColor: theme.borderCard }}
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 rounded-xl font-medium text-xs flex items-center justify-center gap-2 text-white shadow-sm transition-all cursor-pointer"
+                  style={{ backgroundColor: theme.accentPink }}
+                >
+                  {isSignUp ? 'Create Account & Sign In' : 'Sign In with Email'}
+                </button>
+                <div className="flex items-center justify-between text-[11px] pt-1">
+                  <span className="opacity-75">{isSignUp ? 'Already have an account?' : "Don't have an account?"}</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSignUp(!isSignUp)}
+                    className="font-bold underline cursor-pointer"
+                    style={{ color: theme.accentPink }}
+                  >
+                    {isSignUp ? 'Sign In' : 'Sign Up'}
+                  </button>
+                </div>
+              </form>
+
               <button
                 onClick={() => {
                   continueAsGuest();
                   onClose();
                 }}
-                className="w-full py-2 text-xs opacity-75 hover:opacity-100 transition-opacity font-medium"
+                className="w-full py-2 text-xs opacity-75 hover:opacity-100 transition-opacity font-medium mt-2"
               >
                 Continue in Offline / Guest Mode
               </button>

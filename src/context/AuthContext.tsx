@@ -6,8 +6,12 @@ import {
   signInWithRedirect,
   getRedirectResult,
   signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import {
   getDatabaseProvider,
   setDatabaseProvider,
@@ -31,6 +35,8 @@ interface AuthContextType {
   activeProvider: DatabaseProviderType;
   providerName: string;
   signInWithGoogle: (useRedirect?: boolean) => Promise<void>;
+  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string) => Promise<void>;
   signOutUser: () => Promise<void>;
   continueAsGuest: () => void;
   switchDatabase: (type: DatabaseProviderType) => void;
@@ -85,28 +91,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         setIsGuest(false);
         localStorage.removeItem('aura_auth_guest');
+        setDatabaseProvider('firestore');
+        setActiveProviderState('firestore');
         setSyncStatus('syncing');
 
         try {
           const repo = getDatabaseProvider();
-          let profile = await repo.getUserProfile(currentUser.uid);
+          // Add 6-second timeout so app never hangs indefinitely on network/firestore delay
+          let profile = await Promise.race([
+            repo.getUserProfile(currentUser.uid),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore connection timeout')), 6000))
+          ]) as UserProfileData | null;
+
           if (!profile) {
-            // First time user registered/signed in
             profile = {
               uid: currentUser.uid,
               email: currentUser.email || '',
-              displayName: currentUser.displayName || 'Cycle Tracker User',
+              displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Cycle Tracker User',
               photoURL: currentUser.photoURL || '',
               cycleLength: 28,
               periodLength: 5,
               updatedAt: new Date().toISOString(),
             };
-            await repo.saveUserProfile(currentUser.uid, profile);
+            await repo.saveUserProfile(currentUser.uid, profile).catch(() => {});
           }
           setUserProfile(profile);
           setSyncStatus('synced');
         } catch (e) {
-          console.warn('Failed to fetch user profile:', e);
+          console.warn('Failed to fetch user profile (using offline fallback):', e);
+          setUserProfile({
+            uid: currentUser.uid,
+            email: currentUser.email || '',
+            displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Cycle Tracker User',
+            photoURL: currentUser.photoURL || '',
+            cycleLength: 28,
+            periodLength: 5,
+            updatedAt: new Date().toISOString(),
+          });
           setSyncStatus('offline');
         }
       } else {
@@ -118,19 +139,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async (useRedirect = false) => {
+  const signInWithGoogle = async (useRedirect = true) => {
     try {
-      if (useRedirect) {
-        setLoading(true);
+      setLoading(true);
+      if (useRedirect || Capacitor.isNativePlatform()) {
         await signInWithRedirect(auth, googleProvider);
         return;
       }
-      // Call popup synchronously immediately upon user interaction to avoid browser popup blockers
-      const popupPromise = signInWithPopup(auth, googleProvider);
-      setLoading(true);
-      await popupPromise;
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       console.error('Google Sign-In failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithEmail = async (email: string, pass: string) => {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      console.error('Email sign-in failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUpWithEmail = async (email: string, pass: string) => {
+    setLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      console.error('Email sign-up failed:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -144,6 +186,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserProfile(null);
       setIsGuest(true);
       localStorage.setItem('aura_auth_guest', 'true');
+      setDatabaseProvider('local');
+      setActiveProviderState('local');
       setSyncStatus('local');
     } catch (e) {
       console.error('Sign-out error:', e);
@@ -153,6 +197,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const continueAsGuest = () => {
     setIsGuest(true);
     localStorage.setItem('aura_auth_guest', 'true');
+    setDatabaseProvider('local');
+    setActiveProviderState('local');
     setSyncStatus('local');
   };
 
@@ -202,6 +248,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeProvider,
         providerName: getDatabaseProvider().name,
         signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
         signOutUser,
         continueAsGuest,
         switchDatabase,
