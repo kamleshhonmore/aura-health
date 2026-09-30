@@ -136,13 +136,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <button
                 key={day.dateStr}
                 onClick={() => { setSelectedDateStr(day.dateStr); onSelectDate(day.dateStr); }}
-                className={`h-14 rounded-2xl flex flex-col items-center justify-between p-2 border-2 transition-all cursor-pointer ${cellBg} ${cellBorder} ${isSelected ? 'ring-4 ring-rose-500/30 border-rose-500 scale-105 z-10' : ''}`}
+                className={`h-16 rounded-2xl flex flex-col items-center justify-between p-1.5 border-2 transition-all cursor-pointer ${cellBg} ${cellBorder} ${isSelected ? 'ring-4 ring-rose-500/30 border-rose-500 scale-105 z-10' : ''}`}
               >
                 <div className="w-full flex items-center justify-between font-black text-xs">
                   <span className={day.isToday ? 'w-5 h-5 flex items-center justify-center rounded-full bg-rose-950 text-white font-extrabold' : ''}>{day.dayOfMonth}</span>
                   {isOvulation && <Sparkles className="w-3 h-3 text-amber-600" />}
                 </div>
-                <div className="h-2 flex gap-0.5">
+
+                {/* Helper text for period start/end/day & fertile window */}
+                <div className="text-[9px] font-black tracking-tighter truncate w-full text-center">
+                  {isPeriod || isPredictedPeriod ? (
+                    day.cycleDay === 1 ? 'Start' : day.cycleDay === periodLength ? 'End' : `Day ${day.cycleDay}`
+                  ) : isOvulation ? (
+                    'Ovulation'
+                  ) : isFertile ? (
+                    'Fertile'
+                  ) : null}
+                </div>
+
+                <div className="h-1.5 flex gap-0.5">
                   {day.log?.pillTaken && <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
                   {day.log?.intimacy && day.log.intimacy[0] !== 'none' && <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />}
                 </div>

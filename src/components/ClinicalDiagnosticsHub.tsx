@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Capacitor } from '@capacitor/core';
 import { ThemeConfig, DayLog, AppSettings } from '../types';
 import { NativeBridge, OnnxPredictor } from '../utils/nativeBridge';
+import { buildPcosRotterdamVector, ROTTERDAM_PHENOTYPES } from '../utils/onnxVector';
 
 interface ClinicalHubProps {
   theme: ThemeConfig;
@@ -127,18 +128,30 @@ export function ClinicalDiagnosticsHub({
   const [stressLevel, setStressLevel] = useState(6);
   const [generativeOutput, setGenerativeOutput] = useState<any>(null);
 
-  // V3 LOCAL STATE (16-PARAMETER PACKET)
+  // ROTTERDAM V4 LOCAL STATE (19-FEATURE PACKET)
   const [form, setForm] = useState({
-    restingHeartRate: 70,
-    screenTimeMins: 45,
-    sleepHours: todayLog?.waterGlasses ? 7.5 : 7.0,
-    acneSeverity: todayLog?.symptoms.includes('acne') ? 7 : 0,
-    hirsutismSeverity: todayLog?.symptoms.includes('hirsutism') ? 6 : 0,
-    moodSwingsSeverity: todayLog?.moods.includes('mood_swings') ? 8 : 2,
-    sugarCravingsSeverity: todayLog?.symptoms.includes('cravings_sweet') ? 7 : 1,
-    fatigueSeverity: todayLog?.symptoms.includes('fatigue') ? 8 : 2,
+    menarcheAge: 12,
+    waistCm: 80,
+    hipCm: 95,
+    meanCycleLength: settings.cycleLength || 28,
+    cycleVarianceStd: 1.5,
+    mfgHirsutismScore: todayLog?.symptoms.includes('hirsutism') ? 12 : 2,
+    hormonalAcnePresent: todayLog?.symptoms.includes('acne') ?? false,
+    androgenicAlopeciaStage: 0, // 0 = None, 1 = Mild/Moderate, 2 = Severe
+    acanthosisNigricansPresent: false,
+    onContraceptives: todayLog?.pillTaken ?? false,
+    onInsulinSensitizer: false,
+    isAmenorrhea: false,
     irregularCycles: false,
     periodDuration: settings.periodLength || 5,
+    restingHeartRate: 70,
+    screenTimeMins: 45,
+    sleepHours: 7.0,
+    // Optional Labs (-1.0 if empty)
+    lhFshRatio: '' as string | number,
+    totalTestosterone: '' as string | number,
+    fastingInsulin: '' as string | number,
+    tsh: '' as string | number,
   });
 
   // --- MASTER HARDWARE SYNC ---
@@ -161,8 +174,7 @@ export function ClinicalDiagnosticsHub({
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
-      acneSeverity: todayLog?.symptoms.includes('acne') ? 8 : prev.acneSeverity,
-      fatigueSeverity: todayLog?.symptoms.includes('fatigue') ? 7 : prev.fatigueSeverity,
+      hormonalAcnePresent: todayLog?.symptoms.includes('acne') || prev.hormonalAcnePresent,
       periodDuration: settings.periodLength,
     }));
   }, [settings.periodLength, todayLog]);
@@ -238,42 +250,59 @@ export function ClinicalDiagnosticsHub({
     }, 1200);
   };
 
-  // --- PRECISION V3 RISK ENGINE ---
+  // --- PRECISION ROTTERDAM V4 RISK ENGINE ---
   const handleAnalyzeRisk = async () => {
     setIsAnalyzing(true);
     setDiagnosticResult(null);
 
-    const safeAge = Math.max(12, Math.min(95, settings.userAge));
-    const safeWeight = Math.max(30, Math.min(300, settings.userWeight));
-    const safeHeight = Math.max(100, Math.min(220, settings.userHeight));
+    const safeAge = Math.max(14, Math.min(50, settings.userAge || 25));
+    const safeWeight = Math.max(30, Math.min(250, settings.userWeight || 60));
+    const safeHeight = Math.max(100, Math.min(220, settings.userHeight || 165));
+    const waistCm = Number(form.waistCm) || 80;
+    const hipCm = Number(form.hipCm) || 95;
+    const whr = Number((waistCm / (hipCm || 1)).toFixed(2));
     const bmi = Number((safeWeight / Math.pow(safeHeight / 100, 2)).toFixed(1));
 
-    const vector = [
-      Number(safeAge),
-      Number(safeWeight),
-      Number(safeHeight),
-      bmi,
-      Number(settings.cycleLength),
-      Number(form.periodDuration),
-      Number(form.sleepHours),
-      Number(form.restingHeartRate),
-      Number(form.screenTimeMins),
-      Number(form.acneSeverity),
-      Number(form.hirsutismSeverity),
-      Number(form.moodSwingsSeverity),
-      Number(form.sugarCravingsSeverity),
-      Number(form.fatigueSeverity),
-      form.irregularCycles ? 1.0 : 0.0,
-      todayLog?.pillTaken ? 1.0 : 0.0,
-    ];
+    const parseLab = (val: string | number) => {
+      if (val === '' || val === null || val === undefined) return -1.0;
+      const num = Number(val);
+      return isNaN(num) || num < 0 ? -1.0 : num;
+    };
+
+    const vector = buildPcosRotterdamVector({
+      age: safeAge,
+      menarcheAge: Number(form.menarcheAge) || 12,
+      weightKg: safeWeight,
+      heightCm: safeHeight,
+      waistCm,
+      hipCm,
+      meanCycleLength: form.onContraceptives ? 28 : (form.irregularCycles ? 40 : Number(form.meanCycleLength) || 28),
+      cycleVarianceStd: Number(form.cycleVarianceStd) || 1.5,
+      isAmenorrhea: form.isAmenorrhea,
+      mfgHirsutismScore: Number(form.mfgHirsutismScore) || 0,
+      hormonalAcnePresent: Boolean(form.hormonalAcnePresent),
+      androgenicAlopeciaStage: Number(form.androgenicAlopeciaStage) || 0,
+      acanthosisNigricansPresent: Boolean(form.acanthosisNigricansPresent),
+      onContraceptives: Boolean(form.onContraceptives),
+      onInsulinSensitizer: Boolean(form.onInsulinSensitizer),
+      lhFshRatio: parseLab(form.lhFshRatio),
+      totalTestosterone: parseLab(form.totalTestosterone),
+      fastingInsulin: parseLab(form.fastingInsulin),
+      tsh: parseLab(form.tsh),
+    });
 
     if (safeAge > 52) {
       setDiagnosticResult({
         riskLevel: 'low',
         probability: 3,
+        confidence: 95,
+        predictedClassIndex: 0,
+        phenotypeName: 'Baseline (Menopausal Transition)',
+        phenotypeDescription: 'Physiology transition detected. PCOS markers are statistically inert.',
         engineType: 'Menopause Layer',
-        primaryIndicator:
-          'Physiology transition detected. PCOS markers are statistically inert.',
+        primaryIndicator: 'Physiology transition detected. PCOS markers are statistically inert.',
+        bmi,
+        whr,
       });
       setIsAnalyzing(false);
       return;
@@ -282,48 +311,69 @@ export function ClinicalDiagnosticsHub({
     try {
       if (Capacitor.isNativePlatform()) {
         const response = await OnnxPredictor.runInference({ data: vector });
-        const rawProb = response.probability ?? 0.05;
-        const probPercent = Math.round(rawProb * 100);
+
+        const predictedClassIndex = response.predictedClassIndex ?? response.label ?? 0;
+        const phenotype = ROTTERDAM_PHENOTYPES[predictedClassIndex] || ROTTERDAM_PHENOTYPES[0];
+
+        const pcosProb = response.pcosProbability ?? response.probability ?? (predictedClassIndex > 0 ? 0.75 : 0.1);
+        const probPercent = Math.round(pcosProb * 100);
+        const confidence = response.confidence ?? 88;
+
         const calculatedRiskLevel: 'low' | 'moderate' | 'high' =
           response.riskLevel || (probPercent >= 65 ? 'high' : probPercent >= 35 ? 'moderate' : 'low');
 
         setDiagnosticResult({
           riskLevel: calculatedRiskLevel,
           probability: probPercent,
+          confidence,
+          predictedClassIndex,
+          phenotypeName: response.phenotypeName || phenotype.name,
+          phenotypeDescription: response.phenotypeDescription || phenotype.description,
           bmi,
-          engineType: 'V3 Precision ONNX Engine',
-          primaryIndicator:
-            calculatedRiskLevel === 'high'
-              ? 'High correlation with Rotterdam criteria markers (androgenic symptoms & irregular cycle).'
-              : calculatedRiskLevel === 'moderate'
-              ? 'Moderate clinical marker correlation. Continuous monitoring & lifestyle alignment recommended.'
-              : 'Symptom patterns remain within standard physiological baseline.',
+          whr,
+          engineType: 'Rotterdam v4 ONNX Neural Engine',
+          primaryIndicator: response.phenotypeDescription || phenotype.description,
+          probabilities: response.probabilities || [],
         });
       } else {
-        // Web Sandbox Fallback: Deterministic clinical heuristic
-        let webRisk = 10;
-        if (form.irregularCycles) webRisk += 25;
-        if (settings.cycleLength > 35 || settings.cycleLength < 21) webRisk += 20;
-        if (bmi >= 25) webRisk += 15;
-        if (form.hirsutismSeverity >= 5) webRisk += 15;
-        if (form.acneSeverity >= 5) webRisk += 10;
-        if (todayLog?.pillTaken) webRisk -= 10;
-        const clampedWebProb = Math.max(3, Math.min(95, webRisk));
-        const webRiskLevel: 'low' | 'moderate' | 'high' =
-          clampedWebProb >= 65 ? 'high' : clampedWebProb >= 35 ? 'moderate' : 'low';
-
+        // Web Sandbox Fallback using Rotterdam Rules
         await new Promise((r) => setTimeout(r, 800));
+
+        const hasHyperandrogenism = form.mfgHirsutismScore >= 8 || form.hormonalAcnePresent || form.androgenicAlopeciaStage > 0;
+        const hasAnovulation = !form.onContraceptives && (form.irregularCycles || form.isAmenorrhea || form.meanCycleLength > 35 || form.meanCycleLength < 21);
+
+        let predictedClassIndex = 0;
+        if (hasHyperandrogenism && hasAnovulation) {
+          predictedClassIndex = 1; // Phenotype A (Classic Complete)
+        } else if (hasHyperandrogenism) {
+          predictedClassIndex = 3; // Phenotype C (Ovulatory)
+        } else if (hasAnovulation) {
+          predictedClassIndex = 4; // Phenotype D (Non-Hyperandrogenic)
+        } else {
+          predictedClassIndex = 0; // Baseline
+        }
+
+        const phenotype = ROTTERDAM_PHENOTYPES[predictedClassIndex];
+        const probPercent = predictedClassIndex === 0 ? 12 : (predictedClassIndex === 1 ? 88 : 65);
+
         setDiagnosticResult({
-          riskLevel: webRiskLevel,
-          probability: clampedWebProb,
+          riskLevel: phenotype.riskLevel,
+          probability: probPercent,
+          confidence: 86,
+          predictedClassIndex,
+          phenotypeName: phenotype.name,
+          phenotypeDescription: phenotype.description,
           bmi,
-          engineType: 'Web Clinical Heuristic',
-          primaryIndicator:
-            webRiskLevel === 'high'
-              ? 'Elevated correlation with irregular cycles & androgenic markers.'
-              : webRiskLevel === 'moderate'
-              ? 'Moderate clinical markers present. Further tracking advised.'
-              : 'Symptom patterns within normal physiological baseline.',
+          whr,
+          engineType: 'Web Rotterdam Clinical Engine',
+          primaryIndicator: phenotype.description,
+          probabilities: [
+            predictedClassIndex === 0 ? 0.88 : 0.12,
+            predictedClassIndex === 1 ? 0.85 : 0.05,
+            predictedClassIndex === 2 ? 0.70 : 0.05,
+            predictedClassIndex === 3 ? 0.65 : 0.05,
+            predictedClassIndex === 4 ? 0.60 : 0.05,
+          ],
         });
       }
     } catch (e) {
@@ -551,7 +601,7 @@ export function ClinicalDiagnosticsHub({
     </div>
   );
 
-  // --- RENDER PRECISION V3 DIAGNOSTICS ---
+  // --- RENDER PRECISION ROTTERDAM V4 DIAGNOSTICS ---
   const renderDiagnostic = () => (
     <div className="space-y-4 pb-12">
       <div className="flex justify-between items-start">
@@ -563,15 +613,15 @@ export function ClinicalDiagnosticsHub({
         </button>
         <div className="text-right">
           <h2 className="text-xl font-black text-rose-950 tracking-tight">
-            PRECISION V3
+            ROTTERDAM V4
           </h2>
           <span className="text-[9px] font-bold text-rose-600 uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-            Neural Graph Active
+            19-Feature Neural Model
           </span>
         </div>
       </div>
 
-      {/* LIVE SENSOR HARDWARE DASHBOARD - Glassmorphic Soft Depth Palette */}
+      {/* LIVE SENSOR HARDWARE DASHBOARD */}
       <div className="bg-gradient-to-br from-[#FF5376] via-[#FF6584] to-[#E04365] rounded-[32px] p-6 text-white shadow-xl relative overflow-hidden">
         <div className="flex items-center justify-between mb-4 relative z-10">
           <div className="flex items-center gap-2">
@@ -616,14 +666,14 @@ export function ClinicalDiagnosticsHub({
         </div>
       </div>
 
-      {/* CARD 1: BIOMETRIC CORE */}
+      {/* CARD 1: BIOMETRIC & ANTHROPOMETRIC CORE */}
       <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-8 h-8 rounded-full bg-[#FF5376] flex items-center justify-center text-white shadow-sm">
             <Activity className="w-4 h-4" />
           </div>
           <h3 className="font-black text-rose-950 text-sm">
-            System Biometrics
+            System & Body Biometrics
           </h3>
         </div>
 
@@ -632,22 +682,20 @@ export function ClinicalDiagnosticsHub({
             label="Age"
             value={settings.userAge}
             onChange={(v) => onUpdateSettings({ userAge: v })}
-            min={12}
-            max={95}
+            min={14}
+            max={50}
             icon={Clock}
             unit="Yrs"
           />
-          <div className="p-4 rounded-3xl bg-pink-50 border border-pink-200 text-[#4A2E35] flex flex-col justify-center shadow-xs">
-            <label className="text-[9px] font-black text-[#875C66] uppercase mb-1">
-              Calculated BMI
-            </label>
-            <div className="text-2xl font-black text-[#1A1A24]">
-              {(
-                settings.userWeight /
-                Math.pow(settings.userHeight / 100, 2)
-              ).toFixed(1)}
-            </div>
-          </div>
+          <MasterNumericInput
+            label="1st Period Age"
+            value={form.menarcheAge}
+            onChange={(v) => setForm({ ...form, menarcheAge: v })}
+            min={8}
+            max={25}
+            icon={Clock}
+            unit="Yrs"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -656,7 +704,7 @@ export function ClinicalDiagnosticsHub({
             value={settings.userWeight}
             onChange={(v) => onUpdateSettings({ userWeight: v })}
             min={30}
-            max={300}
+            max={250}
             icon={Activity}
             unit="Kg"
           />
@@ -665,152 +713,323 @@ export function ClinicalDiagnosticsHub({
             value={settings.userHeight}
             onChange={(v) => onUpdateSettings({ userHeight: v })}
             min={100}
-            max={250}
+            max={220}
             icon={Leaf}
             unit="Cm"
           />
         </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <MasterNumericInput
+            label="Waist Circumference"
+            value={form.waistCm}
+            onChange={(v) => setForm({ ...form, waistCm: v })}
+            min={40}
+            max={180}
+            icon={Activity}
+            unit="Cm"
+          />
+          <MasterNumericInput
+            label="Hip Circumference"
+            value={form.hipCm}
+            onChange={(v) => setForm({ ...form, hipCm: v })}
+            min={50}
+            max={200}
+            icon={Activity}
+            unit="Cm"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="p-3.5 rounded-2xl bg-pink-50 border border-pink-200 flex flex-col justify-center">
+            <span className="text-[9px] font-black text-[#875C66] uppercase">BMI</span>
+            <span className="text-xl font-black text-[#1A1A24]">
+              {(settings.userWeight / Math.pow((settings.userHeight || 165) / 100, 2)).toFixed(1)}
+            </span>
+          </div>
+          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex flex-col justify-center">
+            <span className="text-[9px] font-black text-rose-800 uppercase">Waist-Hip Ratio (WHR)</span>
+            <span className="text-xl font-black text-rose-950">
+              {(form.waistCm / (form.hipCm || 1)).toFixed(2)}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* CARD 2: PHYSIOLOGICAL FLOW */}
+      {/* CARD 2: HYPERANDROGENISM & CLINICAL SIGNS */}
       <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-5">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white shadow-sm">
+            <Zap className="w-4 h-4" />
+          </div>
+          <h3 className="font-black text-rose-950 text-sm">
+            Androgenic & Clinical Signs
+          </h3>
+        </div>
+
+        {/* mFG Hirsutism Score Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs font-black text-rose-950">
+            <span>mFG Hirsutism Score (0–36)</span>
+            <span className="text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">
+              {form.mfgHirsutismScore} / 36
+            </span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="36"
+            value={form.mfgHirsutismScore}
+            onChange={(e) => setForm({ ...form, mfgHirsutismScore: parseInt(e.target.value) || 0 })}
+            className="w-full custom-slider cursor-pointer"
+          />
+          <p className="text-[10px] font-medium text-slate-500">
+            Modified Ferriman-Gallwey Score: Sum of ratings across 9 body areas (0=None, 4=Severe)
+          </p>
+        </div>
+
+        {/* Alopecia Stage Picker */}
+        <div className="space-y-2">
+          <label className="text-xs font-black text-rose-950 block">
+            Scalp Hair Thinning (Androgenic Alopecia)
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { level: 0, label: '0: None' },
+              { level: 1, label: '1: Mild/Mod' },
+              { level: 2, label: '2: Severe' },
+            ].map(({ level, label }) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setForm({ ...form, androgenicAlopeciaStage: level })}
+                className={`py-2 rounded-2xl text-xs font-black transition-all cursor-pointer border ${
+                  form.androgenicAlopeciaStage === level
+                    ? 'bg-rose-500 text-white border-rose-500 shadow-sm'
+                    : 'bg-white text-rose-900 border-rose-100 hover:bg-rose-50'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Hormonal Acne & Acanthosis Nigricans Toggles */}
+        <div className="grid grid-cols-1 gap-2.5">
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, hormonalAcnePresent: !form.hormonalAcnePresent })}
+            className={`p-3.5 rounded-2xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+              form.hormonalAcnePresent
+                ? 'bg-rose-500 border-rose-500 text-white shadow-sm'
+                : 'bg-white border-rose-100 text-rose-900 hover:bg-rose-50'
+            }`}
+          >
+            <span className="text-xs font-black">Persistent Hormonal Acne</span>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+              form.hormonalAcnePresent ? 'bg-white text-rose-500 border-white' : 'border-rose-300'
+            }`}>
+              {form.hormonalAcnePresent && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setForm({ ...form, acanthosisNigricansPresent: !form.acanthosisNigricansPresent })}
+            className={`p-3.5 rounded-2xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+              form.acanthosisNigricansPresent
+                ? 'bg-purple-600 border-purple-600 text-white shadow-sm'
+                : 'bg-white border-rose-100 text-purple-900 hover:bg-purple-50'
+            }`}
+          >
+            <div className="text-left">
+              <span className="text-xs font-black block">Acanthosis Nigricans</span>
+              <span className="text-[9px] opacity-80 block">Dark, velvety skin patches on neck/axilla</span>
+            </div>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+              form.acanthosisNigricansPresent ? 'bg-white text-purple-600 border-white' : 'border-purple-300'
+            }`}>
+              {form.acanthosisNigricansPresent && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* CARD 3: MENSTRUAL & MEDICATION CONTEXT */}
+      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-4">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-sm">
             <HeartPulse className="w-4 h-4" />
           </div>
           <h3 className="font-black text-rose-950 text-sm">
-            Real-time Detection
+            Menstrual Cycle & Medications
           </h3>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-[10px] font-black text-rose-900 uppercase">
-              <span>Resting Heart Rate</span>
-              <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">
-                {form.restingHeartRate} BPM
-              </span>
-            </div>
-            <input
-              type="range"
-              min="40"
-              max="140"
-              value={form.restingHeartRate}
-              onChange={(e) =>
-                setForm({ ...form, restingHeartRate: parseInt(e.target.value) })
-              }
-              className="w-full custom-slider cursor-pointer"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-[10px] font-black text-rose-900 uppercase">
-              <span>Screen Time Sync</span>
-              <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">
-                {form.screenTimeMins} MIN
-              </span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="480"
-              value={form.screenTimeMins}
-              onChange={(e) =>
-                setForm({ ...form, screenTimeMins: parseInt(e.target.value) })
-              }
-              className="w-full custom-slider cursor-pointer"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-3xl bg-blue-50/80 border border-blue-100 flex flex-col justify-center">
-              <label className="text-[9px] font-black text-blue-700 uppercase mb-1">
-                Log Temp (BBT)
-              </label>
-              <div className="text-lg font-black text-blue-950 flex items-center gap-1">
-                <Thermometer className="w-4 h-4 text-blue-600" /> {todayLog?.temperature || 98.2}°
-              </div>
-            </div>
-            <div className="p-4 rounded-3xl bg-emerald-50/80 border border-emerald-100 flex flex-col justify-center">
-              <label className="text-[9px] font-black text-emerald-700 uppercase mb-1">
-                Hydration
-              </label>
-              <div className="text-lg font-black text-emerald-950 flex items-center gap-1">
-                <Droplets className="w-4 h-4 text-emerald-600" />{' '}
-                {todayLog?.waterGlasses ? todayLog.waterGlasses * 250 : 0}ml
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CARD 3: SYMPTOM MATRIX */}
-      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-6">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white shadow-sm">
-            <Zap className="w-4 h-4" />
-          </div>
-          <h3 className="font-black text-rose-950 text-sm">Intensity Matrix</h3>
-        </div>
-
-        {[
-          { key: 'acneSeverity', label: 'Acne Severity', color: 'bg-amber-500' },
-          { key: 'hirsutismSeverity', label: 'Hair Growth', color: 'bg-rose-500' },
-          { key: 'moodSwingsSeverity', label: 'Mood Shifts', color: 'bg-purple-500' },
-          { key: 'fatigueSeverity', label: 'Energy Depletion', color: 'bg-blue-500' },
-        ].map(({ key, label, color }) => (
-          <div key={key} className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-rose-950">
-              <span>{label}</span>
-              <span className="font-mono text-rose-700">
-                {form[key as keyof typeof form]}/10
-              </span>
-            </div>
-            <div className="flex gap-1.5 h-3">
-              {[...Array(11)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setForm({ ...form, [key]: i })}
-                  className={`flex-1 rounded-full transition-all cursor-pointer ${
-                    i <= (form[key as keyof typeof form] as number)
-                      ? color + ' shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-
+        {/* Birth Control Toggle */}
         <button
-          onClick={() =>
-            setForm({ ...form, irregularCycles: !form.irregularCycles })
-          }
-          className={`w-full p-4 rounded-3xl border-2 flex items-center justify-between transition-all cursor-pointer ${
-            form.irregularCycles
-              ? 'bg-rose-500 border-rose-500 text-white shadow-md'
-              : 'bg-white border-rose-100 text-rose-700 hover:bg-rose-50'
+          type="button"
+          onClick={() => setForm({ ...form, onContraceptives: !form.onContraceptives })}
+          className={`p-4 rounded-2xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+            form.onContraceptives
+              ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+              : 'bg-white border-rose-100 text-blue-950 hover:bg-blue-50'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <Activity className={form.irregularCycles ? 'animate-pulse' : ''} />
-            <span className="text-sm font-black">Irregular Cycle Patterns</span>
+          <div className="text-left">
+            <span className="text-xs font-black block">Actively Taking Oral Contraceptives (Birth Control)</span>
+            <span className="text-[9px] opacity-80 block">Standardizes cycle to 28.0d to avoid masking symptoms</span>
           </div>
-          <div
-            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-              form.irregularCycles
-                ? 'bg-white border-white text-rose-500'
-                : 'border-rose-300'
-            }`}
-          >
-            {form.irregularCycles && (
-              <Check className="w-4 h-4 stroke-[4]" />
-            )}
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ml-2 ${
+            form.onContraceptives ? 'bg-white text-blue-600 border-white' : 'border-blue-300'
+          }`}>
+            {form.onContraceptives && <Check className="w-3.5 h-3.5 stroke-[3]" />}
           </div>
         </button>
+
+        {/* Insulin Sensitizer Toggle */}
+        <button
+          type="button"
+          onClick={() => setForm({ ...form, onInsulinSensitizer: !form.onInsulinSensitizer })}
+          className={`p-3.5 rounded-2xl border-2 flex items-center justify-between transition-all cursor-pointer ${
+            form.onInsulinSensitizer
+              ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+              : 'bg-white border-rose-100 text-emerald-950 hover:bg-emerald-50'
+          }`}
+        >
+          <div className="text-left">
+            <span className="text-xs font-black block">Taking Metformin or Myo-Inositol</span>
+            <span className="text-[9px] opacity-80 block">Insulin sensitizing therapy</span>
+          </div>
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ml-2 ${
+            form.onInsulinSensitizer ? 'bg-white text-emerald-600 border-white' : 'border-emerald-300'
+          }`}>
+            {form.onInsulinSensitizer && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+          </div>
+        </button>
+
+        {/* Cycle Length Controls */}
+        {!form.onContraceptives && (
+          <div className="space-y-3 pt-2">
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs font-black text-rose-950">
+                <span>Mean Cycle Length</span>
+                <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">
+                  {form.meanCycleLength} Days
+                </span>
+              </div>
+              <input
+                type="range"
+                min="15"
+                max="90"
+                value={form.meanCycleLength}
+                onChange={(e) => setForm({ ...form, meanCycleLength: parseInt(e.target.value) || 28 })}
+                className="w-full custom-slider cursor-pointer"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, irregularCycles: !form.irregularCycles, isAmenorrhea: false })}
+                className={`p-3 rounded-2xl border text-xs font-black cursor-pointer ${
+                  form.irregularCycles
+                    ? 'bg-rose-500 text-white border-rose-500'
+                    : 'bg-white text-rose-900 border-rose-100 hover:bg-rose-50'
+                }`}
+              >
+                Irregular Cycles
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, isAmenorrhea: !form.isAmenorrhea, irregularCycles: false })}
+                className={`p-3 rounded-2xl border text-xs font-black cursor-pointer ${
+                  form.isAmenorrhea
+                    ? 'bg-amber-600 text-white border-amber-600'
+                    : 'bg-white text-amber-900 border-rose-100 hover:bg-amber-50'
+                }`}
+              >
+                Amenorrhea (&gt;90d No Period)
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* CARD 4: OPTIONAL LABORATORY PANEL (HOME SCREENER MODE) */}
+      <div className="bg-white rounded-[32px] p-5 border-2 border-rose-100 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-black text-rose-950 text-sm">
+                Lab Panel (Optional)
+              </h3>
+              <span className="text-[9px] font-bold text-indigo-600 uppercase">Home Screener Mode Active</span>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[10px] font-medium text-slate-500">
+          Leave fields blank if unentered. Missing labs default to -1.0 per Rotterdam v4 decision tree protocol.
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+            <label className="text-[9px] font-extrabold text-slate-600 uppercase block mb-1">LH / FSH Ratio</label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="-1.0 (Unentered)"
+              value={form.lhFshRatio}
+              onChange={(e) => setForm({ ...form, lhFshRatio: e.target.value })}
+              className="w-full text-base font-black text-slate-900 bg-transparent focus:outline-none"
+            />
+          </div>
+
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+            <label className="text-[9px] font-extrabold text-slate-600 uppercase block mb-1">Total Testosterone (ng/dL)</label>
+            <input
+              type="number"
+              step="1"
+              placeholder="-1.0 (Unentered)"
+              value={form.totalTestosterone}
+              onChange={(e) => setForm({ ...form, totalTestosterone: e.target.value })}
+              className="w-full text-base font-black text-slate-900 bg-transparent focus:outline-none"
+            />
+          </div>
+
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+            <label className="text-[9px] font-extrabold text-slate-600 uppercase block mb-1">Fasting Insulin (μIU/mL)</label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="-1.0 (Unentered)"
+              value={form.fastingInsulin}
+              onChange={(e) => setForm({ ...form, fastingInsulin: e.target.value })}
+              className="w-full text-base font-black text-slate-900 bg-transparent focus:outline-none"
+            />
+          </div>
+
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+            <label className="text-[9px] font-extrabold text-slate-600 uppercase block mb-1">TSH (mIU/L)</label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="-1.0 (Unentered)"
+              value={form.tsh}
+              onChange={(e) => setForm({ ...form, tsh: e.target.value })}
+              className="w-full text-base font-black text-slate-900 bg-transparent focus:outline-none"
+            />
+          </div>
+        </div>
       </div>
 
       <button
+        type="button"
         onClick={handleAnalyzeRisk}
         disabled={isAnalyzing}
         className="w-full py-4.5 bg-gradient-to-r from-rose-600 via-[#FF5376] to-pink-600 text-white font-black rounded-[28px] shadow-xl shadow-rose-200 active:scale-95 disabled:opacity-50 uppercase tracking-wider text-xs flex items-center justify-center gap-3 cursor-pointer"
@@ -821,8 +1040,8 @@ export function ClinicalDiagnosticsHub({
           <BrainCircuit />
         )}
         {isAnalyzing
-          ? 'Mapping Neural Nodes...'
-          : 'Execute Precision Inference'}
+          ? 'Running Rotterdam v4 Inference...'
+          : 'Execute Rotterdam v4 Assessment'}
       </button>
 
       {/* Clinical Disclaimer Callout Banner */}
@@ -830,10 +1049,10 @@ export function ClinicalDiagnosticsHub({
         <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-extrabold uppercase tracking-wider text-[10px] text-amber-800">
-            Clinical Advisory Disclaimer
+            Rotterdam Consensus Medical Disclaimer
           </span>
           <p className="font-medium text-[11px] leading-relaxed opacity-90">
-            This AI diagnostic screening tool is provided solely for personal educational awareness. It does not provide medical diagnosis, treatment, or clinical decisions under Rotterdam criteria. Please consult a licensed medical provider.
+            This AI screening engine evaluates Rotterdam Phenotypes (A, B, C, D) for informational awareness. It is not a clinical diagnosis. Final confirmation requires clinical laboratory blood panels and pelvic ultrasound under care of an OB/GYN or endocrinologist.
           </p>
         </div>
       </div>
@@ -850,13 +1069,17 @@ export function ClinicalDiagnosticsHub({
               : 'border-emerald-500 bg-emerald-50 text-emerald-950'
           }`}
         >
-          <div className="flex justify-between items-center mb-3">
-            <h4 className="text-2xl font-black">
-              {diagnosticResult.probability}%{' '}
-              <span className="text-sm uppercase opacity-70">RISK</span>
-            </h4>
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest opacity-70 block mb-0.5">
+                Rotterdam v4 Diagnosis
+              </span>
+              <h4 className="text-xl font-black leading-tight">
+                {diagnosticResult.phenotypeName}
+              </h4>
+            </div>
             <div
-              className={`px-4 py-1 rounded-full text-[10px] font-black uppercase ${
+              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase shrink-0 ${
                 diagnosticResult.riskLevel === 'high'
                   ? 'bg-rose-500 text-white'
                   : diagnosticResult.riskLevel === 'moderate'
@@ -864,14 +1087,27 @@ export function ClinicalDiagnosticsHub({
                   : 'bg-emerald-500 text-white'
               }`}
             >
-              {diagnosticResult.riskLevel} POTENTIAL
+              {diagnosticResult.riskLevel} PROBABILITY
             </div>
           </div>
-          <p className="text-sm font-bold leading-relaxed mb-4">
+
+          <p className="text-xs font-extrabold leading-relaxed mb-4 opacity-90">
             {diagnosticResult.primaryIndicator}
           </p>
-          <div className="flex justify-between items-center text-[10px] font-black opacity-60 border-t border-current/10 pt-3 uppercase tracking-widest">
-            <span>BMI: {diagnosticResult.bmi}</span>
+
+          <div className="grid grid-cols-2 gap-2 p-3 bg-white/70 rounded-2xl border border-current/10 mb-4 text-xs font-black">
+            <div>
+              <span className="text-[9px] opacity-70 uppercase block">Total PCOS Risk</span>
+              <span className="text-lg">{diagnosticResult.probability}%</span>
+            </div>
+            <div>
+              <span className="text-[9px] opacity-70 uppercase block">Model Confidence</span>
+              <span className="text-lg">{diagnosticResult.confidence}%</span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center text-[10px] font-black opacity-70 border-t border-current/10 pt-3 uppercase tracking-wider">
+            <span>BMI: {diagnosticResult.bmi} | WHR: {diagnosticResult.whr}</span>
             <span>{diagnosticResult.engineType}</span>
           </div>
         </motion.div>

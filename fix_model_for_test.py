@@ -1,6 +1,6 @@
 import onnx
 
-model_path = 'android/app/src/main/assets/pcos_app_model_v3.onnx'
+model_path = 'android/app/src/main/assets/pcos_rotterdam_v4.onnx'
 output_path = 'pcos_model_fixed.onnx'
 
 try:

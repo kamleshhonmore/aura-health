@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Cloud } from 'lucide-react';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+interface AppPlugin {
+  exitApp(): Promise<void>;
+  minimizeApp(): Promise<void>;
+  addListener(eventName: 'backButton', listenerFunc: (data: any) => void): Promise<any>;
+}
+
+const CapacitorApp = registerPlugin<AppPlugin>('App');
 import {
   ThemeId,
   PetId,
@@ -19,7 +28,6 @@ import { DeskHeader } from './components/DeskHeader';
 import { StatusCard } from './components/StatusCard';
 import { PetMascot } from './components/PetMascot';
 import { WaterTracker } from './components/WaterTracker';
-import { PillTracker } from './components/PillTracker';
 import { QuickLogBar } from './components/QuickLogBar';
 import { CalendarView } from './components/CalendarView';
 import { ChartsView } from './components/ChartsView';
@@ -128,6 +136,100 @@ export function App() {
   const [isPinSetupOpen, setIsPinSetupOpen] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isInteractiveWizardOpen, setIsInteractiveWizardOpen] = useState(false);
+
+  // Keep refs for activeTab and all modals so the back button listener never misses state
+  const activeTabRef = useRef(activeTab);
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  const modalsStateRef = useRef({
+    isInteractiveWizardOpen,
+    isLogModalOpen,
+    isThemeModalOpen,
+    isRemindersModalOpen,
+    isSettingsModalOpen,
+    isAuthModalOpen,
+  });
+  useEffect(() => {
+    modalsStateRef.current = {
+      isInteractiveWizardOpen,
+      isLogModalOpen,
+      isThemeModalOpen,
+      isRemindersModalOpen,
+      isSettingsModalOpen,
+      isAuthModalOpen,
+    };
+  }, [
+    isInteractiveWizardOpen,
+    isLogModalOpen,
+    isThemeModalOpen,
+    isRemindersModalOpen,
+    isSettingsModalOpen,
+    isAuthModalOpen,
+  ]);
+
+  // Android Hardware Back Button Handler (Registered ONCE on mount with refs)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let listenerHandle: any = null;
+    let isMounted = true;
+
+    CapacitorApp.addListener('backButton', () => {
+      if (!isMounted) return;
+      const modals = modalsStateRef.current;
+
+      if (modals.isInteractiveWizardOpen) {
+        setIsInteractiveWizardOpen(false);
+        return;
+      }
+      if (modals.isLogModalOpen) {
+        setIsLogModalOpen(false);
+        return;
+      }
+      if (modals.isThemeModalOpen) {
+        setIsThemeModalOpen(false);
+        return;
+      }
+      if (modals.isRemindersModalOpen) {
+        setIsRemindersModalOpen(false);
+        return;
+      }
+      if (modals.isSettingsModalOpen) {
+        setIsSettingsModalOpen(false);
+        return;
+      }
+      if (modals.isAuthModalOpen) {
+        setIsAuthModalOpen(false);
+        return;
+      }
+
+      if (activeTabRef.current !== 'home') {
+        setActiveTab('home');
+        return;
+      }
+
+      try {
+        CapacitorApp.minimizeApp();
+      } catch (e) {
+        CapacitorApp.exitApp();
+      }
+    }).then((h) => {
+      if (isMounted) {
+        listenerHandle = h;
+      } else {
+        h.remove();
+      }
+    }).catch((e) => console.warn('Back button listener setup failed:', e));
+
+    return () => {
+      isMounted = false;
+      if (listenerHandle && typeof listenerHandle.remove === 'function') {
+        listenerHandle.remove();
+      }
+    };
+  }, []);
 
   // Keep references to latest logs and cycles for event handlers
   const logsRef = useRef(logs);
@@ -491,37 +593,47 @@ export function App() {
                       onOpenCalendar={() => setActiveTab('calendar')}
                     />
 
-                    {/* Interactive Wellness Intake Flow Banner */}
-                    <div
-                      onClick={() => setIsInteractiveWizardOpen(true)}
-                      className="p-4 bg-gradient-to-r from-[#F4EBE6] to-[#FAF3F0] rounded-2xl border border-[#C86D51]/30 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#C86D51] flex items-center justify-center text-white text-xl">
-                          🪷
+                    {/* 2-Column Square Cards Grid: Water Tracker & Wellness Quiz */}
+                    <div className="grid grid-cols-2 gap-3 items-stretch">
+                      {/* Left Card: Hydration Gauge */}
+                      <WaterTracker
+                        currentGlasses={todayLog?.waterGlasses || 0}
+                        goalGlasses={settings.waterGoalGlasses}
+                        theme={currentTheme}
+                        onUpdateGlasses={handleUpdateWaterGlasses}
+                      />
+
+                      {/* Right Card: High-Engagement Graphical Wellness Quiz */}
+                      <div
+                        onClick={() => setIsInteractiveWizardOpen(true)}
+                        className="relative rounded-[28px] p-4 flex flex-col justify-between bg-gradient-to-br from-rose-500 via-pink-600 to-purple-600 text-white shadow-lg shadow-rose-500/25 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all group overflow-hidden"
+                      >
+                        {/* Background Decorative Glow */}
+                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform" />
+
+                        <div className="flex items-center justify-between relative z-10">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-md border border-white/30">
+                            AI Checkup
+                          </span>
+                          <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold group-hover:translate-x-0.5 transition-transform">
+                            →
+                          </span>
                         </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-[#2C2A29]">Interactive Wellness Intake Flow</h4>
-                          <p className="text-xs text-[#7A7571]">Calming intro, branching logic, visual chips & zero typing</p>
+
+                        <div className="my-auto py-2 text-center relative z-10">
+                          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center mx-auto mb-2 text-2xl shadow-inner border border-white/30 group-hover:scale-110 transition-transform">
+                            ✨
+                          </div>
+                          <h4 className="text-xs font-black tracking-tight leading-snug text-white">
+                            Hormonal AI Assessment
+                          </h4>
+                        </div>
+
+                        <div className="relative z-10 flex items-center justify-center gap-1 text-[10px] font-extrabold text-rose-100 bg-black/15 py-1 px-2 rounded-xl backdrop-blur-xs">
+                          <span>Take 2-Min Quiz</span>
                         </div>
                       </div>
-                      <span className="text-[#C86D51] font-bold text-sm">→</span>
                     </div>
-
-                    <WaterTracker
-                      currentGlasses={todayLog?.waterGlasses || 0}
-                      goalGlasses={settings.waterGoalGlasses}
-                      theme={currentTheme}
-                      onUpdateGlasses={handleUpdateWaterGlasses}
-                    />
-
-                    <PillTracker
-                      isTaken={todayLog?.pillTaken || false}
-                      pillTime={todayLog?.pillTime}
-                      cycleDay={cycleStatus.currentCycleDay}
-                      theme={currentTheme}
-                      onTogglePill={handleTogglePillToday}
-                    />
 
                     <SleekSymptomLogger
                       currentPhase={

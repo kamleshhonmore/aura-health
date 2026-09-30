@@ -1,0 +1,48 @@
+
+{
+  "project_info": {
+    "project_number": "78121851792",
+    "project_id": "gen-lang-client-0289714608",
+    "storage_bucket": "gen-lang-client-0289714608.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78121851792:android:5578574c10c85bd7197115",
+        "android_client_info": {
+          "package_name": "com.aura.health"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "78121851792-uch5j9krb3v6mk737t4i4ijm085up09r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aura.health",
+            "certificate_hash": "a617871cadbd04299715508953f92c3c30c4c58f"
+          }
+        },
+        {
+          "client_id": "78121851792-7ge7tsoan5q7n6elnhbd2lqgo7o8251k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQTqTBfnZRtfIWEkHBC19ImitYY6U8fbQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "78121851792-7ge7tsoan5q7n6elnhbd2lqgo7o8251k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

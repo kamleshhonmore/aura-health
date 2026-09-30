@@ -7,7 +7,11 @@ export interface OnnxInferenceResult {
   confidence?: number;
   riskLevel?: 'low' | 'moderate' | 'high';
   probability?: number;
+  pcosProbability?: number;
   label?: number;
+  predictedClassIndex?: number;
+  phenotypeName?: string;
+  phenotypeDescription?: string;
   results?: number[];
   probabilities?: number[];
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, Check, ArrowRight, ArrowLeft, X, Heart, Shield, Activity, Sliders } from 'lucide-react';
+import { Sparkles, Check, ArrowRight, ArrowLeft, X, Heart, Shield, Activity, Sliders, Flame } from 'lucide-react';
+import { fireCelebrationConfetti } from '../utils/confetti';
 
 interface IntakeWizardProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
     },
     {
       id: 2,
-      phase: 'Phase 3: Segmented Controls (2-4 Choices)',
+      phase: 'Phase 3: Segmented Controls',
       title: "How predictable is your typical cycle length?",
       subtitle: "Select your most frequent cycle duration pattern using instant tap controls.",
       type: 'segmented',
@@ -69,7 +70,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
     },
     {
       id: 3,
-      phase: 'Phase 3: Visual Option Chips (2x3 Grid)',
+      phase: 'Phase 3: Visual Option Chips',
       title: "Which physical or skin signs do you notice most often?",
       subtitle: "Select all that apply without scrolling through a wall of text.",
       type: 'chips_grid',
@@ -96,7 +97,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
     },
     {
       id: 5,
-      phase: 'Phase 3: Sliders & Steppers (+ / -)',
+      phase: 'Phase 3: Sliders & Steppers',
       title: "Average nightly sleep duration (hours)",
       subtitle: "Slide or use steppers to set your resting baseline without keyboard typing.",
       type: 'slider',
@@ -131,17 +132,22 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
       setTimeout(() => {
         setIsLoading(false);
         setStep((s) => s + 1);
-      }, 1500);
+      }, 1200);
       return;
     }
     if (step < stepsData.length - 1) {
       if (step === 5) {
-        // Trigger loader before results
         setIsLoading(true);
+        fireCelebrationConfetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#FF5376', '#38BDF8', '#10B981', '#F59E0B'],
+        });
         setTimeout(() => {
           setIsLoading(false);
           setStep((s) => s + 1);
-        }, 2000);
+        }, 1800);
       } else {
         setStep((s) => s + 1);
       }
@@ -152,65 +158,74 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.92, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="w-full max-w-xl bg-[#FAF8F5] rounded-3xl shadow-2xl border border-white/80 overflow-hidden flex flex-col max-h-[90vh]"
+        exit={{ opacity: 0, scale: 0.92, y: 20 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="w-full max-w-xl bg-gradient-to-br from-white via-[#FAF8F5] to-rose-50/30 rounded-[36px] shadow-2xl border border-rose-100/80 overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Header & Smart Stepper */}
-        <div className="px-6 pt-6 pb-4 border-b border-[#EFECE6] flex items-center justify-between">
+        <div className="px-6 pt-6 pb-4 border-b border-rose-100/60 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-[#F4EBE6] text-[#C86D51] text-xs font-semibold rounded-full">
+            <span className="px-3.5 py-1 bg-rose-100/80 text-rose-700 text-xs font-black rounded-full tracking-wider uppercase border border-rose-200">
               Step {step + 1} of {stepsData.length} • Auto-saved
             </span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#EFECE6] flex items-center justify-center text-[#7A7571] hover:bg-[#E2DDD5] transition-colors"
+            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer shadow-xs"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 stroke-[3]" />
           </button>
         </div>
 
-        {/* Global Progress Bar */}
-        <div className="w-full bg-[#EFECE6] h-1.5">
+        {/* Global Progress Bar with Glow */}
+        <div className="w-full bg-slate-100 h-2 relative overflow-hidden">
           <motion.div
-            className="bg-[#C86D51] h-1.5 rounded-full"
+            className="h-full bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 shadow-sm"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
           />
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1">
-          <div className="inline-block px-2.5 py-1 bg-[#E8F0EC] text-[#4A7C59] text-[10px] font-bold tracking-wider uppercase rounded-md mb-3">
+        <div className="p-6 overflow-y-auto flex-1 font-['Nunito']">
+          <div className="inline-block px-3 py-1 bg-emerald-50 text-emerald-800 text-[10px] font-black tracking-widest uppercase rounded-full mb-3 border border-emerald-200/60 shadow-xs">
             {currentStepData.phase}
           </div>
 
-          <h2 className="text-2xl font-bold text-[#2C2A29] mb-2 font-['Fredoka']">
+          <h2 className="text-2xl font-black text-slate-900 mb-2 font-['Fredoka'] tracking-tight">
             {currentStepData.title}
           </h2>
-          <p className="text-sm text-[#7A7571] mb-6 leading-relaxed">
+          <p className="text-xs font-semibold text-slate-600 mb-6 leading-relaxed">
             {currentStepData.subtitle}
           </p>
 
           {isLoading || currentStepData.type === 'loader' ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center">
-              <div className="w-12 h-12 border-4 border-[#C86D51] border-t-transparent rounded-full animate-spin mb-4" />
-              <h3 className="text-lg font-bold text-[#2C2A29]">Analyzing your profile...</h3>
-              <p className="text-xs text-[#7A7571] mt-1">Synthesizing Rotterdam criteria and metabolic markers.</p>
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-14 h-14 border-4 border-rose-500 border-t-transparent rounded-full animate-spin shadow-md" />
+              <div>
+                <h3 className="text-base font-black text-slate-900">Synthesizing Clinical AI...</h3>
+                <p className="text-xs font-semibold text-slate-500 mt-1">Analyzing Rotterdam criteria & metabolic parameters.</p>
+              </div>
             </div>
           ) : (
             <>
               {currentStepData.type === 'calming' && (
-                <div className="p-8 bg-[#F4EBE6] rounded-2xl text-center border border-[#EAD5CE]">
-                  <span className="text-5xl block mb-4">🪷</span>
-                  <h3 className="text-lg font-bold text-[#C86D51] mb-2">Breathe in calm, exhale tension.</h3>
-                  <p className="text-xs text-[#7A7571]">Your inputs are fully encrypted and tailored precisely to your hormonal rhythm.</p>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-8 bg-gradient-to-br from-rose-50 via-pink-50/50 to-white rounded-[32px] text-center border border-rose-200/80 shadow-inner space-y-3"
+                >
+                  <span className="text-6xl block mb-2 animate-bounce [animation-duration:3s]">🪷</span>
+                  <h3 className="text-base font-black text-rose-950">Breathe in calm, exhale tension.</h3>
+                  <p className="text-xs font-semibold text-rose-800/80 leading-relaxed">
+                    Your responses are securely processed on-device, tailoring your hormonal rhythm with zero commercial tracking.
+                  </p>
+                </motion.div>
               )}
 
               {(currentStepData.type === 'branching' || currentStepData.type === 'segmented') && (
@@ -218,24 +233,38 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                   {currentStepData.options?.map((opt) => {
                     const isSelected = answers[step] === opt.id;
                     return (
-                      <div
+                      <motion.div
                         key={opt.id}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => setAnswers({ ...answers, [step]: opt.id })}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                        className={`p-4 rounded-[24px] border-2 transition-all cursor-pointer flex items-center justify-between ${
                           isSelected
-                            ? 'bg-[#F4EBE6] border-[#C86D51] shadow-sm'
-                            : 'bg-white border-[#EFECE6] hover:border-[#DCD7CD]'
+                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 border-rose-500 text-white shadow-lg shadow-rose-500/25'
+                            : 'bg-white border-rose-100 hover:border-rose-300 text-slate-900 shadow-xs'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{opt.icon}</span>
+                        <div className="flex items-center gap-3.5">
+                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shadow-xs ${
+                            isSelected ? 'bg-white/20 text-white' : 'bg-rose-50 text-rose-600'
+                          }`}>
+                            {opt.icon}
+                          </div>
                           <div>
-                            <h4 className="text-sm font-semibold text-[#2C2A29]">{opt.title}</h4>
-                            {'subtitle' in opt && opt.subtitle && <p className="text-xs text-[#7A7571]">{opt.subtitle}</p>}
+                            <h4 className="text-xs font-black tracking-tight">{opt.title}</h4>
+                            {'subtitle' in opt && opt.subtitle && (
+                              <p className={`text-[10px] font-semibold mt-0.5 ${isSelected ? 'text-rose-100' : 'text-slate-500'}`}>
+                                {opt.subtitle}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        {isSelected && <Check className="w-5 h-5 text-[#C86D51]" />}
-                      </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                          isSelected ? 'bg-white text-rose-500 border-white' : 'border-slate-300'
+                        }`}>
+                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -247,23 +276,32 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                     const currentSet = answers[step] || [];
                     const isSelected = currentSet.includes(opt.id);
                     return (
-                      <div
+                      <motion.div
                         key={opt.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => {
                           const updated = isSelected
                             ? currentSet.filter((id: string) => id !== opt.id)
                             : [...currentSet, opt.id];
                           setAnswers({ ...answers, [step]: updated });
                         }}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col items-start ${
+                        className={`p-4 rounded-[24px] border-2 transition-all cursor-pointer flex flex-col items-start justify-between min-h-[110px] ${
                           isSelected
-                            ? 'bg-[#F4EBE6] border-[#C86D51] shadow-sm'
-                            : 'bg-white border-[#EFECE6] hover:border-[#DCD7CD]'
+                            ? 'bg-gradient-to-br from-rose-500 to-pink-500 border-rose-500 text-white shadow-lg shadow-rose-500/25'
+                            : 'bg-white border-rose-100 hover:border-rose-300 text-slate-900 shadow-xs'
                         }`}
                       >
-                        <span className="text-2xl mb-2">{opt.icon}</span>
-                        <h4 className="text-xs font-semibold text-[#2C2A29]">{opt.title}</h4>
-                      </div>
+                        <div className="flex justify-between w-full items-start">
+                          <span className="text-2xl">{opt.icon}</span>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            isSelected ? 'bg-white text-rose-500 border-white' : 'border-slate-300'
+                          }`}>
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
+                        </div>
+                        <h4 className="text-xs font-black tracking-tight">{opt.title}</h4>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -274,31 +312,48 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                   {currentStepData.options?.map((opt) => {
                     const isSelected = answers[step] === opt.id;
                     return (
-                      <div
+                      <motion.div
                         key={opt.id}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => setAnswers({ ...answers, [step]: opt.id })}
-                        className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center gap-4 ${
+                        className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer flex items-center gap-4 ${
                           isSelected
-                            ? 'bg-[#F4EBE6] border-[#C86D51] shadow-sm'
-                            : 'bg-white border-[#EFECE6] hover:border-[#DCD7CD]'
+                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 border-rose-500 text-white shadow-lg shadow-rose-500/25'
+                            : 'bg-white border-rose-100 hover:border-rose-300 text-slate-900 shadow-xs'
                         }`}
                       >
-                        <span className="text-3xl">{opt.icon}</span>
-                        <div>
-                          <h4 className="text-sm font-bold text-[#2C2A29]">{opt.title}</h4>
-                          {'subtitle' in opt && opt.subtitle && <p className="text-xs text-[#7A7571] mt-0.5">{opt.subtitle}</p>}
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xs shrink-0 ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-rose-50 text-rose-600'
+                        }`}>
+                          {opt.icon}
                         </div>
-                      </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-black tracking-tight">{opt.title}</h4>
+                          {'subtitle' in opt && opt.subtitle && (
+                            <p className={`text-[10px] font-semibold mt-0.5 ${isSelected ? 'text-rose-100' : 'text-slate-500'}`}>
+                              {opt.subtitle}
+                            </p>
+                          )}
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          isSelected ? 'bg-white text-rose-500 border-white' : 'border-slate-300'
+                        }`}>
+                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+                      </motion.div>
                     );
                   })}
                 </div>
               )}
 
               {currentStepData.type === 'slider' && (
-                <div className="p-6 bg-white rounded-2xl border border-[#EFECE6] text-center">
-                  <div className="text-3xl font-bold text-[#C86D51] mb-4">
-                    {answers[step] || currentStepData.defaultVal} {currentStepData.unit}
+                <div className="p-6 bg-white rounded-[32px] border-2 border-rose-100 shadow-md text-center space-y-6">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-50 text-rose-700 rounded-full font-mono text-xl font-black shadow-inner border border-rose-200">
+                    <Sliders className="w-4 h-4" />
+                    <span>{answers[step] || currentStepData.defaultVal} {currentStepData.unit}</span>
                   </div>
+
                   <input
                     type="range"
                     min={currentStepData.min}
@@ -306,9 +361,10 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                     step={currentStepData.step}
                     value={answers[step] || currentStepData.defaultVal}
                     onChange={(e) => setAnswers({ ...answers, [step]: parseFloat(e.target.value) })}
-                    className="w-full accent-[#C86D51] mb-6 cursor-pointer"
+                    className="w-full custom-slider cursor-pointer"
                   />
-                  <div className="flex justify-between">
+
+                  <div className="flex justify-between gap-3">
                     <button
                       onClick={() => {
                         const cur = answers[step] || currentStepData.defaultVal || 0;
@@ -316,7 +372,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                         const next = Math.max(minVal, cur - 0.5);
                         setAnswers({ ...answers, [step]: next });
                       }}
-                      className="px-4 py-2 bg-[#EFECE6] text-[#2C2A29] rounded-xl text-xs font-semibold hover:bg-[#E2DDD5]"
+                      className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-black transition-colors cursor-pointer shadow-xs"
                     >
                       - 0.5 hrs
                     </button>
@@ -327,7 +383,7 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
                         const next = Math.min(maxVal, cur + 0.5);
                         setAnswers({ ...answers, [step]: next });
                       }}
-                      className="px-4 py-2 bg-[#EFECE6] text-[#2C2A29] rounded-xl text-xs font-semibold hover:bg-[#E2DDD5]"
+                      className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl text-xs font-black transition-colors cursor-pointer shadow-md shadow-rose-500/20"
                     >
                       + 0.5 hrs
                     </button>
@@ -336,32 +392,38 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
               )}
 
               {currentStepData.type === 'results' && (
-                <div className="p-6 bg-[#E8F0EC] rounded-2xl border border-[#4A7C59]/30">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-3xl">🎉</span>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-6 bg-gradient-to-br from-emerald-50 via-teal-50/50 to-white rounded-[32px] border-2 border-emerald-200 shadow-lg space-y-4 text-slate-900"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow-md shadow-emerald-500/30">
+                      🎉
+                    </div>
                     <div>
-                      <h3 className="text-base font-bold text-[#2C2A29]">Intake Successfully Completed!</h3>
-                      <p className="text-xs text-[#4A7C59]">Auto-saved securely to local storage</p>
+                      <h3 className="text-sm font-black text-emerald-950">Wellness Intake Complete!</h3>
+                      <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Saved securely to on-device memory</p>
                     </div>
                   </div>
-                  <hr className="border-[#4A7C59]/20 my-3" />
-                  <ul className="text-xs text-[#7A7571] space-y-2">
-                    <li>• Personalized clinical intelligence enabled</li>
-                    <li>• Zero-keyboard friction experience verified</li>
-                    <li>• Branching domain path optimized for your profile</li>
+                  <hr className="border-emerald-200/60 my-2" />
+                  <ul className="text-xs font-semibold text-slate-700 space-y-2">
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Personalized clinical intelligence enabled</li>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Zero-keyboard friction experience verified</li>
+                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Branching domain path optimized for your profile</li>
                   </ul>
-                </div>
+                </motion.div>
               )}
             </>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 bg-white border-t border-[#EFECE6] flex items-center justify-between">
+        <div className="px-6 py-4 bg-white border-t border-rose-100/60 flex items-center justify-between shrink-0">
           {step > 0 ? (
             <button
               onClick={() => setStep((s) => s - 1)}
-              className="px-4 py-2.5 rounded-xl border border-[#EFECE6] text-xs font-semibold text-[#7A7571] hover:bg-[#FAF8F5] flex items-center gap-2"
+              className="px-4.5 py-3 rounded-2xl border-2 border-slate-200 text-xs font-black text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" /> Previous
             </button>
@@ -370,9 +432,10 @@ export const InteractiveIntakeWizard: React.FC<IntakeWizardProps> = ({ isOpen, o
           <button
             onClick={handleNext}
             disabled={isLoading}
-            className="px-6 py-2.5 rounded-xl bg-[#C86D51] text-white text-xs font-bold hover:bg-[#B35C41] transition-colors flex items-center gap-2 shadow-sm"
+            className="px-7 py-3 rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 text-white text-xs font-black uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2.5 shadow-xl shadow-rose-500/25 cursor-pointer disabled:opacity-50"
           >
-            {step === stepsData.length - 1 ? 'Return to App' : 'Continue'} <ArrowRight className="w-4 h-4" />
+            <span>{step === stepsData.length - 1 ? 'Return to App' : 'Continue'}</span>
+            <ArrowRight className="w-4 h-4 stroke-[3]" />
           </button>
         </div>
       </motion.div>

@@ -1,101 +1,90 @@
+import { buildPcosRotterdamVector } from './onnxVector';
+
 function assert(condition: boolean, message: string) {
   if (!condition) {
     throw new Error(`TEST FAILED: ${message}`);
   }
 }
 
-export function buildPcosInputVector(params: {
-  age: number;
-  weightKg: number;
-  heightCm: number;
-  cycleLength: number;
-  periodDuration: number;
-  sleepHours: number;
-  restingHeartRate: number;
-  screenTimeMins: number;
-  acneSeverity: number;
-  hirsutismSeverity: number;
-  moodSwingsSeverity: number;
-  sugarCravingsSeverity: number;
-  fatigueSeverity: number;
-  irregularCycles: boolean;
-  pillTaken: boolean;
-}): number[] {
-  const safeAge = Math.max(12, Math.min(95, params.age));
-  const safeWeight = Math.max(30, Math.min(300, params.weightKg));
-  const safeHeight = Math.max(100, Math.min(220, params.heightCm));
-  const bmi = Number((safeWeight / Math.pow(safeHeight / 100, 2)).toFixed(1));
+console.log('Running Rotterdam v4 ONNX Input Vector Assembly Tests...');
 
-  return [
-    Number(safeAge),
-    Number(safeWeight),
-    Number(safeHeight),
-    bmi,
-    Number(params.cycleLength),
-    Number(params.periodDuration),
-    Number(params.sleepHours),
-    Number(params.restingHeartRate),
-    Number(params.screenTimeMins),
-    Number(params.acneSeverity),
-    Number(params.hirsutismSeverity),
-    Number(params.moodSwingsSeverity),
-    Number(params.sugarCravingsSeverity),
-    Number(params.fatigueSeverity),
-    params.irregularCycles ? 1.0 : 0.0,
-    params.pillTaken ? 1.0 : 0.0,
-  ];
-}
-
-console.log('Running ONNX Input Vector Assembly Tests...');
-
-// Test 1: Standard baseline profile
-const vector = buildPcosInputVector({
+// Test 1: Standard baseline profile with missing labs
+const vector = buildPcosRotterdamVector({
   age: 26,
+  menarcheAge: 12,
   weightKg: 60,
   heightCm: 165,
-  cycleLength: 28,
-  periodDuration: 5,
-  sleepHours: 8,
-  restingHeartRate: 72,
-  screenTimeMins: 180,
-  acneSeverity: 2,
-  hirsutismSeverity: 1,
-  moodSwingsSeverity: 3,
-  sugarCravingsSeverity: 2,
-  fatigueSeverity: 2,
-  irregularCycles: false,
-  pillTaken: false,
+  waistCm: 75,
+  hipCm: 95,
+  meanCycleLength: 28,
+  cycleVarianceStd: 1.2,
+  mfgHirsutismScore: 2,
+  hormonalAcnePresent: false,
+  androgenicAlopeciaStage: 0,
+  acanthosisNigricansPresent: false,
+  onContraceptives: false,
+  onInsulinSensitizer: false,
 });
 
-assert(vector.length === 16, `Expected vector length 16, got ${vector.length}`);
+assert(vector.length === 19, `Expected vector length 19, got ${vector.length}`);
 assert(vector[0] === 26, 'Age = 26');
-assert(vector[1] === 60, 'Weight = 60');
-assert(vector[2] === 165, 'Height = 165');
-const expectedBmi = Number((60 / Math.pow(165 / 100, 2)).toFixed(1));
-assert(vector[3] === expectedBmi, `Expected BMI ${expectedBmi}, got ${vector[3]}`);
-assert(vector[14] === 0.0, 'Irregular cycles = 0.0');
-assert(vector[15] === 0.0, 'Pill taken = 0.0');
+assert(vector[1] === 14, 'Years post menarche = 26 - 12 = 14');
+const expectedBmi = Number((60 / Math.pow(1.65, 2)).toFixed(1));
+assert(vector[2] === expectedBmi, `Expected BMI ${expectedBmi}, got ${vector[2]}`);
+assert(vector[3] === 0.79, `Expected WHR 0.79, got ${vector[3]}`);
+assert(vector[4] === 28, 'Mean cycle length = 28');
+assert(vector[6] === 0.0, 'is_oligomenorrhea = 0.0');
+assert(vector[7] === 0.0, 'is_polymenorrhea = 0.0');
+assert(vector[8] === 0.0, 'is_amenorrhea = 0.0');
+assert(vector[15] === -1.0, 'Missing LH/FSH ratio defaults to -1.0');
+assert(vector[16] === -1.0, 'Missing Total Testosterone defaults to -1.0');
+assert(vector[17] === -1.0, 'Missing Fasting Insulin defaults to -1.0');
+assert(vector[18] === -1.0, 'Missing TSH defaults to -1.0');
 
-// Test 2: High risk profile
-const highRiskVector = buildPcosInputVector({
-  age: 28,
-  weightKg: 85,
-  heightCm: 160,
-  cycleLength: 42,
-  periodDuration: 7,
-  sleepHours: 6,
-  restingHeartRate: 85,
-  screenTimeMins: 300,
-  acneSeverity: 8,
-  hirsutismSeverity: 7,
-  moodSwingsSeverity: 8,
-  sugarCravingsSeverity: 9,
-  fatigueSeverity: 7,
-  irregularCycles: true,
-  pillTaken: false,
+// Test 2: Birth control override rule
+const bcVector = buildPcosRotterdamVector({
+  age: 24,
+  menarcheAge: 13,
+  weightKg: 58,
+  heightCm: 162,
+  meanCycleLength: 45, // Normally oligomenorrhea, but on BC!
+  onContraceptives: true,
 });
 
-assert(highRiskVector[14] === 1.0, 'Irregular cycles = 1.0');
-assert(highRiskVector[9] === 8, 'Acne severity = 8');
+assert(bcVector[4] === 28.0, 'BC override: mean_cycle_length forced to 28.0');
+assert(bcVector[5] === 0.5, 'BC override: cycle_variance_std forced to 0.5');
+assert(bcVector[6] === 0.0, 'BC override: oligomenorrhea forced to 0.0');
+assert(bcVector[7] === 0.0, 'BC override: polymenorrhea forced to 0.0');
+assert(bcVector[8] === 0.0, 'BC override: amenorrhea forced to 0.0');
+assert(bcVector[13] === 1.0, 'on_contraceptives = 1.0');
 
-console.log('✅ ALL ONNX VECTOR ASSEMBLY TESTS PASSED SUCCESSFULLY!');
+// Test 3: Oligomenorrhea flag (cycle > 35)
+const oligoVector = buildPcosRotterdamVector({
+  age: 28,
+  weightKg: 80,
+  heightCm: 160,
+  meanCycleLength: 42,
+  onContraceptives: false,
+});
+
+assert(oligoVector[6] === 1.0, 'Cycle 42 > 35 set oligomenorrhea = 1.0');
+assert(oligoVector[7] === 0.0, 'Polymenorrhea = 0.0');
+assert(oligoVector[8] === 0.0, 'Amenorrhea = 0.0');
+
+// Test 4: Labs provided
+const labsVector = buildPcosRotterdamVector({
+  age: 29,
+  weightKg: 70,
+  heightCm: 165,
+  lhFshRatio: 2.5,
+  totalTestosterone: 65,
+  fastingInsulin: 18.5,
+  tsh: 2.1,
+});
+
+assert(labsVector[15] === 2.5, 'LH/FSH ratio = 2.5');
+assert(labsVector[16] === 65, 'Total Testosterone = 65');
+assert(labsVector[17] === 18.5, 'Fasting Insulin = 18.5');
+assert(labsVector[18] === 2.1, 'TSH = 2.1');
+
+console.log('✅ ALL ROTTERDAM V4 ONNX VECTOR ASSEMBLY TESTS PASSED SUCCESSFULLY!');

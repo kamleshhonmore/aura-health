@@ -14,16 +14,18 @@ import { CycleStatus } from '../utils/cycleCalculations';
 import { generateMasterAuraResponse } from '../utils/aiMasterEngine';
 
 /**
- * Fetches AI completions directly from OpenRouter client-side with automatic model failover.
+ * Fetches real-time AI completions with multi-layer fallback:
+ * Layer 1: OpenRouter (if user configured a custom API key in Settings)
+ * Layer 2: Pollinations AI Real-Time Live Engine (100% Free, No API key required, 24/7 active)
+ * Layer 3: Backup Pollinations AI GET Endpoint
  */
 async function fetchServerAIChat(
   messages: { role: string; content: string }[],
   userCycleContext?: any
 ): Promise<{ reply: string; model: string }> {
   const customApiKey = localStorage.getItem('aura_openrouter_api_key') || '';
-  const apiKeyToUse = customApiKey;
 
-  let systemInstruction = `You are "Aura AI", the powerful, unified all-in-one Master Women's Health, Clinical, and App Navigation Intelligence. Always answer warmly, authoritatively, and clearly using clean markdown, bullet points, and actionable tips.`;
+  let systemInstruction = `You are "Aura AI", the warm, authoritative Master Women's Health, Clinical, and App Navigation Intelligence. Always answer warmly, authoritatively, and clearly using clean markdown, bullet points, and actionable tips.`;
 
   if (userCycleContext) {
     systemInstruction += `\n\nUser's Current Cycle Context:\n- Cycle Day: ${userCycleContext.cycleDay || "Unknown"}\n- Current Phase: ${userCycleContext.phase || "Unknown"}\n- Cycle Length: ${userCycleContext.cycleLength || 28} days\n- Next Period In: ${userCycleContext.daysUntilPeriod ?? "N/A"} days\n- Current Logged Symptoms/Mood: ${userCycleContext.symptoms || "None reported today"}`;
@@ -37,48 +39,97 @@ async function fetchServerAIChat(
     })),
   ];
 
-  const candidateModels = [
-    "openrouter/auto",
-    "meta-llama/llama-3.3-70b-instruct",
-    "deepseek/deepseek-chat",
-    "qwen/qwen-2.5-72b-instruct",
-  ];
+  // --- LAYER 1: Try OpenRouter if Custom API Key is Provided ---
+  if (customApiKey && customApiKey.trim().length > 0) {
+    const candidateModels = [
+      "openrouter/auto",
+      "meta-llama/llama-3.3-70b-instruct",
+      "deepseek/deepseek-chat",
+      "qwen/qwen-2.5-72b-instruct",
+    ];
 
-  for (const model of candidateModels) {
-    try {
-      console.log('[AURA-AI-CLIENT] Calling OpenRouter directly with model:', model);
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKeyToUse}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://aistudio.google.com",
-          "X-Title": "Aura Women Health App",
-        },
-        body: JSON.stringify({
-          model,
-          messages: formattedMessages,
-          temperature: 0.7,
-        }),
-      });
+    for (const model of candidateModels) {
+      try {
+        console.log('[AURA-AI] Calling OpenRouter with custom key, model:', model);
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${customApiKey.trim()}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://aistudio.google.com",
+            "X-Title": "Aura Women Health App",
+          },
+          body: JSON.stringify({
+            model,
+            messages: formattedMessages,
+            temperature: 0.7,
+          }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.choices?.[0]?.message?.content;
-        if (text && typeof text === "string" && text.trim().length > 0) {
-          console.log('[AURA-AI-CLIENT] Success with model:', model);
-          return {
-            reply: text.trim(),
-            model: 'Aura AI • OpenRouter Live Online',
-          };
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.choices?.[0]?.message?.content;
+          if (text && typeof text === "string" && text.trim().length > 0) {
+            console.log('[AURA-AI] OpenRouter success with model:', model);
+            return {
+              reply: text.trim(),
+              model: 'Aura AI • OpenRouter Live Online',
+            };
+          }
         }
-      } else {
-        const errText = await response.text();
-        console.warn(`[AURA-AI-CLIENT] Model ${model} failed:`, errText);
+      } catch (err) {
+        console.warn(`[AURA-AI] OpenRouter model ${model} error:`, err);
       }
-    } catch (err) {
-      console.warn(`[AURA-AI-CLIENT] Model ${model} error:`, err);
     }
+  }
+
+  // --- LAYER 2: Pollinations AI Real-Time Live Engine (100% Free, No API Key Required, Always Online) ---
+  try {
+    console.log('[AURA-AI] Connecting to Pollinations AI Real-Time Live Engine...');
+    const response = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: formattedMessages,
+        model: "openai",
+      }),
+    });
+
+    if (response.ok) {
+      const text = await response.text();
+      if (text && typeof text === "string" && text.trim().length > 0) {
+        console.log('[AURA-AI] Pollinations AI Live Engine success!');
+        return {
+          reply: text.trim(),
+          model: 'Aura AI • Real-Time Live Engine',
+        };
+      }
+    } else {
+      console.warn('[AURA-AI] Pollinations AI status:', response.status);
+    }
+  } catch (err) {
+    console.warn('[AURA-AI] Pollinations AI error:', err);
+  }
+
+  // --- LAYER 3: Backup Pollinations GET Endpoint ---
+  try {
+    const lastUserMessage = messages.filter((m) => m.role === 'user').pop()?.content || 'Hello';
+    const encodedPrompt = encodeURIComponent(`System: ${systemInstruction}\n\nUser Question: ${lastUserMessage}`);
+    const response = await fetch(`https://text.pollinations.ai/${encodedPrompt}?model=openai`);
+
+    if (response.ok) {
+      const text = await response.text();
+      if (text && typeof text === "string" && text.trim().length > 0) {
+        return {
+          reply: text.trim(),
+          model: 'Aura AI • Live Online Core',
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[AURA-AI] Backup Pollinations GET error:', err);
   }
 
   throw new Error("Online AI request failed. Please check your internet connection.");
@@ -125,13 +176,12 @@ export function GeminiChatbot({
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
     };
   }, []);
 
@@ -317,36 +367,43 @@ How can I assist your body, mood, or app navigation today?`,
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-h-[750px] bg-white rounded-3xl shadow-xl border border-pink-100 overflow-hidden relative font-['Nunito']">
-      {/* Top Unified Master AI Header */}
-      <div className="bg-gradient-to-r from-pink-50 via-rose-50 to-purple-50 border-b border-pink-100/80 px-4 py-3 flex items-center justify-between shadow-xs">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FF758C] to-[#FF7EB3] flex items-center justify-center text-xl shadow-md text-white shrink-0">
+    <div className="flex flex-col h-full flex-1 min-h-[350px] bg-white rounded-3xl shadow-xl border border-pink-100 overflow-hidden relative font-['Nunito']">
+      {/* Top Futuristic Graphical AI Header */}
+      <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white px-4 py-3 flex items-center justify-between shadow-md relative overflow-hidden shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 animate-pulse pointer-events-none" />
+
+        <div className="flex items-center space-x-3 relative z-10">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-rose-500/30 text-white shrink-0 relative">
+            <span className="animate-spin [animation-duration:8s] absolute inset-0 rounded-2xl border border-white/30" />
             🌸
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="text-sm font-black text-gray-900 font-['Fredoka']">Aura AI</h2>
-              <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[9px] font-bold tracking-wide shadow-xs">
-                MASTER AI
+              <h2 className="text-sm font-black tracking-wide font-['Fredoka']">Aura AI</h2>
+              <span className="px-2 py-0.5 rounded-full bg-white/20 text-rose-200 text-[9px] font-black uppercase tracking-wider backdrop-blur-md border border-white/20">
+                Neural Core
               </span>
             </div>
-            <p className="text-[10px] text-gray-500 font-medium">
-              Women's Health, Clinical Insights, Ayurveda & Full App Guide
+            <p className="text-[10px] text-slate-300 font-semibold">
+              Clinical & On-Device Intelligence
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${
-            isOnline ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
+        <div className="flex items-center space-x-2 relative z-10">
+          {/* Blinking Live Indicator (Green when online with API key, Red when offline/local) */}
+          <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-md border ${
+            isOnline
+              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+              : 'bg-rose-500/20 text-rose-300 border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-            <span>{isOnline ? 'Online • OpenRouter' : 'Offline'}</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-ping' : 'bg-rose-500'}`} />
+            <span>{isOnline ? 'Live Online' : 'Local Mode'}</span>
           </div>
+
           <button
             onClick={handleClearHistory}
-            className="p-2 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-slate-300 hover:text-rose-400 hover:bg-white/10 transition-colors cursor-pointer"
             title="Reset conversation"
           >
             <Trash2 className="w-4 h-4" />
