@@ -82,7 +82,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const selectedLog = logs[selectedDateStr];
 
   return (
-    <div className="space-y-4 font-['Nunito']">
+    <div className="space-y-4 font-['Nunito'] pb-28">
       {/* Calendar Grid Card */}
       <div
         className={`p-5 rounded-[32px] ${theme.bgCard} border-2 ${theme.borderCard} shadow-xl transition-all space-y-4`}
@@ -143,14 +143,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   {isOvulation && <Sparkles className="w-3 h-3 text-amber-600" />}
                 </div>
 
-                {/* Helper text for period start/end/day & fertile window */}
-                <div className="text-[9px] font-black tracking-tighter truncate w-full text-center">
+                {/* Compact short helper text fitting narrow mobile cells */}
+                <div className="text-[8px] sm:text-[9px] font-black tracking-tighter truncate w-full text-center uppercase leading-none">
                   {isPeriod || isPredictedPeriod ? (
-                    day.cycleDay === 1 ? 'Start' : day.cycleDay === periodLength ? 'End' : `Day ${day.cycleDay}`
+                    day.cycleDay === 1 ? 'Start' : day.cycleDay === periodLength ? 'End' : `D${day.cycleDay}`
                   ) : isOvulation ? (
-                    'Ovulation'
+                    'Ovul'
                   ) : isFertile ? (
-                    'Fertile'
+                    'Fert'
                   ) : null}
                 </div>
 

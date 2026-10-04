@@ -9,6 +9,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#FFF4F7] text-[#4A3B43] antialiased overflow-x-hidden selection:bg-[#FF85A2] selection:text-white">
+    <script>
+      window.addEventListener('error', function(e) {
+        var errDiv = document.getElementById('debug-error');
+        if (!errDiv) {
+          errDiv = document.createElement('div');
+          errDiv.id = 'debug-error';
+          errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;color:#d32f2f;padding:20px;z-index:999999;font-family:sans-serif;font-size:14px;overflow:auto;word-wrap:break-word;';
+          (document.body || document.documentElement).appendChild(errDiv);
+        }
+        errDiv.innerHTML += '<h3>JS Error:</h3><p>' + (e.message || e) + '</p><p>' + (e.filename || '') + ':' + (e.lineno || '') + '</p><hr/>';
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var errDiv = document.getElementById('debug-error');
+        if (!errDiv) {
+          errDiv = document.createElement('div');
+          errDiv.id = 'debug-error';
+          errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;color:#d32f2f;padding:20px;z-index:999999;font-family:sans-serif;font-size:14px;overflow:auto;word-wrap:break-word;';
+          (document.body || document.documentElement).appendChild(errDiv);
+        }
+        errDiv.innerHTML += '<h3>Unhandled Rejection:</h3><p>' + (e.reason ? (e.reason.stack || e.reason.message || e.reason) : e) + '</p><hr/>';
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

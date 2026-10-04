@@ -72,14 +72,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [user]);
 
-  // Handle redirect login results on boot
+  // Handle redirect login results on boot (web only, non-blocking on native)
   useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
-      // Non-fatal if no redirect was pending
-      if (err?.code !== 'auth/null-user') {
-        console.log('Firebase redirect auth status:', err?.message);
-      }
-    });
+    if (!Capacitor.isNativePlatform()) {
+      getRedirectResult(auth).catch((err) => {
+        if (err?.code !== 'auth/null-user') {
+          console.log('Firebase redirect auth status:', err?.message);
+        }
+      });
+    }
   }, []);
 
   // Listen to Auth State
@@ -97,10 +98,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
           const repo = getDatabaseProvider();
-          // Add 6-second timeout so app never hangs indefinitely on network/firestore delay
+          // Add 2-second timeout so app loads instantly even if Firestore network is delayed
           let profile = await Promise.race([
             repo.getUserProfile(currentUser.uid),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore connection timeout')), 6000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore connection timeout')), 2000))
           ]) as UserProfileData | null;
 
           if (!profile) {

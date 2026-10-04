@@ -8,6 +8,7 @@ import {
   Trash2,
   Volume2,
   VolumeX,
+  ArrowLeft,
 } from 'lucide-react';
 import { ThemeConfig } from '../types';
 import { CycleStatus } from '../utils/cycleCalculations';
@@ -369,22 +370,32 @@ How can I assist your body, mood, or app navigation today?`,
   return (
     <div className="flex flex-col h-full flex-1 min-h-[350px] bg-white rounded-3xl shadow-xl border border-pink-100 overflow-hidden relative font-['Nunito']">
       {/* Top Futuristic Graphical AI Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white px-4 py-3 flex items-center justify-between shadow-md relative overflow-hidden shrink-0">
+      <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 text-white px-3 py-3 flex items-center justify-between shadow-md relative overflow-hidden shrink-0">
         <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 animate-pulse pointer-events-none" />
 
-        <div className="flex items-center space-x-3 relative z-10">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-rose-500/30 text-white shrink-0 relative">
+        <div className="flex items-center space-x-2.5 relative z-10">
+          {onNavigateToTab && (
+            <button
+              onClick={() => onNavigateToTab('home')}
+              className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer border border-white/20 shrink-0"
+              title="Return to Home"
+            >
+              <ArrowLeft className="w-4 h-4 stroke-[3]" />
+            </button>
+          )}
+
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-purple-600 flex items-center justify-center text-lg shadow-lg shadow-rose-500/30 text-white shrink-0 relative">
             <span className="animate-spin [animation-duration:8s] absolute inset-0 rounded-2xl border border-white/30" />
             🌸
           </div>
           <div>
-            <div className="flex items-center space-x-2">
-              <h2 className="text-sm font-black tracking-wide font-['Fredoka']">Aura AI</h2>
-              <span className="px-2 py-0.5 rounded-full bg-white/20 text-rose-200 text-[9px] font-black uppercase tracking-wider backdrop-blur-md border border-white/20">
+            <div className="flex items-center space-x-1.5">
+              <h2 className="text-xs font-black tracking-wide font-['Fredoka']">Aura AI</h2>
+              <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-rose-200 text-[8px] font-black uppercase tracking-wider backdrop-blur-md border border-white/20">
                 Neural Core
               </span>
             </div>
-            <p className="text-[10px] text-slate-300 font-semibold">
+            <p className="text-[9px] text-slate-300 font-semibold truncate max-w-[130px] sm:max-w-[180px]">
               Clinical & On-Device Intelligence
             </p>
           </div>

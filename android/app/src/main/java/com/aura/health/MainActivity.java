@@ -6,7 +6,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(OnnxPredictorPlugin.class);
         super.onCreate(savedInstanceState);
+        registerPlugin(OnnxPredictorPlugin.class);
     }
 }

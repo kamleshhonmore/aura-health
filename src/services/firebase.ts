@@ -70,13 +70,16 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Validate connection on boot as mandated
+// Validate connection on boot as mandated (with short non-blocking timeout)
 export async function testConnection(): Promise<boolean> {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    await Promise.race([
+      getDocFromServer(doc(db, 'test', 'connection')),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection test timeout')), 1500))
+    ]);
     return true;
   } catch (error) {
-    if (error instanceof Error && (error.message.includes('the client is offline') || (error as any).code === 'unavailable')) {
+    if (error instanceof Error && (error.message.includes('the client is offline') || (error as any).code === 'unavailable' || error.message.includes('timeout'))) {
       console.warn('Firebase client operating in offline mode or waiting for connection.');
     }
     return false;

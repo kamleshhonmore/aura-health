@@ -136,6 +136,29 @@ export function App() {
   const [isPinSetupOpen, setIsPinSetupOpen] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isInteractiveWizardOpen, setIsInteractiveWizardOpen] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // Global Keyboard / Input Auto-Adjustment Listener across all screens & modals
+  useEffect(() => {
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        setIsKeyboardVisible(true);
+      }
+    };
+    const handleFocusOut = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        setTimeout(() => setIsKeyboardVisible(false), 150);
+      }
+    };
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
+  }, []);
 
   // Keep refs for activeTab and all modals so the back button listener never misses state
   const activeTabRef = useRef(activeTab);
@@ -505,7 +528,7 @@ export function App() {
   return (
     <div className={`min-h-screen ${currentTheme.bgMain} flex flex-col font-['Nunito'] antialiased transition-colors text-[#1A1A24]`}>
       {/* Mobile App Frame Container */}
-      <div className="w-full max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative bg-[#F8F9FC] pb-24 border-x border-[#EAECEF]">
+      <div className="w-full max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative bg-[#F8F9FC] pb-36 border-x border-[#EAECEF]">
         {/* Top Header */}
         <DeskHeader
           theme={currentTheme}
@@ -808,8 +831,8 @@ export function App() {
           </AnimatePresence>
         </main>
 
-        {/* Floating Glassmorphic Navigation Dock */}
-        {!(isLogModalOpen || isThemeModalOpen || isRemindersModalOpen || isSettingsModalOpen || isPinSetupOpen || isAppLocked) && (
+        {/* Floating Glassmorphic Navigation Dock (Hidden when keyboard is active or in AI Chat to maximize space) */}
+        {!isKeyboardVisible && activeTab !== 'aichat' && !(isLogModalOpen || isThemeModalOpen || isRemindersModalOpen || isSettingsModalOpen || isPinSetupOpen || isAppLocked) && (
           <NavDock
             activeTab={activeTab}
             onTabChange={(tab) => setActiveTab(tab === 'ai' ? 'aichat' : (tab as any))}

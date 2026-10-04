@@ -24,7 +24,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "My Application"
 
-include(":app")
 include(":capacitor-android")
 project(":capacitor-android").projectDir = file("node_modules/@capacitor/android/capacitor")
 include(":capacitor-app")
