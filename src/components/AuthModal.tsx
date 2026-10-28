@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ThemeConfig, DayLog, CycleRecord } from '../types';
+import { UserRole, DoctorInfo } from '../services/db/types';
 import {
   X,
   Cloud,
@@ -18,6 +19,10 @@ import {
   Lock,
   Mail,
   User,
+  Stethoscope,
+  Building,
+  FileCheck,
+  Award,
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -37,6 +42,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const {
     user,
+    userProfile,
     loading,
     syncStatus,
     activeProvider,
@@ -58,6 +64,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [passwordInput, setPasswordInput] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
 
+  // Extended Doctor / Role state
+  const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
+  const [specialization, setSpecialization] = useState<DoctorInfo['specialization']>('Gynecologist');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [hospitalClinic, setHospitalClinic] = useState('');
+
   if (!isOpen) return null;
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -65,11 +77,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setErrorMessage(null);
     try {
       if (isSignUp) {
-        await signUpWithEmail(emailInput, passwordInput);
-        setSyncMessage('Account created and logged in successfully!');
+        const doctorDetails: DoctorInfo | undefined = selectedRole === 'doctor' ? {
+          specialization,
+          licenseNumber: licenseNumber.trim(),
+          hospitalClinic: hospitalClinic.trim(),
+        } : undefined;
+
+        if (selectedRole === 'doctor' && !licenseNumber.trim()) {
+          setErrorMessage('Please provide a valid Medical License Number.');
+          return;
+        }
+
+        await signUpWithEmail(emailInput, passwordInput, selectedRole, doctorDetails);
+        setSyncMessage(selectedRole === 'doctor'
+          ? 'Doctor account created! Verification pending admin review.'
+          : 'Account created and logged in successfully!');
       } else {
         await signInWithEmail(emailInput, passwordInput);
-        setSyncMessage('Logged in successfully with email!');
+        setSyncMessage('Logged in successfully!');
       }
       setTimeout(() => setSyncMessage(null), 3500);
     } catch (err: any) {
@@ -204,9 +229,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="flex-1 min-w-0">
                   <h3 className="font-black text-sm truncate text-slate-900">{user.displayName || 'Aura Health User'}</h3>
                   <p className="text-xs font-semibold text-slate-500 truncate">{user.email}</p>
-                  <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-700 font-black uppercase tracking-wider">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Google Authenticated</span>
+
+                  <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-800">
+                      Role: {userProfile?.role || 'patient'}
+                    </span>
+                    {userProfile?.role === 'doctor' && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        userProfile.isVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {userProfile.isVerified ? 'Verified Doctor' : 'Verification Pending'}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -274,8 +308,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <form onSubmit={handleEmailAuth} className="space-y-3 pt-3 text-left border-t border-slate-100 mt-2">
                 <div className="text-[11px] font-black uppercase tracking-wider text-slate-500 text-center mb-1">
-                  Or Sign in with Email & Password
+                  Or {isSignUp ? 'Create New Account' : 'Sign in with Email'}
                 </div>
+
+                {isSignUp && (
+                  <div className="p-1 rounded-2xl bg-slate-100 grid grid-cols-2 gap-1 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRole('patient')}
+                      className={`py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        selectedRole === 'patient'
+                          ? 'bg-white text-rose-600 shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      Patient
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRole('doctor')}
+                      className={`py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                        selectedRole === 'doctor'
+                          ? 'bg-white text-teal-700 shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Stethoscope className="w-3.5 h-3.5" />
+                      Doctor / Specialist
+                    </button>
+                  </div>
+                )}
+
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                   <input
@@ -299,12 +363,61 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-rose-100 text-xs font-semibold outline-none bg-slate-50/50 focus:border-rose-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400"
                   />
                 </div>
+
+                {isSignUp && selectedRole === 'doctor' && (
+                  <div className="space-y-2.5 p-3.5 rounded-2xl bg-teal-50/50 border border-teal-100 mt-2">
+                    <div className="text-[11px] font-black uppercase tracking-wider text-teal-800 flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-teal-600" />
+                      Medical Credential Verification
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black text-slate-600 uppercase tracking-wider block mb-1">
+                        Specialization
+                      </label>
+                      <select
+                        value={specialization}
+                        onChange={(e) => setSpecialization(e.target.value as any)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-teal-200 text-xs font-semibold bg-white outline-none focus:border-teal-500 text-slate-900"
+                      >
+                        <option value="Gynecologist">Gynecologist & Obstetrician</option>
+                        <option value="Endocrinologist">Endocrinologist (Reproductive)</option>
+                        <option value="Ayurvedic Practitioner">Ayurvedic Physician (BAMS/MD)</option>
+                        <option value="General Physician">General Wellness Physician</option>
+                      </select>
+                    </div>
+
+                    <div className="relative">
+                      <FileCheck className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Medical License Number (e.g. MCI-123456)"
+                        value={licenseNumber}
+                        onChange={(e) => setLicenseNumber(e.target.value)}
+                        required
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-teal-200 text-xs font-semibold outline-none bg-white focus:border-teal-500 text-slate-900 placeholder-slate-400"
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <Building className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Hospital / Clinic Name (Optional)"
+                        value={hospitalClinic}
+                        onChange={(e) => setHospitalClinic(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-teal-200 text-xs font-semibold outline-none bg-white focus:border-teal-500 text-slate-900 placeholder-slate-400"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full py-3 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 text-white bg-slate-900 hover:bg-slate-800 shadow-md transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                 >
-                  <span>{isSignUp ? 'Create Account & Sign In' : 'Sign In with Email'}</span>
+                  <span>{isSignUp ? `Create ${selectedRole === 'doctor' ? 'Doctor' : 'Patient'} Account` : 'Sign In with Email'}</span>
                 </button>
                 <div className="flex items-center justify-between text-xs pt-1 px-1">
                   <span className="font-semibold text-slate-500">{isSignUp ? 'Already have an account?' : "Don't have an account?"}</span>

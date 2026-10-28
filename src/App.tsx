@@ -49,6 +49,8 @@ import { RemindersModal } from './components/RemindersModal';
 import { PinLockModal } from './components/PinLockModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AuthModal } from './components/AuthModal';
+import { AdminPortal } from './components/AdminPortal';
+import { DoctorConnectModal } from './components/DoctorConnectModal';
 import { useAuth } from './context/AuthContext';
 import { getDatabaseProvider } from './services/db';
 
@@ -118,13 +120,15 @@ export function App() {
   });
 
   const [activeTab, setActiveTab] = useState<
-    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat'
+    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat' | 'admin'
   >('home');
   const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('desk');
 
   // Auth & Database Context
   const { user, userProfile, syncStatus, updateSettings: updateProfileSettings, syncOfflineData } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isDoctorConnectOpen, setIsDoctorConnectOpen] = useState(false);
+  const [isAdminPortalOpen, setIsAdminPortalOpen] = useState(false);
   const [onlineSyncToast, setOnlineSyncToast] = useState<string | null>(null);
 
   // Modals state
@@ -544,8 +548,12 @@ export function App() {
           onOpenAiChat={() => setActiveTab('aichat')}
           onSearchClick={() => setActiveTab('hub')}
           onOpenAuth={() => setIsAuthModalOpen(true)}
+          onOpenDoctorConnect={() => setIsDoctorConnectOpen(true)}
+          onOpenAdminPortal={() => setIsAdminPortalOpen(true)}
           userEmail={user?.email}
           userPhoto={user?.photoURL}
+          userRole={userProfile?.role}
+          isDoctorVerified={userProfile?.isVerified}
           syncStatus={syncStatus}
           onTogglePregnancy={() => {
             const nextMode = !settings.isPregnancyMode;
@@ -828,6 +836,18 @@ export function App() {
                 />
               </motion.div>
             )}
+
+            {activeTab === 'admin' && (
+              <motion.div
+                key="admin"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <AdminPortal theme={currentTheme} onClose={() => setActiveTab('home')} />
+              </motion.div>
+            )}
           </AnimatePresence>
         </main>
 
@@ -927,6 +947,26 @@ export function App() {
         currentLogs={logs}
         currentCycles={cycles}
       />
+
+      <DoctorConnectModal
+        isOpen={isDoctorConnectOpen}
+        onClose={() => setIsDoctorConnectOpen(false)}
+        theme={currentTheme}
+      />
+
+      {isAdminPortalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xl overflow-y-auto p-4 sm:p-6 flex items-start justify-center pt-10">
+          <div className="w-full max-w-5xl bg-white rounded-[32px] p-2 relative shadow-2xl">
+            <button
+              onClick={() => setIsAdminPortalOpen(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold z-50 cursor-pointer shadow-sm"
+            >
+              ✕
+            </button>
+            <AdminPortal theme={currentTheme} onClose={() => setIsAdminPortalOpen(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

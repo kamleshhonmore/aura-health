@@ -6,6 +6,8 @@ import {
   getDocs,
   deleteDoc,
   onSnapshot,
+  query,
+  where,
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
 import {
@@ -13,6 +15,7 @@ import {
   UserProfileData,
   AssessmentData,
   AyurvedicProfileData,
+  PatientDoctorConnection,
 } from './types';
 import { DayLog, CycleRecord } from '../../types';
 
@@ -253,6 +256,105 @@ export class FirestoreRepository implements IDataRepository {
       return snap.data() as AyurvedicProfileData;
     } catch (error) {
       handleFirestoreError(error, OperationType.GET, path);
+    }
+  }
+
+  // --- Doctor & Admin Access Control ---
+  async getPendingDoctors(): Promise<UserProfileData[]> {
+    const path = 'users (role == doctor & isVerified == false)';
+    try {
+      const q = query(collection(db, 'users'), where('role', '==', 'doctor'));
+      const snap = await getDocs(q);
+      const docs: UserProfileData[] = [];
+      snap.forEach((d) => {
+        const data = d.data() as UserProfileData;
+        if (!data.isVerified) {
+          docs.push(data);
+        }
+      });
+      return docs;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  }
+
+  async getAllDoctors(): Promise<UserProfileData[]> {
+    const path = 'users (role == doctor)';
+    try {
+      const q = query(collection(db, 'users'), where('role', '==', 'doctor'));
+      const snap = await getDocs(q);
+      const docs: UserProfileData[] = [];
+      snap.forEach((d) => {
+        docs.push(d.data() as UserProfileData);
+      });
+      return docs;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  }
+
+  async verifyDoctor(doctorId: string, isVerified: boolean): Promise<void> {
+    const path = `users/${doctorId}`;
+    try {
+      await setDoc(
+        doc(db, 'users', doctorId),
+        { isVerified, updatedAt: new Date().toISOString() },
+        { merge: true }
+      );
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  }
+
+  // --- Patient - Doctor Connections ---
+  async saveConnection(connection: PatientDoctorConnection): Promise<void> {
+    const path = `connections/${connection.id}`;
+    try {
+      await setDoc(doc(db, 'connections', connection.id), {
+        ...connection,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  }
+
+  async getPatientConnections(patientId: string): Promise<PatientDoctorConnection[]> {
+    const path = `connections (patientId == ${patientId})`;
+    try {
+      const q = query(collection(db, 'connections'), where('patientId', '==', patientId));
+      const snap = await getDocs(q);
+      const list: PatientDoctorConnection[] = [];
+      snap.forEach((d) => list.push(d.data() as PatientDoctorConnection));
+      return list;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  }
+
+  async getDoctorPatients(doctorId: string): Promise<PatientDoctorConnection[]> {
+    const path = `connections (doctorId == ${doctorId})`;
+    try {
+      const q = query(collection(db, 'connections'), where('doctorId', '==', doctorId));
+      const snap = await getDocs(q);
+      const list: PatientDoctorConnection[] = [];
+      snap.forEach((d) => list.push(d.data() as PatientDoctorConnection));
+      return list;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, path);
+      return [];
+    }
+  }
+
+  async deleteConnection(connectionId: string): Promise<void> {
+    const path = `connections/${connectionId}`;
+    try {
+      await deleteDoc(doc(db, 'connections', connectionId));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, path);
     }
   }
 }

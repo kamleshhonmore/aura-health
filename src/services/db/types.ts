@@ -1,10 +1,23 @@
 import { DayLog, CycleRecord, AppSettings, ThemeId, PetId } from '../../types';
 
+export type UserRole = 'patient' | 'doctor' | 'admin';
+
+export interface DoctorInfo {
+  specialization: 'Gynecologist' | 'Endocrinologist' | 'Ayurvedic Practitioner' | 'General Physician';
+  licenseNumber: string;
+  hospitalClinic?: string;
+  bio?: string;
+  consultationFee?: number;
+}
+
 export interface UserProfileData {
   uid: string;
   email: string;
   displayName?: string;
   photoURL?: string;
+  role?: UserRole;
+  isVerified?: boolean;
+  doctorInfo?: DoctorInfo;
   cycleLength?: number;
   periodLength?: number;
   lutealLength?: number;
@@ -17,6 +30,25 @@ export interface UserProfileData {
   userHeight?: number;
   userWeight?: number;
   updatedAt?: string;
+}
+
+export interface PatientDoctorConnection {
+  id: string;
+  patientId: string;
+  patientName: string;
+  patientEmail: string;
+  doctorId: string;
+  doctorName: string;
+  doctorSpecialization?: string;
+  status: 'pending' | 'accepted' | 'revoked';
+  permissions: {
+    shareCycleLogs: boolean;
+    sharePcosAssessments: boolean;
+    shareAyurvedicProfile: boolean;
+  };
+  accessCode?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AssessmentData {
@@ -68,4 +100,16 @@ export interface IDataRepository {
   // Ayurvedic Profile
   saveAyurvedicProfile(userId: string, profile: AyurvedicProfileData): Promise<void>;
   getAyurvedicProfile(userId: string): Promise<AyurvedicProfileData | null>;
+
+  // Doctor & Admin Access Control
+  getPendingDoctors?(): Promise<UserProfileData[]>;
+  getAllDoctors?(): Promise<UserProfileData[]>;
+  verifyDoctor?(doctorId: string, isVerified: boolean): Promise<void>;
+
+  // Patient - Doctor Connections
+  saveConnection?(connection: PatientDoctorConnection): Promise<void>;
+  getPatientConnections?(patientId: string): Promise<PatientDoctorConnection[]>;
+  getDoctorPatients?(doctorId: string): Promise<PatientDoctorConnection[]>;
+  deleteConnection?(connectionId: string): Promise<void>;
 }
+

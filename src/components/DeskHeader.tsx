@@ -21,6 +21,9 @@ import {
   Cloud,
   ShieldCheck,
   Check,
+  Stethoscope,
+  ShieldAlert,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface DeskHeaderProps {
@@ -37,8 +40,12 @@ interface DeskHeaderProps {
   onOpenAiChat?: () => void;
   onSearchClick?: () => void;
   onOpenAuth?: () => void;
+  onOpenDoctorConnect?: () => void;
+  onOpenAdminPortal?: () => void;
   userEmail?: string | null;
   userPhoto?: string | null;
+  userRole?: string;
+  isDoctorVerified?: boolean;
   syncStatus?: 'synced' | 'syncing' | 'offline' | 'local';
 }
 
@@ -165,10 +172,15 @@ export const DeskHeader: React.FC<DeskHeaderProps> = ({
                       <p className="text-xs text-rose-100 font-semibold truncate max-w-[170px]">
                         {userEmail || 'Guest User'}
                       </p>
-                      <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white/20 text-white border border-white/30 uppercase tracking-wider">
-                        <Cloud className="w-3 h-3" />
-                        {syncStatus === 'synced' ? 'Cloud Synced' : 'Local Mode'}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white/20 text-white border border-white/30 uppercase tracking-wider">
+                          Role: {userRole || 'patient'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white/20 text-white border border-white/30 uppercase tracking-wider">
+                          <Cloud className="w-3 h-3" />
+                          {syncStatus === 'synced' ? 'Cloud' : 'Local'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -217,6 +229,46 @@ export const DeskHeader: React.FC<DeskHeaderProps> = ({
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </button>
+
+                  {/* 3. Doctor Connect & Data Sharing */}
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      if (onOpenDoctorConnect) onOpenDoctorConnect();
+                    }}
+                    className="w-full p-3 rounded-2xl flex items-center justify-between hover:bg-teal-50 text-[#1A1A24] transition-colors cursor-pointer group border border-teal-100/50 bg-teal-50/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                        <HeartHandshake className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-xs font-black text-teal-950">Doctor Connect & Consent</div>
+                        <div className="text-[10px] text-teal-700 font-medium">Share health data with doctors</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-teal-400" />
+                  </button>
+
+                  {/* 4. Admin Portal Governance */}
+                  <button
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      if (onOpenAdminPortal) onOpenAdminPortal();
+                    }}
+                    className="w-full p-3 rounded-2xl flex items-center justify-between hover:bg-indigo-50 text-[#1A1A24] transition-colors cursor-pointer group border border-indigo-100/50 bg-indigo-50/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                        <ShieldAlert className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-xs font-black text-indigo-950">Admin Governance Portal</div>
+                        <div className="text-[10px] text-indigo-700 font-medium">Doctor licensing & verification</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-indigo-400" />
                   </button>
 
                   {/* 3. PIN Lock & Security */}

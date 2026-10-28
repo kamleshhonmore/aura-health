@@ -18,6 +18,8 @@ import {
   getCurrentProviderType,
   DatabaseProviderType,
   UserProfileData,
+  UserRole,
+  DoctorInfo,
   firestoreRepo,
   localRepo,
   syncLocalDataToCloud,
@@ -36,7 +38,7 @@ interface AuthContextType {
   providerName: string;
   signInWithGoogle: (useRedirect?: boolean) => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string, role?: UserRole, doctorDetails?: DoctorInfo) => Promise<void>;
   signOutUser: () => Promise<void>;
   continueAsGuest: () => void;
   switchDatabase: (type: DatabaseProviderType) => void;
@@ -108,8 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             profile = {
               uid: currentUser.uid,
               email: currentUser.email || '',
-              displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Cycle Tracker User',
+              displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Aura User',
               photoURL: currentUser.photoURL || '',
+              role: 'patient',
+              isVerified: true,
               cycleLength: 28,
               periodLength: 5,
               updatedAt: new Date().toISOString(),
@@ -123,8 +127,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUserProfile({
             uid: currentUser.uid,
             email: currentUser.email || '',
-            displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Cycle Tracker User',
+            displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Aura User',
             photoURL: currentUser.photoURL || '',
+            role: 'patient',
+            isVerified: true,
             cycleLength: 28,
             periodLength: 5,
             updatedAt: new Date().toISOString(),
@@ -168,10 +174,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUpWithEmail = async (email: string, pass: string) => {
+  const signUpWithEmail = async (
+    email: string,
+    pass: string,
+    role: UserRole = 'patient',
+    doctorDetails?: DoctorInfo
+  ) => {
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, pass);
+      const res = await createUserWithEmailAndPassword(auth, email, pass);
+      if (res.user) {
+        const repo = getDatabaseProvider();
+        const initialProfile: UserProfileData = {
+          uid: res.user.uid,
+          email: res.user.email || email,
+          displayName: res.user.displayName || email.split('@')[0],
+          photoURL: res.user.photoURL || '',
+          role: role,
+          isVerified: role === 'patient' ? true : false,
+          doctorInfo: doctorDetails,
+          cycleLength: 28,
+          periodLength: 5,
+          updatedAt: new Date().toISOString(),
+        };
+        await repo.saveUserProfile(res.user.uid, initialProfile).catch(() => {});
+        setUserProfile(initialProfile);
+      }
     } catch (error: any) {
       console.error('Email sign-up failed:', error);
       throw error;

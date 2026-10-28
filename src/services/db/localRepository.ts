@@ -1,4 +1,4 @@
-import { IDataRepository, UserProfileData, AssessmentData, AyurvedicProfileData } from './types';
+import { IDataRepository, UserProfileData, AssessmentData, AyurvedicProfileData, PatientDoctorConnection } from './types';
 import { DayLog, CycleRecord } from '../../types';
 import { sampleLogs, sampleCycles } from '../../data';
 
@@ -86,4 +86,51 @@ export class LocalStorageRepository implements IDataRepository {
   async getAyurvedicProfile(userId: string): Promise<AyurvedicProfileData | null> {
     return safeLoad<AyurvedicProfileData | null>(`aura_ayurveda_${userId}`, null);
   }
+
+  // --- Doctor & Admin Access Control ---
+  async getPendingDoctors(): Promise<UserProfileData[]> {
+    const docs = safeLoad<UserProfileData[]>('aura_mock_doctors', []);
+    return docs.filter((d) => d.role === 'doctor' && !d.isVerified);
+  }
+
+  async getAllDoctors(): Promise<UserProfileData[]> {
+    return safeLoad<UserProfileData[]>('aura_mock_doctors', []);
+  }
+
+  async verifyDoctor(doctorId: string, isVerified: boolean): Promise<void> {
+    const docs = safeLoad<UserProfileData[]>('aura_mock_doctors', []);
+    const idx = docs.findIndex((d) => d.uid === doctorId);
+    if (idx >= 0) {
+      docs[idx].isVerified = isVerified;
+      safeSave('aura_mock_doctors', docs);
+    }
+  }
+
+  // --- Patient - Doctor Connections ---
+  async saveConnection(connection: PatientDoctorConnection): Promise<void> {
+    const all = safeLoad<PatientDoctorConnection[]>('aura_connections', []);
+    const idx = all.findIndex((c) => c.id === connection.id);
+    if (idx >= 0) {
+      all[idx] = connection;
+    } else {
+      all.push(connection);
+    }
+    safeSave('aura_connections', all);
+  }
+
+  async getPatientConnections(patientId: string): Promise<PatientDoctorConnection[]> {
+    const all = safeLoad<PatientDoctorConnection[]>('aura_connections', []);
+    return all.filter((c) => c.patientId === patientId);
+  }
+
+  async getDoctorPatients(doctorId: string): Promise<PatientDoctorConnection[]> {
+    const all = safeLoad<PatientDoctorConnection[]>('aura_connections', []);
+    return all.filter((c) => c.doctorId === doctorId);
+  }
+
+  async deleteConnection(connectionId: string): Promise<void> {
+    const all = safeLoad<PatientDoctorConnection[]>('aura_connections', []);
+    safeSave('aura_connections', all.filter((c) => c.id !== connectionId));
+  }
 }
+
