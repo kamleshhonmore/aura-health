@@ -35,7 +35,6 @@ import { PregnancyModeView } from './components/PregnancyModeView';
 import { ScenicCountdownView } from './components/ScenicCountdownView';
 import { CategoryHub } from './components/CategoryHub';
 import { AyurvedicHub } from './components/AyurvedicHub';
-import { FutureBabyGenerator } from './components/FutureBabyGenerator';
 import { ClinicalDiagnosticsHub } from './components/ClinicalDiagnosticsHub';
 import { PerimenopauseScreen } from './components/PerimenopauseScreen';
 import { GeminiChatbot } from './components/GeminiChatbot';
@@ -126,7 +125,7 @@ export function App() {
   });
 
   const [activeTab, setActiveTab] = useState<
-    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat' | 'admin' | 'doctor' | 'doctors'
+    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'perimenopause' | 'aichat' | 'admin' | 'doctor' | 'doctors'
   >('home');
   const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('desk');
 
@@ -906,18 +905,6 @@ export function App() {
               </motion.div>
             )}
 
-            {activeTab === 'babyai' && (
-              <motion.div
-                key="babyai"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-              >
-                <FutureBabyGenerator onBack={() => setActiveTab('hub')} />
-              </motion.div>
-            )}
-
             {activeTab === 'pregnancy' && (
               <motion.div
                 key="pregnancy"
@@ -930,7 +917,6 @@ export function App() {
                   settings={settings}
                   theme={currentTheme}
                   onUpdateDueDate={(newDue) => handleUpdateSettings({ pregnancyDueDate: newDue })}
-                  onNavigateToBabyAI={() => setActiveTab('babyai')}
                 />
               </motion.div>
             )}

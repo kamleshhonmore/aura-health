@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Home, Calendar, LayoutGrid, Bot, Stethoscope, ShieldAlert } from 'lucide-react';
+import { Home, Calendar, LayoutGrid, Leaf, Stethoscope, ShieldAlert } from 'lucide-react';
 
 interface NavDockProps {
   activeTab: string;
@@ -12,7 +12,7 @@ export const NavDock: React.FC<NavDockProps> = ({ activeTab, onTabChange, userRo
   const navItems = [
     { id: 'home', label: 'Cycle', icon: Home },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'ayurveda', label: 'Ayurveda', icon: Bot },
+    { id: 'ayurveda', label: 'Ayurveda', icon: Leaf },
     { id: 'doctors', label: 'Doctors', icon: Stethoscope },
     { id: 'hub', label: 'Hub', icon: LayoutGrid },
   ];

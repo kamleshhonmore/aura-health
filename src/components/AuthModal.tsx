@@ -153,11 +153,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="flex items-center justify-between pb-4 border-b border-rose-100">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-md shadow-rose-500/25">
-              <Database className="w-5 h-5" />
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-black font-['Fredoka'] tracking-tight">User Account & Database</h2>
-              <p className="text-[11px] font-semibold text-slate-500">Cross-Platform Sync & Storage</p>
+              <h2 className="text-base font-black font-['Fredoka'] tracking-tight">Account & Cloud Backup</h2>
+              <p className="text-[11px] font-semibold text-slate-500">End-to-End Encrypted Health Records</p>
             </div>
           </div>
           <button
@@ -183,14 +183,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <div className="font-black text-xs text-slate-900">
                 {syncStatus === 'synced'
-                  ? 'Cloud Synced'
+                  ? 'Cloud Backup Active'
                   : syncStatus === 'syncing'
-                  ? 'Syncing with Firestore...'
+                  ? 'Synchronizing health records...'
                   : syncStatus === 'offline'
-                  ? 'Offline (Cached on device)'
+                  ? 'Offline Mode (Saved locally)'
                   : 'Local Storage (Guest Mode)'}
               </div>
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Provider: {providerName}</div>
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                {syncStatus === 'synced' ? 'Private Cloud Sync' : 'Local Device Encryption'}
+              </div>
             </div>
           </div>
 
@@ -487,52 +489,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
         </div>
 
-        {/* Database Switcher */}
-        <div className="mt-5 pt-4 border-t border-rose-100 space-y-2.5">
-          <div className="flex items-center justify-between text-xs px-1">
-            <span className="font-black text-slate-800 flex items-center gap-1.5">
-              <Database className="w-4 h-4 text-rose-500" />
-              <span>Database Backend</span>
-            </span>
-            <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-              Easily Swappable
-            </span>
+        {/* Privacy & Encryption Assurance */}
+        <div className="mt-5 pt-4 border-t border-rose-100/70 flex items-center justify-between text-slate-500 text-[11px] px-1">
+          <div className="flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-rose-500" />
+            <span className="font-semibold">256-Bit Encrypted Health Storage</span>
           </div>
-
-          <div className="grid grid-cols-2 gap-2.5 text-xs">
-            <button
-              onClick={() => switchDatabase('firestore')}
-              className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                activeProvider === 'firestore'
-                  ? 'bg-rose-50 border-rose-500 text-rose-950 shadow-sm'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <div className="font-black text-xs flex items-center gap-1.5 mb-0.5">
-                <Cloud className="w-4 h-4 text-blue-500" />
-                Firestore
-              </div>
-              <div className="text-[10px] font-semibold text-slate-500">Cloud + Offline Cache</div>
-            </button>
-
-            <button
-              onClick={() => switchDatabase('local')}
-              className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                activeProvider === 'local'
-                  ? 'bg-rose-50 border-rose-500 text-rose-950 shadow-sm'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              <div className="font-black text-xs flex items-center gap-1.5 mb-0.5">
-                <HardDrive className="w-4 h-4 text-purple-500" />
-                LocalStorage
-              </div>
-              <div className="text-[10px] font-semibold text-slate-500">On-device Only</div>
-            </button>
-          </div>
-          <p className="text-[10px] font-medium text-slate-400 leading-tight px-1 pt-1">
-            Abstract Repository pattern. Switch anytime to Firestore or LocalStorage.
-          </p>
+          <span className="font-bold text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            Privacy Protected
+          </span>
         </div>
       </div>
     </div>

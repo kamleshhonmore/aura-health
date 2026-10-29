@@ -401,11 +401,11 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({
             <div className="space-y-3.5 animate-fadeIn">
               <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-3">
                 <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <HardDrive className="w-4 h-4 text-indigo-400" />
-                  <span>Database Switcher & Architecture</span>
+                  <Database className="w-4 h-4 text-indigo-400" />
+                  <span>Storage Infrastructure & Backup</span>
                 </h4>
                 <p className="text-[11px] text-slate-400 leading-snug">
-                  Easily toggle between Cloud Firestore (Google Cloud Platform) and on-device offline storage for testing.
+                  Manage primary cloud database synchronization and offline client cache resilience.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">

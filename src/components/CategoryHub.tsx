@@ -12,8 +12,8 @@ import {
   Shield,
   Flame,
   ChevronRight,
-  SlidersHorizontal,
   Compass,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface CategoryHubProps {
@@ -21,11 +21,11 @@ interface CategoryHubProps {
   settings: AppSettings;
   theme: ThemeConfig;
   todayLog?: DayLog;
-  onNavigateTab: (tab: 'home' | 'calendar' | 'charts' | 'pregnancy' | 'ayurveda' | 'perimenopause' | 'aichat' | 'babyai' | 'clinical') => void;
+  onNavigateTab: (tab: 'home' | 'calendar' | 'charts' | 'pregnancy' | 'ayurveda' | 'perimenopause' | 'clinical') => void;
   onOpenLogModal: () => void;
 }
 
-type HubCategory = 'all' | 'cycle' | 'ai_diagnostics' | 'wellness';
+type HubCategory = 'all' | 'cycle' | 'clinical' | 'wellness';
 
 export const CategoryHub: React.FC<CategoryHubProps> = ({
   status,
@@ -39,24 +39,28 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto space-y-5 font-['Nunito'] animate-fade-in pb-16">
-      {/* 1. Segmented Filter Chips (Pill-shaped toggle chips with active glow) */}
-      <div className="space-y-2">
+      {/* 1. Header & Category Switcher */}
+      <div className="space-y-2.5">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-xl font-black font-['Fredoka'] text-[#1A1A24]">
-            Explore Services
-          </h2>
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#FF5376] bg-pink-50 px-2.5 py-1 rounded-full border border-pink-100">
-            Aura Hub
+          <div>
+            <h2 className="text-xl font-black font-['Fredoka'] text-[#1A1A24]">
+              Clinical & Care Hub
+            </h2>
+            <p className="text-xs text-[#646478] font-medium">Evidence-based women's reproductive health modules</p>
+          </div>
+          <span className="text-[11px] font-bold text-[#FF5376] flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-[#FF5376] animate-pulse" />
+            Active
           </span>
         </div>
 
-        {/* Compact Segmented Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        {/* Clean Segmented Controls */}
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl overflow-x-auto scrollbar-none">
           {[
-            { id: 'all', label: 'All Services', icon: Compass },
+            { id: 'all', label: 'All Modules', icon: Compass },
             { id: 'cycle', label: 'Cycle & Fertility', icon: Droplets },
-            { id: 'ai_diagnostics', label: 'AI & Diagnostics', icon: Sparkles },
-            { id: 'wellness', label: 'Wellness & Dosha', icon: Leaf },
+            { id: 'clinical', label: 'Rotterdam Screening', icon: Shield },
+            { id: 'wellness', label: 'Ayurvedic Care', icon: Leaf },
           ].map((cat) => {
             const Icon = cat.icon;
             const isSelected = activeCategory === cat.id;
@@ -64,13 +68,13 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id as HubCategory)}
-                className={`px-3.5 py-2 rounded-full text-xs font-black font-['Fredoka'] flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
                   isSelected
-                    ? 'bg-gradient-to-r from-[#FF5376] to-[#FF758C] text-white border-[#FF5376] glow-pink scale-105'
-                    : 'bg-white text-[#646478] border-[#EAECEF] hover:bg-slate-50 hover:text-[#1A1A24]'
+                    ? 'bg-white text-[#1A1A24] shadow-sm font-black'
+                    : 'text-[#646478] hover:text-[#1A1A24]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-[#FF5376]'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#FF5376]' : 'text-slate-400'}`} />
                 <span>{cat.label}</span>
               </button>
             );
@@ -78,85 +82,84 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
         </div>
       </div>
 
-      {/* 2. Featured Layered Highlights Stack */}
-      {(activeCategory === 'all' || activeCategory === 'ai_diagnostics') && (
+      {/* 2. Featured Clinical Highlights */}
+      {(activeCategory === 'all' || activeCategory === 'clinical') && (
         <div className="space-y-2.5">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xs font-black font-['Fredoka'] tracking-wider text-[#646478] uppercase flex items-center gap-1.5">
               <Flame className="w-4 h-4 text-[#FF5376]" />
-              Featured Highlights
+              Clinical Insights
             </h3>
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
-            {/* Slide 1 */}
-            <div className="min-w-[280px] p-4.5 rounded-[28px] bg-gradient-to-r from-[#1A1A24] via-[#242038] to-[#1A1A24] text-white border border-[#EAECEF] shadow-xl flex items-center justify-between snap-center shrink-0 relative overflow-hidden group cursor-pointer">
-              <div className="space-y-2 relative z-10 pr-2">
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
-                  Advanced Analytics
-                </span>
+            {/* Slide 1: Cycle Regularity */}
+            <div
+              onClick={() => onNavigateTab('charts')}
+              className="min-w-[280px] p-4.5 rounded-[24px] bg-gradient-to-br from-[#1A1A24] via-[#242038] to-[#1A1A24] text-white border border-slate-800 shadow-lg flex items-center justify-between snap-center shrink-0 relative overflow-hidden group cursor-pointer hover:border-slate-700 transition-all"
+            >
+              <div className="space-y-1.5 relative z-10 pr-2">
+                <div className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">Biomarker Analytics</div>
                 <div>
                   <h4 className="text-base font-black font-['Fredoka'] leading-tight">
                     Cycle Regularity Index
                   </h4>
                   <p className="text-xs text-slate-300 mt-1">
-                    98% prediction accuracy based on historical logs
+                    Historical log pattern & follicular variation metrics
                   </p>
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-2xl glass-circle-btn flex items-center justify-center shrink-0">
-                <Activity className="w-6 h-6 text-amber-500" />
+              <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                <Activity className="w-5 h-5 text-amber-400" />
               </div>
             </div>
 
-            {/* Slide 2 */}
+            {/* Slide 2: Rotterdam Phenotyping */}
             <div
-              onClick={() => onNavigateTab('aichat')}
-              className="min-w-[280px] p-4.5 rounded-[28px] bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white border border-purple-500/30 shadow-xl flex items-center justify-between snap-center shrink-0 relative overflow-hidden group cursor-pointer"
+              onClick={() => onNavigateTab('clinical')}
+              className="min-w-[280px] p-4.5 rounded-[24px] bg-gradient-to-br from-teal-950 via-slate-900 to-teal-900 text-white border border-teal-800/40 shadow-lg flex items-center justify-between snap-center shrink-0 relative overflow-hidden group cursor-pointer hover:border-teal-600 transition-all"
             >
-              <div className="space-y-2 relative z-10 pr-2">
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-500/30 text-purple-200 border border-purple-400/30 shrink-0">
-                  Gemini 2.5 AI
-                </span>
+              <div className="space-y-1.5 relative z-10 pr-2">
+                <div className="text-[10px] uppercase font-bold text-teal-300 tracking-wider">ESHRE/ASRM Criteria</div>
                 <div>
                   <h4 className="text-base font-black font-['Fredoka'] leading-tight">
-                    Aura AI Expert Chat
+                    Rotterdam PCOS Risk Profile
                   </h4>
-                  <p className="text-xs text-purple-200 mt-1">
-                    Instant multi-turn cycle & health insights
+                  <p className="text-xs text-teal-200/80 mt-1">
+                    Multi-parameter screening & phenotype stratification
                   </p>
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-2xl glass-circle-btn flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6 text-purple-600 animate-pulse" />
+              <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5 text-teal-400" />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3. Structured 2-Column Bento Grid ($2\times2$) */}
+      {/* 3. Structured 2-Column Bento Grid */}
       {(activeCategory === 'all' || activeCategory === 'cycle') && (
         <div className="grid grid-cols-2 gap-3">
           {/* Card 1: Period Tracker */}
           <button
             onClick={() => onNavigateTab('calendar')}
-            className="p-4 rounded-[28px] bg-white border border-[#EAECEF] shadow-sm hover:shadow-md transition-all flex flex-col justify-between text-left cursor-pointer group hover:scale-[1.02] min-h-[135px] relative overflow-hidden"
+            className="p-4 rounded-[24px] bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between text-left cursor-pointer group hover:border-[#FF5376]/40 min-h-[135px] relative overflow-hidden"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 rounded-2xl bg-[#FFE3E9] flex items-center justify-center text-[#FF5376] shadow-xs shrink-0">
                 <Droplets className="w-5 h-5 fill-[#FF5376]" />
               </div>
-              <span className="text-[10px] font-bold text-[#FF5376] bg-[#FFE3E9] px-2 py-0.5 rounded-full shrink-0 border border-pink-200">
-                {status.isPeriodToday ? 'Active' : `${status.daysUntilNextPeriod}d`}
+              <span className="text-[11px] font-bold text-[#FF5376]">
+                {status.isPeriodToday ? 'Period Active' : `${status.daysUntilNextPeriod}d left`}
               </span>
             </div>
             <div className="space-y-0.5">
               <h4 className="text-sm font-black font-['Fredoka'] text-[#1A1A24] leading-snug truncate">
-                Period Tracker
+                Period Calendar
               </h4>
               <p className="text-[11px] text-[#646478] font-medium leading-tight line-clamp-2">
-                Accurate flow & symptom logging
+                Flow volume, symptoms & intimate wellness logs
               </p>
             </div>
           </button>
@@ -164,49 +167,49 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           {/* Card 2: Ovulation Hub */}
           <button
             onClick={() => onNavigateTab('charts')}
-            className="p-4 rounded-[28px] bg-white border border-[#EAECEF] shadow-sm hover:shadow-md transition-all flex flex-col justify-between text-left cursor-pointer group hover:scale-[1.02] min-h-[135px] relative overflow-hidden"
+            className="p-4 rounded-[24px] bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between text-left cursor-pointer group hover:border-teal-500/40 min-h-[135px] relative overflow-hidden"
           >
             <div className="flex items-center justify-between mb-2">
               <div className="w-10 h-10 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 shadow-xs shrink-0">
                 <Thermometer className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full shrink-0 border border-teal-200">
-                {status.phase === 'ovulation' ? 'Peak Today' : 'Fertile'}
+              <span className="text-[11px] font-bold text-teal-700">
+                {status.phase === 'ovulation' ? 'Peak Window' : 'Fertility Phase'}
               </span>
             </div>
             <div className="space-y-0.5">
               <h4 className="text-sm font-black font-['Fredoka'] text-[#1A1A24] leading-snug truncate">
-                Ovulation Hub
+                Ovulation & BBT
               </h4>
               <p className="text-[11px] text-[#646478] font-medium leading-tight line-clamp-2">
-                Peak fertility window analysis
+                Biphasic temperature curve & conception window
               </p>
             </div>
           </button>
         </div>
       )}
 
-      {/* 4. Full-width Bento Container Cards with Glass Action Triggers */}
+      {/* 4. Full-width Clinical Cards */}
       <div className="space-y-3">
-        {/* Future Baby AI Generator */}
-        {(activeCategory === 'all' || activeCategory === 'ai_diagnostics' || activeCategory === 'cycle') && (
+        {/* Rotterdam Clinical Diagnostics */}
+        {(activeCategory === 'all' || activeCategory === 'clinical') && (
           <button
-            onClick={() => onNavigateTab('babyai')}
-            className="w-full p-4 rounded-[28px] bg-gradient-to-r from-pink-50/80 via-white to-purple-50/80 border border-pink-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:scale-[1.01]"
+            onClick={() => onNavigateTab('clinical')}
+            className="w-full p-4 rounded-[24px] bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:border-teal-500/40"
           >
             <div className="space-y-1 pr-3">
-              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-pink-100 text-pink-700 border border-pink-200 shrink-0">
-                AI Photo Blend
-              </span>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-teal-700">
+                Clinical Diagnostics · 3 Criteria Scoring
+              </div>
               <h4 className="text-base font-black font-['Fredoka'] text-[#1A1A24] leading-snug">
-                Future Baby Generator
+                Rotterdam PCOS Assessment
               </h4>
               <p className="text-xs text-[#646478] line-clamp-2">
-                Generate baby face from Mom & Dad photos with ONNX genetics
+                Oligo-ovulation, hyperandrogenism signs, and ultrasound morphology screening
               </p>
             </div>
-            <div className="w-12 h-12 rounded-2xl glass-circle-btn flex items-center justify-center shrink-0">
-              <Baby className="w-6 h-6 text-[#FF5376]" />
+            <div className="w-11 h-11 rounded-2xl bg-teal-50 flex items-center justify-center shrink-0 text-teal-700">
+              <Shield className="w-5 h-5" />
             </div>
           </button>
         )}
@@ -215,44 +218,44 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
         {(activeCategory === 'all' || activeCategory === 'cycle') && (
           <button
             onClick={() => onNavigateTab('pregnancy')}
-            className="w-full p-4 rounded-[28px] bg-white border border-[#EAECEF] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:scale-[1.01]"
+            className="w-full p-4 rounded-[24px] bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:border-amber-500/40"
           >
             <div className="space-y-1 pr-3">
-              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
-                Week-by-Week
-              </span>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                Maternal Care · Week-by-Week
+              </div>
               <h4 className="text-base font-black font-['Fredoka'] text-[#1A1A24] leading-snug">
-                Pregnancy Mode
+                Pregnancy & Trimester Milestones
               </h4>
               <p className="text-xs text-[#646478] line-clamp-2">
-                Fetal size milestones, due date & kick counter
+                Gestational development, due date calculator, and fetal activity tracker
               </p>
             </div>
-            <div className="w-12 h-12 rounded-2xl glass-circle-btn flex items-center justify-center shrink-0">
-              <Activity className="w-6 h-6 text-amber-600" />
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0 text-amber-700">
+              <Activity className="w-5 h-5" />
             </div>
           </button>
         )}
 
-        {/* Clinical Diagnostics Hub */}
-        {(activeCategory === 'all' || activeCategory === 'ai_diagnostics') && (
+        {/* Perimenopause Tracker */}
+        {(activeCategory === 'all' || activeCategory === 'cycle') && (
           <button
-            onClick={() => onNavigateTab('clinical')}
-            className="w-full p-4 rounded-[28px] bg-white border border-[#EAECEF] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:scale-[1.01]"
+            onClick={() => onNavigateTab('perimenopause')}
+            className="w-full p-4 rounded-[24px] bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:border-purple-500/40"
           >
             <div className="space-y-1 pr-3">
-              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
-                ML Diagnostic V3
-              </span>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-purple-700">
+                Hormonal Transition · Vasomotor Tracking
+              </div>
               <h4 className="text-base font-black font-['Fredoka'] text-[#1A1A24] leading-snug">
-                Clinical Diagnostics Hub
+                Perimenopause Transition
               </h4>
               <p className="text-xs text-[#646478] line-clamp-2">
-                PCOS risk screening, vision scan & symptom vectors
+                Hot flush monitoring, night sweat patterns, and sleep regularity
               </p>
             </div>
-            <div className="w-12 h-12 rounded-2xl glass-circle-btn flex items-center justify-center shrink-0">
-              <Shield className="w-6 h-6 text-emerald-600" />
+            <div className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0 text-purple-700">
+              <Flame className="w-5 h-5" />
             </div>
           </button>
         )}
@@ -262,25 +265,25 @@ export const CategoryHub: React.FC<CategoryHubProps> = ({
           <div className="space-y-4">
             <button
               onClick={() => onNavigateTab('ayurveda')}
-              className="w-full p-4 rounded-[28px] bg-white border border-[#EAECEF] shadow-sm hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:scale-[1.01]"
+              className="w-full p-4 rounded-[24px] bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all flex items-center justify-between text-left cursor-pointer group hover:border-emerald-500/40"
             >
               <div className="space-y-1 pr-3">
-                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-orange-100 text-orange-800 border border-orange-200 shrink-0">
-                  Dosha Diet & Herbs
-                </span>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                  Classical Ayurveda · Prakriti Harmony
+                </div>
                 <h4 className="text-base font-black font-['Fredoka'] text-[#1A1A24] leading-snug">
-                  Ayurvedic Wellness
+                  Ayurvedic Cycle & Dosha Care
                 </h4>
                 <p className="text-xs text-[#646478] line-clamp-2">
-                  Traditional remedies, yoga & herbal teas
+                  Ritucharya seasonal regimen, Dinacharya daily rhythm, and classical herb formulations
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-2xl glass-circle-btn flex items-center justify-center shrink-0">
-                <Leaf className="w-6 h-6 text-orange-600" />
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0 text-emerald-700">
+                <Leaf className="w-5 h-5" />
               </div>
             </button>
 
-            {/* Graphical Self-Care & SOS Logs */}
+            {/* Graphical Symptom Logs */}
             <div className="pt-2">
               <GraphicalLogHub
                 onOpenLogModal={onOpenLogModal}

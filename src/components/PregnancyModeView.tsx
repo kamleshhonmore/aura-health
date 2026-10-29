@@ -237,31 +237,24 @@ export const PregnancyModeView: React.FC<PregnancyModeViewProps> = ({
         )}
       </div>
 
-      {/* Future Baby Face & Genetics AI Feature Card */}
-      {onNavigateToBabyAI && (
-        <button
-          onClick={onNavigateToBabyAI}
-          className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFF0F5] via-[#FCE4EC] to-[#EDE7F6] border-2 border-pink-200 shadow-md hover:shadow-lg transition-all flex items-center justify-between text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99] group"
-        >
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-black uppercase tracking-wider text-pink-600 bg-white/90 px-2.5 py-0.5 rounded-full border border-pink-200">
-                ✨ Parents AI Blend
-              </span>
-            </div>
-            <h3 className="text-sm font-black font-['Fredoka'] text-[#2D1B2D]">
-              Future Baby Face Generator
-            </h3>
-            <p className="text-xs text-[#875C66]">
-              Upload Mom & Dad photos to predict baby traits & features
-            </p>
+      {/* Clinical Prenatal Health & Trimester Milestones Card */}
+      <div className="w-full p-4 rounded-3xl bg-gradient-to-r from-amber-50/80 via-white to-orange-50/80 border border-amber-200/80 shadow-xs flex items-center justify-between text-left">
+        <div className="space-y-1">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
+            Trimester {trimester} Clinical Checklist
           </div>
+          <h3 className="text-sm font-black font-['Fredoka'] text-slate-900">
+            Prenatal Appointments & Nutrition
+          </h3>
+          <p className="text-xs text-slate-600">
+            Folic acid, elemental iron, morphology scan timing & BP monitoring
+          </p>
+        </div>
 
-          <div className="w-12 h-12 rounded-2xl bg-white/90 border border-pink-100 flex items-center justify-center text-2xl shadow-xs shrink-0">
-            <span>👶</span>
-          </div>
-        </button>
-      )}
+        <div className="w-11 h-11 rounded-2xl bg-amber-100/70 border border-amber-200 flex items-center justify-center text-amber-800 shadow-xs shrink-0">
+          <Heart className="w-5 h-5 fill-amber-600/30" />
+        </div>
+      </div>
 
       {/* Week 15 Mom & Baby Insights */}
       <div className={`p-4 rounded-3xl ${theme.bgCard} border ${theme.borderCard} shadow-md space-y-2`}>

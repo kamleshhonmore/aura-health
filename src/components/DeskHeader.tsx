@@ -349,22 +349,22 @@ export const DeskHeader: React.FC<DeskHeaderProps> = ({
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </button>
 
-                  {/* 5. AI Health Assistant */}
+                  {/* 5. Clinical Health Guidance */}
                   {onOpenAiChat && (
                     <button
                       onClick={() => {
                         setIsDrawerOpen(false);
                         onOpenAiChat();
                       }}
-                      className="w-full p-3 rounded-2xl flex items-center justify-between hover:bg-purple-50 text-[#1A1A24] transition-colors cursor-pointer group"
+                      className="w-full p-3 rounded-2xl flex items-center justify-between hover:bg-teal-50 text-[#1A1A24] transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                          <Sparkles className="w-4 h-4" />
+                        <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                          <Activity className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                          <div className="text-xs font-black">AI Health Assistant</div>
-                          <div className="text-[10px] text-[#646478] font-medium">Chat & symptom insights</div>
+                          <div className="text-xs font-black">Clinical Health Guidance</div>
+                          <div className="text-[10px] text-[#646478] font-medium">Hormonal symptom & cycle support</div>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400" />

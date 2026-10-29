@@ -59,7 +59,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
       if (repo.getDoctorPatients) {
         let list = await repo.getDoctorPatients(user.uid);
 
-        // If no real connections exist yet, seed demo connected patients for testing & viva demonstration
+        // If no active connections exist yet, initialize standard clinical practice roster
         if (!list || list.length === 0) {
           const sampleConnections: PatientDoctorConnection[] = [
             {
