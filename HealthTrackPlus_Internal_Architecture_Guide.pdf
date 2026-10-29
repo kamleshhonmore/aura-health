@@ -1,0 +1,926 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 12422
+>>
+stream
+0.200025 w
+0 G
+0. G
+1.5 w
+40. 801.8899999999999864 515.2799999999999727 -68. re
+S
+BT
+/F2 16 Tf
+18.3999999999999986 TL
+0. g
+52. 777.8899999999999864 Td
+(HEALTHTRACK+ FOR WOMEN: TECHNICAL WORKING GUIDE) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+52. 759.8899999999999864 Td
+(Complete Internal Architecture: React, TypeScript, Kotlin, Capacitor, AI & Doctor Portal) Tj
+ET
+BT
+/F1 8.5 Tf
+9.7749999999999986 TL
+0.314 g
+52. 744.8899999999999864 Td
+(Presenter & Viva Defense Reference Document | Clean Monochrome Edition) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 719.8899999999999864 Td
+(MODULE 1: The Big Picture \(How TypeScript, Kotlin & Capacitor Connect\)) Tj
+ET
+0. G
+1. w
+40. 716.8899999999999864 m
+555.2799999999999727 716.8899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 703.8899999999999864 m
+552.2799999999999727 703.8899999999999864 l
+553.9368542494923986 703.8899999999999864 555.2799999999999727 702.5468542494922985 555.2799999999999727 700.8899999999999864 c
+555.2799999999999727 651.3899999999999864 l
+555.2799999999999727 649.7331457505076742 553.6231457505075468 648.3899999999999864 552.2799999999999727 648.3899999999999864 c
+43. 648.3899999999999864 l
+41.3431457505076168 648.3899999999999864 40. 650.0468542494922985 40. 651.3899999999999864 c
+40. 700.8899999999999864 l
+40. 702.5468542494922985 41.6568542494923832 703.8899999999999864 43. 703.8899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 691.8899999999999864 Td
+(1. TypeScript & React 19 \(User Interface Layer\)) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 680.8899999999999864 Td
+(• Location: src/ directory \(App.tsx, components/, utils/\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 670.3899999999999864 Td
+(• Role: Controls all screens, calendars, charts, forms, symptom buttons, and animations.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 659.8899999999999864 Td
+(• Execution: Compiled by Vite into optimized JavaScript/HTML that renders inside the mobile app view.) Tj
+ET
+0.71 G
+0.98 g
+0.5 w
+43. 640.3899999999999864 m
+552.2799999999999727 640.3899999999999864 l
+553.9368542494923986 640.3899999999999864 555.2799999999999727 639.0468542494922985 555.2799999999999727 637.3899999999999864 c
+555.2799999999999727 577.3899999999999864 l
+555.2799999999999727 575.7331457505076742 553.6231457505075468 574.3899999999999864 552.2799999999999727 574.3899999999999864 c
+43. 574.3899999999999864 l
+41.3431457505076168 574.3899999999999864 40. 576.0468542494922985 40. 577.3899999999999864 c
+40. 637.3899999999999864 l
+40. 639.0468542494922985 41.6568542494923832 640.3899999999999864 43. 640.3899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 628.3899999999999864 Td
+(2. Capacitor Bridge \(The Link between Web and Phone\)) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 617.3899999999999864 Td
+(• Role: Wraps the React web code inside a real native Android APK \(com.aura.health\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 606.8899999999999864 Td
+(• How it works: Creates a two-way communication bridge between JavaScript and native Java/Kotlin code.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 596.3899999999999864 Td
+(• Trigger: When TypeScript needs phone hardware \(camera for strip scanner, ONNX AI chip, hardware back button\), it calls Capacitor plugins) Tj
+T* (across this bridge.) Tj
+ET
+0.71 G
+0.98 g
+0.5 w
+43. 566.3899999999999864 m
+552.2799999999999727 566.3899999999999864 l
+553.9368542494923986 566.3899999999999864 555.2799999999999727 565.0468542494922985 555.2799999999999727 563.3899999999999864 c
+555.2799999999999727 503.3899999999999864 l
+555.2799999999999727 501.7331457505076173 553.6231457505075468 500.3899999999999864 552.2799999999999727 500.3899999999999864 c
+43. 500.3899999999999864 l
+41.3431457505076168 500.3899999999999864 40. 502.0468542494923554 40. 503.3899999999999864 c
+40. 563.3899999999999864 l
+40. 565.0468542494922985 41.6568542494923832 566.3899999999999864 43. 566.3899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 554.3899999999999864 Td
+(3. Kotlin / Java \(Native Android Engine\)) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 543.3899999999999864 Td
+(• Location: android/app/src/main/java/com/aura/health/OnnxPredictorPlugin.java.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 532.8899999999999864 Td
+(• Role: Interacts directly with the Android mobile operating system and hardware.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 522.3899999999999864 Td
+(• Execution: Loads pcos_rotterdam_v4.onnx directly into phone RAM and runs Microsoft ONNX Runtime C++ engine for sub-30ms offline AI) Tj
+T* (inference.) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 492.3899999999999864 Td
+(MODULE 2: Button Click to Database Storage \(Step-by-Step Flow\)) Tj
+ET
+0. G
+1. w
+40. 489.3899999999999864 m
+555.2799999999999727 489.3899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 476.3899999999999864 m
+552.2799999999999727 476.3899999999999864 l
+553.9368542494923986 476.3899999999999864 555.2799999999999727 475.0468542494923554 555.2799999999999727 473.3899999999999864 c
+555.2799999999999727 381.8899999999999864 l
+555.2799999999999727 380.2331457505076173 553.6231457505075468 378.8899999999999864 552.2799999999999727 378.8899999999999864 c
+43. 378.8899999999999864 l
+41.3431457505076168 378.8899999999999864 40. 380.5468542494923554 40. 381.8899999999999864 c
+40. 473.3899999999999864 l
+40. 475.0468542494923554 41.6568542494923832 476.3899999999999864 43. 476.3899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 464.3899999999999864 Td
+(Detailed Execution Flow When User Taps a Button \(e.g. +250ml Water or Period Log\)) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 453.3899999999999864 Td
+(• Step 1 \(UI Click\): User taps button -> onClick triggers in React component \(QuickLogBar.tsx / WaterTracker.tsx\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 442.8899999999999864 Td
+(• Step 2 \(Local State Update\): Component calls setLogs\(\) -> React state updates instantly with 0ms visual lag.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 432.3899999999999864 Td
+(• Step 3 \(Repository Dispatch\): Calls getDatabaseProvider\(\).saveDailyLog\(uid, date, logData\) via abstract repository interface.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 421.8899999999999864 Td
+(• Step 4 \(On-Device Storage\): Log is immediately saved to phone storage \(localStorage\) so data is never lost even if phone reboots or loses) Tj
+T* (connection.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 400.8899999999999864 Td
+(• Step 5 \(Firestore Cloud Sync\): Firebase SDK asynchronously sends JSON document to users/{uid}/dailyLogs/{YYYY-MM-DD}.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 390.3899999999999864 Td
+(• Step 6 \(Offline Handling\): If offline, Firebase automatically queues data in local cache and uploads automatically when internet reconnects.) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 370.8899999999999864 Td
+(MODULE 3: How the AI Chatbot Works Internally) Tj
+ET
+0. G
+1. w
+40. 367.8899999999999864 m
+555.2799999999999727 367.8899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 354.8899999999999864 m
+552.2799999999999727 354.8899999999999864 l
+553.9368542494923986 354.8899999999999864 555.2799999999999727 353.5468542494923554 555.2799999999999727 351.8899999999999864 c
+555.2799999999999727 270.8899999999999864 l
+555.2799999999999727 269.2331457505075605 553.6231457505075468 267.8899999999999864 552.2799999999999727 267.8899999999999864 c
+43. 267.8899999999999864 l
+41.3431457505076168 267.8899999999999864 40. 269.5468542494924122 40. 270.8899999999999864 c
+40. 351.8899999999999864 l
+40. 353.5468542494923554 41.6568542494923832 354.8899999999999864 43. 354.8899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 342.8899999999999864 Td
+(3-Tier Failover Architecture in GeminiChatbot.tsx) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 331.8899999999999864 Td
+(• Context Injection: Before query is sent, the system secretly appends live user status: Cycle Day, Phase, and current symptoms.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 321.3899999999999864 Td
+(• Tier 1 \(Custom OpenRouter Key\): If user enters their own key in Settings, calls models like Llama 3.3 or DeepSeek Chat.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 310.8899999999999864 Td
+(• Tier 2 \(Real-Time Live Engine\): Free 24/7 AI fallback \(Pollinations AI\) ensuring user always gets a live response without requiring an API) Tj
+T* (key.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 289.8899999999999864 Td
+(• Tier 3 \(Offline Clinical Heuristics\): If completely disconnected \(airplane mode\), src/utils/aiMasterEngine.ts matches keywords across 20+) Tj
+T* (clinical topics, Rotterdam guidelines, and Ayurvedic remedies. It never shows a connection error.) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 259.8899999999999864 Td
+(MODULE 4: How On-Device ML & ONNX Work on Android) Tj
+ET
+0. G
+1. w
+40. 256.8899999999999864 m
+555.2799999999999727 256.8899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 243.8899999999999864 m
+552.2799999999999727 243.8899999999999864 l
+553.9368542494923986 243.8899999999999864 555.2799999999999727 242.5468542494924122 555.2799999999999727 240.8899999999999864 c
+555.2799999999999727 128.3899999999999864 l
+555.2799999999999727 126.7331457505075605 553.6231457505075468 125.3899999999999864 552.2799999999999727 125.3899999999999864 c
+43. 125.3899999999999864 l
+41.3431457505076168 125.3899999999999864 40. 127.0468542494924122 40. 128.3899999999999864 c
+40. 240.8899999999999864 l
+40. 242.5468542494924122 41.6568542494923832 243.8899999999999864 43. 243.8899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 231.8899999999999864 Td
+(Exact Journey of the 19-Parameter Diagnostic Vector) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 220.8899999999999864 Td
+(• Step 1 \(Form Input\): User fills 19 Rotterdam biomarkers \(Age, Menarche, BMI, WHR, Cycle Length, Variance, Hirsutism score, Acne, etc.\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 210.3899999999999864 Td
+(• Step 2 \(Vector Assembly\): buildPcosRotterdamVector\(\) formats input into exact 19-element Float32 array.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 199.8899999999999864 Td
+(• Clinical Rule 1: Missing lab values \(LH/FSH, Testosterone, Insulin, TSH\) are set to -1.0 per decision tree protocol.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 189.3899999999999864 Td
+(• Clinical Rule 2: Active birth control sets mean cycle to 28.0d and variance to 0.5 to prevent symptom masking.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 178.8899999999999864 Td
+(• Step 3 \(Bridge Call\): TypeScript executes OnnxPredictor.runInference\({ data: vector }\) over the Capacitor bridge.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 168.3899999999999864 Td
+(• Step 4 \(Native Execution\): OnnxPredictorPlugin.java feeds vector into OnnxTensor and runs session.run\(\) in C++ runtime.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 157.8899999999999864 Td
+(• Step 5 \(Rotterdam Output\): Model outputs 5 probabilities: Class 0 \(Baseline\), Class 1 \(Phenotype A\), Class 2 \(Phenotype B\), Class 3) Tj
+T* (\(Phenotype C\), Class 4 \(Phenotype D\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 136.8899999999999864 Td
+(• Speed & Privacy: Entire prediction finishes in under 30 milliseconds with 100% data privacy \(zero cloud transmission\).) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 117.3899999999999864 Td
+(MODULE 5: How Menstrual Cycle & Fertile Window Math Works) Tj
+ET
+0. G
+1. w
+40. 114.3899999999999864 m
+555.2799999999999727 114.3899999999999864 l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+285.0799999999999841 15. Td
+(Page 1) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+40. 15. Td
+(Terna Engineering College • Department of Computer / IT Engineering) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+40. 816.8899999999999864 Td
+(HealthTrack+ for Women • Technical Architecture & Internal Working Guide) Tj
+ET
+0.71 G
+0.5 w
+40. 813.8899999999999864 m
+555.2799999999999727 813.8899999999999864 l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+285.0799999999999841 15. Td
+(Page 2) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+40. 15. Td
+(Terna Engineering College • Department of Computer / IT Engineering) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 6610
+>>
+stream
+1. w
+0. G
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+40. 816.8899999999999864 Td
+(HealthTrack+ for Women • Technical Architecture & Internal Working Guide) Tj
+ET
+0.71 G
+0.5 w
+40. 813.8899999999999864 m
+555.2799999999999727 813.8899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 786.8899999999999864 m
+552.2799999999999727 786.8899999999999864 l
+553.9368542494923986 786.8899999999999864 555.2799999999999727 785.5468542494924122 555.2799999999999727 783.8899999999999864 c
+555.2799999999999727 702.8899999999999864 l
+555.2799999999999727 701.2331457505076742 553.6231457505075468 699.8899999999999864 552.2799999999999727 699.8899999999999864 c
+43. 699.8899999999999864 l
+41.3431457505076168 699.8899999999999864 40. 701.5468542494922985 40. 702.8899999999999864 c
+40. 783.8899999999999864 l
+40. 785.5468542494924122 41.6568542494923832 786.8899999999999864 43. 786.8899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 774.8899999999999864 Td
+(Mathematical Formulas in src/utils/cycleCalculations.ts) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 763.8899999999999864 Td
+(• Days Passed: \(Today Date - Last Period Start Date\) / 86,400,000 milliseconds.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 753.3899999999999864 Td
+(• Current Cycle Day: \(\(Days Passed % Cycle Length\) + Cycle Length\) % Cycle Length + 1.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 742.8899999999999864 Td
+(• Ovulation Day: Cycle Length - Luteal Phase Length \(Default 14 days\). E.g., 28 - 14 = Day 14.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 732.3899999999999864 Td
+(• Fertile Window: Ovulation Day minus 5 days through Ovulation Day plus 1 day \(7-day window based on sperm longevity\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 721.8899999999999864 Td
+(• Phase Probability: Menstrual Phase \(3% conception\), Follicular Phase \(8%\), Fertile Window \(18%-28%\), Ovulation Peak \(33%\), Luteal) Tj
+T* (Phase \(4%\).) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 691.8899999999999864 Td
+(MODULE 6: How Doctor Portal Connects to Patient Data) Tj
+ET
+0. G
+1. w
+40. 688.8899999999999864 m
+555.2799999999999727 688.8899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 675.8899999999999864 m
+552.2799999999999727 675.8899999999999864 l
+553.9368542494923986 675.8899999999999864 555.2799999999999727 674.5468542494922985 555.2799999999999727 672.8899999999999864 c
+555.2799999999999727 602.3899999999999864 l
+555.2799999999999727 600.7331457505076742 553.6231457505075468 599.3899999999999864 552.2799999999999727 599.3899999999999864 c
+43. 599.3899999999999864 l
+41.3431457505076168 599.3899999999999864 40. 601.0468542494922985 40. 602.3899999999999864 c
+40. 672.8899999999999864 l
+40. 674.5468542494922985 41.6568542494923832 675.8899999999999864 43. 675.8899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 663.8899999999999864 Td
+(Clinical Data Pipeline Between Patient Mobile App & Doctor Web Portal) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 652.8899999999999864 Td
+(• Step 1: Patient logs multi-cycle data and runs Rotterdam AI on mobile app.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 642.3899999999999864 Td
+(• Step 2: App packages records into standardized summary synced to Firestore collection users/{uid}/medicalSummary.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 631.8899999999999864 Td
+(• Step 3: Doctor logs into responsive Web Portal using verified clinician account \(Role-Based Access Control\).) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 621.3899999999999864 Td
+(• Step 4: Doctor dashboard renders patient cycle regularity graph, BBT biphasic curve, and Rotterdam Phenotype risk card.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 610.8899999999999864 Td
+(• Step 5: Doctor writes digital consultation advice / lifestyle prescription which syncs back to patient app in real time.) Tj
+ET
+BT
+/F2 11.5 Tf
+13.2249999999999996 TL
+0. g
+40. 591.3899999999999864 Td
+(MODULE 7: Viva Voce "Cheat Sheet" – Quick Responses for Examiners) Tj
+ET
+0. G
+1. w
+40. 588.3899999999999864 m
+555.2799999999999727 588.3899999999999864 l
+S
+0.71 G
+0.98 g
+0.5 w
+43. 575.3899999999999864 m
+552.2799999999999727 575.3899999999999864 l
+553.9368542494923986 575.3899999999999864 555.2799999999999727 574.0468542494922985 555.2799999999999727 572.3899999999999864 c
+555.2799999999999727 470.3899999999999864 l
+555.2799999999999727 468.7331457505076173 553.6231457505075468 467.3899999999999864 552.2799999999999727 467.3899999999999864 c
+43. 467.3899999999999864 l
+41.3431457505076168 467.3899999999999864 40. 469.0468542494923554 40. 470.3899999999999864 c
+40. 572.3899999999999864 l
+40. 574.0468542494922985 41.6568542494923832 575.3899999999999864 43. 575.3899999999999864 c
+h
+B
+BT
+/F2 8.5 Tf
+9.7749999999999986 TL
+0. g
+48. 563.3899999999999864 Td
+(Top 4 Questions & Confident Answers) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 552.3899999999999864 Td
+(• Q1: What does Kotlin do if the app is written in TypeScript? -> "TypeScript manages the UI and screens. Kotlin acts as the native Android) Tj
+T* (bridge that loads the ONNX neural model into memory and executes it using mobile hardware acceleration.") Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 531.3899999999999864 Td
+(• Q2: How is data stored? -> "We use an Abstract Repository Pattern with dual providers: LocalStorage for instant zero-lag offline access, and) Tj
+T* (Google Cloud Firestore for secure cloud backup.") Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 510.3899999999999864 Td
+(• Q3: Why run ML on-device instead of on a server? -> "Reproductive health data is highly sensitive. On-device ONNX execution ensures) Tj
+T* (100% data privacy \(data never leaves the phone\) and provides instant sub-30ms results without needing internet.") Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.118 g
+48. 489.3899999999999864 Td
+(• Q4: How does the Doctor Portal work? -> "It is a web portal that reads patient-authorized clinical summaries from Firestore, displaying cycle) Tj
+T* (trends, Rotterdam Phenotype A-D diagnostic classifications, and allowing physicians to issue consultation notes.") Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+40. 816.8899999999999864 Td
+(HealthTrack+ for Women • Technical Architecture & Internal Working Guide) Tj
+ET
+0.71 G
+0.5 w
+40. 813.8899999999999864 m
+555.2799999999999727 813.8899999999999864 l
+S
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+285.0799999999999841 15. Td
+(Page 2) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.392 g
+40. 15. Td
+(Terna Engineering College • Department of Computer / IT Engineering) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R ]
+/Count 2
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 7 0 R
+/F2 8 0 R
+/F3 9 0 R
+/F4 10 0 R
+/F5 11 0 R
+/F6 12 0 R
+/F7 13 0 R
+/F8 14 0 R
+/F9 15 0 R
+/F10 16 0 R
+/F11 17 0 R
+/F12 18 0 R
+/F13 19 0 R
+/F14 20 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+21 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260930174747-00'00')
+>>
+endobj
+22 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 23
+0000000000 65535 f 
+0000019426 00000 n 
+0000021251 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000012627 00000 n 
+0000012764 00000 n 
+0000019489 00000 n 
+0000019614 00000 n 
+0000019744 00000 n 
+0000019877 00000 n 
+0000020015 00000 n 
+0000020139 00000 n 
+0000020268 00000 n 
+0000020400 00000 n 
+0000020536 00000 n 
+0000020664 00000 n 
+0000020791 00000 n 
+0000020920 00000 n 
+0000021053 00000 n 
+0000021155 00000 n 
+0000021501 00000 n 
+0000021587 00000 n 
+trailer
+<<
+/Size 23
+/Root 22 0 R
+/Info 21 0 R
+/ID [ <A2AFB12866819A4327A2ED0B08A566C5> <A2AFB12866819A4327A2ED0B08A566C5> ]
+>>
+startxref
+21691
+%%EOF

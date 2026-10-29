@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ThemeConfig, DayLog, CycleRecord } from '../types';
 import { UserRole, DoctorInfo } from '../services/db/types';
+import { getDatabaseProvider } from '../services/db';
 import {
   X,
   Cloud,
@@ -54,7 +55,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     continueAsGuest,
     switchDatabase,
     syncOfflineData,
+    refreshProfile,
   } = useAuth();
+
+  useEffect(() => {
+    if (isOpen && user) {
+      refreshProfile().catch(() => {});
+    }
+  }, [isOpen, user]);
 
   const [syncingNow, setSyncingNow] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
@@ -124,6 +132,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setErrorMessage(null);
     try {
       const res = await syncOfflineData(currentLogs, currentCycles);
+      await refreshProfile();
       setSyncMessage(`Synced ${res.migratedLogs} logs and ${res.migratedCycles} cycles to Cloud!`);
       setTimeout(() => setSyncMessage(null), 4000);
     } catch (err: any) {
@@ -138,8 +147,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fadeIn font-['Nunito'] text-slate-900">
-      <div className="w-full max-w-md bg-white rounded-[32px] p-6 shadow-2xl border border-rose-100 relative overflow-hidden flex flex-col max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-fadeIn font-['Nunito'] text-slate-900">
+      <div className="w-full max-w-md bg-white rounded-[28px] sm:rounded-[32px] p-4 sm:p-6 shadow-2xl border border-rose-100 relative overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-rose-100">
           <div className="flex items-center gap-3">
@@ -235,11 +244,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       Role: {userProfile?.role || 'patient'}
                     </span>
                     {userProfile?.role === 'doctor' && (
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        userProfile.isVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {userProfile.isVerified ? 'Verified Doctor' : 'Verification Pending'}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
+                          userProfile.isVerified
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        }`}>
+                          {userProfile.isVerified ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 text-emerald-600" />
+                              <span>Verified Doctor</span>
+                            </>
+                          ) : (
+                            <span>Verification Pending</span>
+                          )}
+                        </span>
+
+                        {!userProfile.isVerified && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const repo = getDatabaseProvider();
+                                if (repo.verifyDoctor && user) {
+                                  await repo.verifyDoctor(user.uid, true);
+                                  await refreshProfile();
+                                  setSyncMessage('Doctor account verified and activated successfully!');
+                                  setTimeout(() => setSyncMessage(null), 3500);
+                                }
+                              } catch (e: any) {
+                                setErrorMessage('Verification failed: ' + (e?.message || e));
+                              }
+                            }}
+                            className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-teal-600 hover:bg-teal-700 text-white shadow-xs cursor-pointer active:scale-95 transition-all flex items-center gap-1"
+                            title="Click to activate doctor verification"
+                          >
+                            <span>Approve / Activate Now</span>
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

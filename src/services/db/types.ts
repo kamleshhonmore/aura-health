@@ -47,6 +47,9 @@ export interface PatientDoctorConnection {
     shareAyurvedicProfile: boolean;
   };
   accessCode?: string;
+  consultationNote?: string;
+  consultationDate?: string;
+  prescriptionSummary?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -81,6 +84,7 @@ export interface IDataRepository {
   // Profile & Settings
   getUserProfile(userId: string): Promise<UserProfileData | null>;
   saveUserProfile(userId: string, profile: Partial<UserProfileData>): Promise<void>;
+  subscribeUserProfile?(userId: string, onUpdate: (profile: UserProfileData) => void): () => void;
 
   // Daily Logs
   getDailyLogs(userId: string): Promise<Record<string, DayLog>>;

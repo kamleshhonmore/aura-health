@@ -9,7 +9,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { db, auth, handleFirestoreError, OperationType } from '../firebase';
 import {
   IDataRepository,
   UserProfileData,
@@ -52,9 +52,27 @@ export class FirestoreRepository implements IDataRepository {
     }
   }
 
+  subscribeUserProfile(userId: string, onUpdate: (profile: UserProfileData) => void): () => void {
+    const path = `users/${userId}`;
+    return onSnapshot(
+      doc(db, 'users', userId),
+      (snap) => {
+        if (snap.exists()) {
+          onUpdate(snap.data() as UserProfileData);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.GET, path);
+      }
+    );
+  }
+
   // --- Daily Logs ---
   async getDailyLogs(userId: string): Promise<Record<string, DayLog>> {
     const path = `users/${userId}/dailyLogs`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return {};
+    }
     try {
       const querySnap = await getDocs(collection(db, 'users', userId, 'dailyLogs'));
       const result: Record<string, DayLog> = {};
@@ -85,6 +103,9 @@ export class FirestoreRepository implements IDataRepository {
 
   async saveDailyLog(userId: string, log: DayLog): Promise<void> {
     const path = `users/${userId}/dailyLogs/${log.date}`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return;
+    }
     try {
       const logRef = doc(db, 'users', userId, 'dailyLogs', log.date);
       const docData: Record<string, any> = {
@@ -114,6 +135,9 @@ export class FirestoreRepository implements IDataRepository {
 
   async deleteDailyLog(userId: string, date: string): Promise<void> {
     const path = `users/${userId}/dailyLogs/${date}`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return;
+    }
     try {
       await deleteDoc(doc(db, 'users', userId, 'dailyLogs', date));
     } catch (error) {
@@ -123,6 +147,9 @@ export class FirestoreRepository implements IDataRepository {
 
   subscribeDailyLogs(userId: string, onUpdate: (logs: Record<string, DayLog>) => void): () => void {
     const path = `users/${userId}/dailyLogs`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return () => {};
+    }
     return onSnapshot(
       collection(db, 'users', userId, 'dailyLogs'),
       (snapshot) => {
@@ -157,6 +184,9 @@ export class FirestoreRepository implements IDataRepository {
   // --- Cycles ---
   async getCycles(userId: string): Promise<CycleRecord[]> {
     const path = `users/${userId}/cycles`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return [];
+    }
     try {
       const snap = await getDocs(collection(db, 'users', userId, 'cycles'));
       const cycles: CycleRecord[] = [];
@@ -179,6 +209,9 @@ export class FirestoreRepository implements IDataRepository {
 
   async saveCycle(userId: string, cycle: CycleRecord): Promise<void> {
     const path = `users/${userId}/cycles/${cycle.id}`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return;
+    }
     try {
       const cycleRef = doc(db, 'users', userId, 'cycles', cycle.id);
       await setDoc(
@@ -202,6 +235,9 @@ export class FirestoreRepository implements IDataRepository {
 
   async deleteCycle(userId: string, cycleId: string): Promise<void> {
     const path = `users/${userId}/cycles/${cycleId}`;
+    if (!auth.currentUser || (auth.currentUser.uid !== userId && auth.currentUser.email !== 'honmorekamlesh2425@ternaengg.ac.in')) {
+      return;
+    }
     try {
       await deleteDoc(doc(db, 'users', userId, 'cycles', cycleId));
     } catch (error) {

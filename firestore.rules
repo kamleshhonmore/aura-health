@@ -12,13 +12,28 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    // Helper functions
+    // Global Helper Functions
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email in ['honmorekamlesh2425@ternaengg.ac.in', 'demo.admin@aurahealth.com'] ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isDoctor() {
+      return isSignedIn() && (
+        request.auth.token.email in ['demo.doctor@aurahealth.com', 'doc0@mail.com'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'doctor')
+      );
     }
 
     function isValidId(id) {
@@ -35,84 +50,142 @@ service cloud.firestore {
 
     // Schema Validators
     function isValidUserProfile(data) {
-      return data.uid is string && data.uid == request.auth.uid
+      return data.uid is string && (data.uid == request.auth.uid || isAdmin())
         && (!('email' in data) || (data.email is string && data.email.size() <= 200))
         && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 150))
         && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1000))
+        && (!('role' in data) || (data.role in ['patient', 'doctor', 'admin']))
+        && (!('isVerified' in data) || data.isVerified is bool)
+        && (!('doctorInfo' in data) || data.doctorInfo is map)
         && (!('cycleLength' in data) || data.cycleLength is number)
         && (!('periodLength' in data) || data.periodLength is number)
         && (!('lutealLength' in data) || data.lutealLength is number)
-        && (!('waterGoalGlasses' in data) || data.waterGoalGlasses is number);
+        && (!('activeTheme' in data) || (data.activeTheme is string && data.activeTheme.size() <= 50))
+        && (!('activePet' in data) || (data.activePet is string && data.activePet.size() <= 50))
+        && (!('waterGoalGlasses' in data) || data.waterGoalGlasses is number)
+        && (!('pinLockEnabled' in data) || data.pinLockEnabled is bool)
+        && (!('isPregnancyMode' in data) || data.isPregnancyMode is bool)
+        && (!('userAge' in data) || data.userAge is number)
+        && (!('userHeight' in data) || data.userHeight is number)
+        && (!('userWeight' in data) || data.userWeight is number)
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
     function isValidDayLog(data) {
       return data.userId is string && data.userId == request.auth.uid
         && data.date is string
         && data.isPeriod is bool
-        && (!('flow' in data) || data.flow is string)
+        && (!('flow' in data) || (data.flow is string && data.flow.size() <= 50))
         && (!('waterGlasses' in data) || data.waterGlasses is number)
         && (!('pillTaken' in data) || data.pillTaken is bool)
+        && (!('pillTime' in data) || (data.pillTime is string && data.pillTime.size() <= 30))
         && (!('temperature' in data) || data.temperature == null || data.temperature is number)
         && (!('weight' in data) || data.weight == null || data.weight is number)
-        && (!('cervicalMucus' in data) || data.cervicalMucus == null || data.cervicalMucus is string)
-        && (!('symptoms' in data) || data.symptoms is list)
-        && (!('moods' in data) || data.moods is list)
-        && (!('intimacy' in data) || data.intimacy is list)
+        && (!('cervicalMucus' in data) || data.cervicalMucus == null || (data.cervicalMucus is string && data.cervicalMucus.size() <= 50))
+        && (!('symptoms' in data) || (data.symptoms is list && data.symptoms.size() <= 50))
+        && (!('moods' in data) || (data.moods is list && data.moods.size() <= 50))
+        && (!('intimacy' in data) || (data.intimacy is list && data.intimacy.size() <= 50))
         && (!('orgasms' in data) || data.orgasms is number)
-        && (!('notes' in data) || data.notes is string);
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1500))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
     function isValidCycle(data) {
       return data.userId is string && data.userId == request.auth.uid
         && data.startDate is string
         && data.cycleLength is number
-        && data.periodLength is number;
+        && data.periodLength is number
+        && (!('endDate' in data) || (data.endDate is string && data.endDate.size() <= 20))
+        && (!('ovulationDate' in data) || (data.ovulationDate is string && data.ovulationDate.size() <= 20))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
     function isValidAssessment(data) {
-      return data.userId is string && data.userId == request.auth.uid
+      return data.userId is string && (data.userId == request.auth.uid || isDoctor() || isAdmin())
         && (!('riskScore' in data) || data.riskScore is number)
-        && (!('riskLevel' in data) || data.riskLevel is string);
+        && (!('riskLevel' in data) || (data.riskLevel is string && data.riskLevel.size() <= 100))
+        && (!('answers' in data) || data.answers is map)
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 100));
     }
 
     function isValidAyurvedic(data) {
-      return data.userId is string && data.userId == request.auth.uid
-        && (!('primaryDosha' in data) || data.primaryDosha is string);
+      return data.userId is string && (data.userId == request.auth.uid || isDoctor() || isAdmin())
+        && (!('primaryDosha' in data) || (data.primaryDosha is string && data.primaryDosha.size() <= 50))
+        && (!('vataScore' in data) || data.vataScore is number)
+        && (!('pittaScore' in data) || data.pittaScore is number)
+        && (!('kaphaScore' in data) || data.kaphaScore is number)
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    function isValidConnection(data) {
+      return data.id is string && isValidId(data.id)
+        && data.patientId is string
+        && data.doctorId is string
+        && (!('status' in data) || data.status in ['pending', 'accepted', 'revoked'])
+        && (!('patientName' in data) || (data.patientName is string && data.patientName.size() <= 100))
+        && (!('patientEmail' in data) || (data.patientEmail is string && data.patientEmail.size() <= 150))
+        && (!('doctorName' in data) || (data.doctorName is string && data.doctorName.size() <= 100))
+        && (!('doctorSpecialization' in data) || (data.doctorSpecialization is string && data.doctorSpecialization.size() <= 100))
+        && (!('permissions' in data) || data.permissions is map)
+        && (!('accessCode' in data) || (data.accessCode is string && data.accessCode.size() <= 20))
+        && (!('consultationNote' in data) || (data.consultationNote is string && data.consultationNote.size() <= 2000))
+        && (!('consultationDate' in data) || (data.consultationDate is string && data.consultationDate.size() <= 100))
+        && (!('prescriptionSummary' in data) || (data.prescriptionSummary is string && data.prescriptionSummary.size() <= 500))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 100))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
     }
 
     // Match users collection
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow create, update: if isOwner(userId) && isValidUserProfile(incoming());
-      allow delete: if isOwner(userId);
+      allow get: if isOwner(userId) || isDoctor() || (isSignedIn() && resource.data.role == 'doctor') || isAdmin();
+
+      // Enforce query boundary: client queries must filter for role == 'doctor' (or own profile)
+      allow list: if isSignedIn() && (resource.data.role == 'doctor' || resource.data.uid == request.auth.uid || isDoctor() || isAdmin());
+
+      allow create: if (isOwner(userId) || isAdmin()) && isValidUserProfile(incoming());
+
+      allow update: if (isOwner(userId) && isValidUserProfile(incoming()))
+        || isAdmin()
+        || (isSignedIn() && resource.data.role == 'doctor' && incoming().diff(existing()).affectedKeys().hasOnly(['isVerified', 'updatedAt', 'role', 'uid']));
+
+      allow delete: if isOwner(userId) || isAdmin();
 
       // Subcollection: Daily Logs
       match /dailyLogs/{date} {
-        allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidId(date) && isValidDayLog(incoming()) && incoming().userId == userId;
-        allow delete: if isOwner(userId);
+        allow get, list: if isOwner(userId) || isDoctor() || isAdmin();
+        allow create, update: if (isOwner(userId) || isDoctor() || isAdmin()) && isValidId(date) && isValidDayLog(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId) || isAdmin();
       }
 
       // Subcollection: Cycle Records
       match /cycles/{cycleId} {
-        allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidId(cycleId) && isValidCycle(incoming()) && incoming().userId == userId;
-        allow delete: if isOwner(userId);
+        allow get, list: if isOwner(userId) || isDoctor() || isAdmin();
+        allow create, update: if (isOwner(userId) || isDoctor() || isAdmin()) && isValidId(cycleId) && isValidCycle(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId) || isAdmin();
       }
 
       // Subcollection: Assessments
       match /assessments/{assessmentId} {
-        allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidId(assessmentId) && isValidAssessment(incoming()) && incoming().userId == userId;
-        allow delete: if isOwner(userId);
+        allow get, list: if isOwner(userId) || isDoctor() || isAdmin();
+        allow create, update: if (isOwner(userId) || isDoctor() || isAdmin()) && isValidId(assessmentId) && isValidAssessment(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId) || isAdmin();
       }
 
       // Subcollection: Ayurvedic Profile
       match /ayurvedicProfile/{docId} {
-        allow get, list: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidAyurvedic(incoming()) && incoming().userId == userId;
-        allow delete: if isOwner(userId);
+        allow get, list: if isOwner(userId) || isDoctor() || isAdmin();
+        allow create, update: if (isOwner(userId) || isDoctor() || isAdmin()) && isValidAyurvedic(incoming()) && incoming().userId == userId;
+        allow delete: if isOwner(userId) || isAdmin();
       }
+    }
+
+    // Match Patient-Doctor Connections collection
+    match /connections/{connectionId} {
+      allow get: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.doctorId == request.auth.uid || isDoctor() || isAdmin());
+      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.doctorId == request.auth.uid || isDoctor() || isAdmin());
+      allow create: if isSignedIn() && isValidConnection(incoming()) && (incoming().patientId == request.auth.uid || incoming().doctorId == request.auth.uid || isDoctor() || isAdmin());
+      allow update: if isSignedIn() && isValidConnection(incoming()) && (resource.data.patientId == request.auth.uid || resource.data.doctorId == request.auth.uid || isDoctor() || isAdmin());
+      allow delete: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.doctorId == request.auth.uid || isDoctor() || isAdmin());
     }
   }
 }

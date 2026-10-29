@@ -32,6 +32,15 @@ export class LocalStorageRepository implements IDataRepository {
     safeSave(`aura_profile_${userId}`, { ...current, ...profile, updatedAt: new Date().toISOString() });
   }
 
+  subscribeUserProfile(userId: string, onUpdate: (profile: UserProfileData) => void): () => void {
+    const handleStorage = () => {
+      const p = safeLoad<UserProfileData | null>(`aura_profile_${userId}`, null);
+      if (p) onUpdate(p);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }
+
   async getDailyLogs(userId: string): Promise<Record<string, DayLog>> {
     return safeLoad<Record<string, DayLog>>(`aura_logs_${userId}`, sampleLogs);
   }

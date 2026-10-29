@@ -2,13 +2,16 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "User account profile and global tracking configuration",
+      "description": "User account profile, role, and global tracking configuration",
       "type": "object",
       "properties": {
         "uid": { "type": "string", "description": "Unique Firebase Auth user ID" },
         "displayName": { "type": "string", "maxLength": 100, "description": "User display name" },
         "email": { "type": "string", "format": "email", "maxLength": 150, "description": "User email address" },
         "photoURL": { "type": "string", "maxLength": 500, "description": "Profile picture URL" },
+        "role": { "type": "string", "enum": ["patient", "doctor", "admin"], "description": "User role in the system" },
+        "isVerified": { "type": "boolean", "description": "Whether doctor credentials or account is verified" },
+        "doctorInfo": { "type": "object", "description": "Doctor specialization and license details" },
         "cycleLength": { "type": "number", "description": "Default cycle length in days (typically 21-45)" },
         "periodLength": { "type": "number", "description": "Default period duration in days (typically 2-10)" },
         "lutealLength": { "type": "number", "description": "Default luteal phase length in days" },
@@ -88,12 +91,35 @@
         "updatedAt": { "type": "string", "description": "Assessment date" }
       },
       "required": ["userId", "primaryDosha"]
+    },
+    "PatientDoctorConnection": {
+      "title": "PatientDoctorConnection",
+      "description": "Patient consent and data sharing connection with a doctor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique connection identifier" },
+        "patientId": { "type": "string", "description": "Patient user UID" },
+        "patientName": { "type": "string", "maxLength": 100, "description": "Patient name" },
+        "patientEmail": { "type": "string", "format": "email", "maxLength": 150, "description": "Patient email" },
+        "doctorId": { "type": "string", "description": "Doctor user UID" },
+        "doctorName": { "type": "string", "maxLength": 100, "description": "Doctor name" },
+        "doctorSpecialization": { "type": "string", "maxLength": 100, "description": "Doctor medical specialty" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "revoked"], "description": "Connection status" },
+        "permissions": { "type": "object", "description": "Granular data sharing consent toggles" },
+        "accessCode": { "type": "string", "maxLength": 20, "description": "Secure access code" },
+        "consultationNote": { "type": "string", "maxLength": 2000, "description": "Doctor clinical consultation note and advice" },
+        "consultationDate": { "type": "string", "description": "Date of clinical consultation" },
+        "prescriptionSummary": { "type": "string", "maxLength": 500, "description": "Lifestyle or prescription summary" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Update timestamp" }
+      },
+      "required": ["id", "patientId", "doctorId", "status"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "User profile, configuration, and default cycle metrics"
+      "description": "User profile, role, configuration, and default cycle metrics"
     },
     "/users/{userId}/dailyLogs/{date}": {
       "schema": { "$ref": "#/entities/DayLog" },
@@ -110,6 +136,10 @@
     "/users/{userId}/ayurvedicProfile/current": {
       "schema": { "$ref": "#/entities/AyurvedicProfile" },
       "description": "Current Prakriti and Dosha constitution assessment"
+    },
+    "/connections/{connectionId}": {
+      "schema": { "$ref": "#/entities/PatientDoctorConnection" },
+      "description": "Patient-doctor data sharing permissions and consent records"
     }
   }
 }

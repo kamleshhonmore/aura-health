@@ -27,10 +27,15 @@
 }
 
 /* Base Container Structure & Safe Areas */
-.app-viewport {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+* {
+  -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  height: 100%;
 }
 
 body {
@@ -39,6 +44,18 @@ body {
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Base Container Structure & Safe Areas */
+.app-viewport {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  box-sizing: border-box;
 }
 
 /* Isolated Celebration Particle Canvas */

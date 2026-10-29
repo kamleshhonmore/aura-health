@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ThemeConfig } from '../types';
 import { UserProfileData } from '../services/db/types';
 import { getDatabaseProvider } from '../services/db';
+import { useAuth } from '../context/AuthContext';
 import {
   ShieldAlert,
   CheckCircle,
@@ -25,6 +26,7 @@ interface AdminPortalProps {
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ theme, onClose }) => {
+  const { user, refreshProfile } = useAuth();
   const [pendingDoctors, setPendingDoctors] = useState<UserProfileData[]>([]);
   const [allDoctors, setAllDoctors] = useState<UserProfileData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +59,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ theme, onClose }) => {
       const repo = getDatabaseProvider();
       if (repo.verifyDoctor) {
         await repo.verifyDoctor(doctorId, isVerified);
+        if (user && user.uid === doctorId) {
+          await refreshProfile();
+        }
         setActionMessage(`Doctor account successfully ${isVerified ? 'approved' : 'rejected'}.`);
         setTimeout(() => setActionMessage(null), 3000);
         await loadData();

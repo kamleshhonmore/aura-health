@@ -51,6 +51,10 @@ import { SettingsModal } from './components/SettingsModal';
 import { AuthModal } from './components/AuthModal';
 import { AdminPortal } from './components/AdminPortal';
 import { DoctorConnectModal } from './components/DoctorConnectModal';
+import { DoctorWorkspace } from './components/DoctorWorkspace';
+import { RoleGatewayScreen } from './components/RoleGatewayScreen';
+import { DoctorPortalView } from './components/DoctorPortalView';
+import { AdminPortalView } from './components/AdminPortalView';
 import { useAuth } from './context/AuthContext';
 import { getDatabaseProvider } from './services/db';
 
@@ -60,6 +64,8 @@ import {
   Calendar as CalendarIcon,
   Bot,
   PlusCircle,
+  Stethoscope,
+  ShieldAlert,
 } from 'lucide-react';
 import { fireCelebrationConfetti } from './utils/confetti';
 import { motion, AnimatePresence } from 'motion/react';
@@ -120,16 +126,45 @@ export function App() {
   });
 
   const [activeTab, setActiveTab] = useState<
-    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat' | 'admin'
+    'home' | 'hub' | 'ayurveda' | 'calendar' | 'charts' | 'pregnancy' | 'clinical' | 'babyai' | 'perimenopause' | 'aichat' | 'admin' | 'doctor' | 'doctors'
   >('home');
   const [homeViewStyle, setHomeViewStyle] = useState<'scenic' | 'desk'>('desk');
 
   // Auth & Database Context
-  const { user, userProfile, syncStatus, updateSettings: updateProfileSettings, syncOfflineData } = useAuth();
+  const {
+    user,
+    userProfile,
+    isGuest,
+    continueAsGuest,
+    signOutUser,
+    syncStatus,
+    updateSettings: updateProfileSettings,
+    syncOfflineData,
+  } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDoctorConnectOpen, setIsDoctorConnectOpen] = useState(false);
   const [isAdminPortalOpen, setIsAdminPortalOpen] = useState(false);
   const [onlineSyncToast, setOnlineSyncToast] = useState<string | null>(null);
+  const [isPatientPreviewMode, setIsPatientPreviewMode] = useState(false);
+
+  // Automatic Role-Based Initial Routing:
+  // When a doctor logs in, direct them automatically to their clinical patient workspace.
+  // When an admin logs in, direct them to the admin portal.
+  const hasInitializedRoleRouting = useRef<string | null>(null);
+  useEffect(() => {
+    if (userProfile?.role) {
+      // If we haven't routed this specific user/role yet, route them to their primary workspace
+      const routingKey = `${user?.uid || 'anon'}_${userProfile.role}`;
+      if (hasInitializedRoleRouting.current !== routingKey) {
+        hasInitializedRoleRouting.current = routingKey;
+        if (userProfile.role === 'doctor') {
+          setActiveTab('doctor');
+        } else if (userProfile.role === 'admin') {
+          setActiveTab('admin');
+        }
+      }
+    }
+  }, [user?.uid, userProfile?.role]);
 
   // Modals state
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -232,8 +267,9 @@ export function App() {
         return;
       }
 
-      if (activeTabRef.current !== 'home') {
-        setActiveTab('home');
+      const defaultTab = userProfile?.role === 'doctor' ? 'doctor' : (userProfile?.role === 'admin' ? 'admin' : 'home');
+      if (activeTabRef.current !== defaultTab) {
+        setActiveTab(defaultTab);
         return;
       }
 
@@ -268,9 +304,10 @@ export function App() {
     cyclesRef.current = cycles;
   }, [cycles]);
 
-  // Database sync: fetch remote logs and listen to updates
+  // Database sync: fetch remote logs and listen to updates (PATIENTS ONLY)
   useEffect(() => {
-    if (!user) return;
+    // Only patients have personal menstrual cycle logs
+    if (!user || userProfile?.role === 'doctor' || userProfile?.role === 'admin') return;
     const repo = getDatabaseProvider();
 
     // 1. Fetch existing remote logs
@@ -294,11 +331,12 @@ export function App() {
       });
       return () => unsub();
     }
-  }, [user]);
+  }, [user, userProfile?.role]);
 
-  // Automatic offline-to-online sync when internet connection is restored
+  // Automatic offline-to-online sync when internet connection is restored (PATIENTS ONLY)
   useEffect(() => {
-    if (!user) return;
+    // Only patients have cycle data that needs syncing to cloud
+    if (!user || userProfile?.role === 'doctor' || userProfile?.role === 'admin') return;
 
     const performSync = async (trigger: 'initial' | 'reconnect') => {
       try {
@@ -328,7 +366,7 @@ export function App() {
 
     window.addEventListener('online', handleBackOnline);
     return () => window.removeEventListener('online', handleBackOnline);
-  }, [user, syncOfflineData]);
+  }, [user, userProfile?.role, syncOfflineData]);
 
   // Sync to local storage for offline fast startup
   useEffect(() => {
@@ -529,10 +567,61 @@ export function App() {
     }
   };
 
+  // 1. If not authenticated and not continuing as guest, render RoleGatewayScreen
+  if (!user && !isGuest) {
+    return <RoleGatewayScreen onContinueGuest={continueAsGuest} />;
+  }
+
+  // 2. Dedicated Doctor View (Full isolated workspace with its own top header, drawer, and 4 bottom dock buttons)
+  if (userProfile?.role === 'doctor' && !isPatientPreviewMode) {
+    return (
+      <DoctorPortalView
+        theme={currentTheme}
+        onSwitchToPatientView={() => setIsPatientPreviewMode(true)}
+        onSignOut={async () => {
+          setIsPatientPreviewMode(false);
+          await signOutUser();
+        }}
+      />
+    );
+  }
+
+  // 3. Dedicated Admin View (Full isolated governance workspace with its own top header, drawer, and 4 bottom dock buttons)
+  if (userProfile?.role === 'admin' && !isPatientPreviewMode) {
+    return (
+      <AdminPortalView
+        theme={currentTheme}
+        onSwitchToPatientView={() => setIsPatientPreviewMode(true)}
+        onSignOut={async () => {
+          setIsPatientPreviewMode(false);
+          await signOutUser();
+        }}
+      />
+    );
+  }
+
   return (
     <div className={`min-h-screen ${currentTheme.bgMain} flex flex-col font-['Nunito'] antialiased transition-colors text-[#1A1A24]`}>
+      {/* Role Preview Mode Banner if Doctor or Admin is previewing patient view */}
+      {isPatientPreviewMode && (
+        <div className="w-full bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between text-xs font-bold shadow-lg z-50 sticky top-0">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <span>
+              Previewing Patient View as {userProfile?.role === 'doctor' ? 'Doctor' : 'Administrator'}
+            </span>
+          </div>
+          <button
+            onClick={() => setIsPatientPreviewMode(false)}
+            className="px-3 py-1 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-[11px] font-black uppercase tracking-wider cursor-pointer shadow-sm transition-all"
+          >
+            Return to {userProfile?.role === 'doctor' ? 'Doctor Workspace' : 'Governance Board'} →
+          </button>
+        </div>
+      )}
+
       {/* Mobile App Frame Container */}
-      <div className="w-full max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative bg-[#F8F9FC] pb-36 border-x border-[#EAECEF]">
+      <div className="w-full max-w-md mx-auto min-h-screen flex flex-col shadow-2xl relative bg-[#F8F9FC] pb-[calc(8rem+env(safe-area-inset-bottom,0px))] sm:border-x border-[#EAECEF]">
         {/* Top Header */}
         <DeskHeader
           theme={currentTheme}
@@ -549,7 +638,18 @@ export function App() {
           onSearchClick={() => setActiveTab('hub')}
           onOpenAuth={() => setIsAuthModalOpen(true)}
           onOpenDoctorConnect={() => setIsDoctorConnectOpen(true)}
-          onOpenAdminPortal={() => setIsAdminPortalOpen(true)}
+          onOpenDoctorWorkspace={() => {
+            setIsPatientPreviewMode(false);
+            setActiveTab('doctor');
+          }}
+          onOpenAdminPortal={() => {
+            setIsPatientPreviewMode(false);
+            setActiveTab('admin');
+          }}
+          onSignOut={async () => {
+            setIsPatientPreviewMode(false);
+            await signOutUser();
+          }}
           userEmail={user?.email}
           userPhoto={user?.photoURL}
           userRole={userProfile?.role}
@@ -572,6 +672,38 @@ export function App() {
           }}
           onLockApp={() => setIsAppLocked(true)}
         />
+
+        {/* Doctor Preview Mode Return Bar */}
+        {userProfile?.role === 'doctor' && activeTab === 'home' && (
+          <div className="mx-4 mt-2 p-2.5 rounded-2xl bg-teal-800 text-white text-xs flex items-center justify-between shadow-sm animate-fadeIn">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Stethoscope className="w-4 h-4 text-teal-300" />
+              <span>Doctor Clinical Preview Mode</span>
+            </div>
+            <button
+              onClick={() => setActiveTab('doctor')}
+              className="px-2.5 py-1 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-[10px] font-black uppercase tracking-wider cursor-pointer"
+            >
+              Return to Doctor Portal
+            </button>
+          </div>
+        )}
+
+        {/* Admin Preview Mode Return Bar */}
+        {userProfile?.role === 'admin' && activeTab === 'home' && (
+          <div className="mx-4 mt-2 p-2.5 rounded-2xl bg-slate-900 text-white text-xs flex items-center justify-between shadow-sm border border-slate-700 animate-fadeIn">
+            <div className="flex items-center gap-1.5 font-bold">
+              <ShieldAlert className="w-4 h-4 text-indigo-400" />
+              <span>Admin Governance Preview Mode</span>
+            </div>
+            <button
+              onClick={() => setActiveTab('admin')}
+              className="px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider cursor-pointer"
+            >
+              Return to Admin Portal
+            </button>
+          </div>
+        )}
 
         {/* Online Sync Notification Banner */}
         {onlineSyncToast && (
@@ -848,6 +980,22 @@ export function App() {
                 <AdminPortal theme={currentTheme} onClose={() => setActiveTab('home')} />
               </motion.div>
             )}
+
+            {activeTab === 'doctor' && (
+              <motion.div
+                key="doctor"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <DoctorWorkspace
+                  theme={currentTheme}
+                  onSwitchToPatientView={() => setActiveTab('home')}
+                  onOpenSettings={() => setIsSettingsModalOpen(true)}
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
         </main>
 
@@ -855,7 +1003,20 @@ export function App() {
         {!isKeyboardVisible && activeTab !== 'aichat' && !(isLogModalOpen || isThemeModalOpen || isRemindersModalOpen || isSettingsModalOpen || isPinSetupOpen || isAppLocked) && (
           <NavDock
             activeTab={activeTab}
-            onTabChange={(tab) => setActiveTab(tab === 'ai' ? 'aichat' : (tab as any))}
+            userRole={userProfile?.role}
+            onTabChange={(tab) => {
+              if (tab === 'ai') {
+                setActiveTab('aichat');
+              } else if (tab === 'clinical') {
+                setActiveTab('clinical');
+              } else if (tab === 'doctor' || tab === 'doctors') {
+                setIsDoctorConnectOpen(true);
+              } else if (tab === 'admin') {
+                setActiveTab('admin');
+              } else {
+                setActiveTab(tab as any);
+              }
+            }}
           />
         )}
       </div>
@@ -955,11 +1116,11 @@ export function App() {
       />
 
       {isAdminPortalOpen && (
-        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xl overflow-y-auto p-4 sm:p-6 flex items-start justify-center pt-10">
-          <div className="w-full max-w-5xl bg-white rounded-[32px] p-2 relative shadow-2xl">
+        <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-xl overflow-y-auto p-2 sm:p-6 flex items-start justify-center pt-4 sm:pt-10">
+          <div className="w-full max-w-5xl bg-white rounded-[28px] sm:rounded-[32px] p-2 relative shadow-2xl">
             <button
               onClick={() => setIsAdminPortalOpen(false)}
-              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold z-50 cursor-pointer shadow-sm"
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 font-bold z-50 cursor-pointer shadow-sm active:scale-95"
             >
               ✕
             </button>

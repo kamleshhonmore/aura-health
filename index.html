@@ -2,35 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#FAF8F5" />
     <title>Period Calendar - Cycle & Ovulation Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#FFF4F7] text-[#4A3B43] antialiased overflow-x-hidden selection:bg-[#FF85A2] selection:text-white">
-    <script>
-      window.addEventListener('error', function(e) {
-        var errDiv = document.getElementById('debug-error');
-        if (!errDiv) {
-          errDiv = document.createElement('div');
-          errDiv.id = 'debug-error';
-          errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;color:#d32f2f;padding:20px;z-index:999999;font-family:sans-serif;font-size:14px;overflow:auto;word-wrap:break-word;';
-          (document.body || document.documentElement).appendChild(errDiv);
-        }
-        errDiv.innerHTML += '<h3>JS Error:</h3><p>' + (e.message || e) + '</p><p>' + (e.filename || '') + ':' + (e.lineno || '') + '</p><hr/>';
-      });
-      window.addEventListener('unhandledrejection', function(e) {
-        var errDiv = document.getElementById('debug-error');
-        if (!errDiv) {
-          errDiv = document.createElement('div');
-          errDiv.id = 'debug-error';
-          errDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;color:#d32f2f;padding:20px;z-index:999999;font-family:sans-serif;font-size:14px;overflow:auto;word-wrap:break-word;';
-          (document.body || document.documentElement).appendChild(errDiv);
-        }
-        errDiv.innerHTML += '<h3>Unhandled Rejection:</h3><p>' + (e.reason ? (e.reason.stack || e.reason.message || e.reason) : e) + '</p><hr/>';
-      });
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

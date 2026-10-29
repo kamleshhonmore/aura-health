@@ -134,8 +134,8 @@ export const DoctorConnectModal: React.FC<DoctorConnectModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl animate-fadeIn font-['Nunito'] text-slate-900">
-      <div className="w-full max-w-2xl bg-white rounded-[32px] p-6 shadow-2xl border border-rose-100 relative overflow-hidden flex flex-col max-h-[92vh] overflow-y-auto space-y-5">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-xl animate-fadeIn font-['Nunito'] text-slate-900">
+      <div className="w-full max-w-2xl bg-white rounded-[28px] sm:rounded-[32px] p-4 sm:p-6 shadow-2xl border border-rose-100 relative overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[92vh] overflow-y-auto space-y-4 sm:space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-rose-100">
           <div className="flex items-center gap-3">
